@@ -55,6 +55,9 @@ public class InfoPanel extends JPanel implements ActionListener {
 
 	private MainFrame f = null;
 
+	// 保存流水记录方便删除和修改
+	RecordStructure rds = null;
+
 	public InfoPanel(MainFrame frame) throws SQLException {
 
 		// 父窗口指针
@@ -62,7 +65,7 @@ public class InfoPanel extends JPanel implements ActionListener {
 
 		// 布局设置
 		setLayout(null);
-		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.DARK_GRAY), "记录信息新建或设置", TitledBorder.LEFT,
+		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.DARK_GRAY), "流水记录信息新建或设置", TitledBorder.LEFT,
 				TitledBorder.DEFAULT_POSITION, font.getFont());
 		setBorder(tb1);
 
@@ -103,8 +106,6 @@ public class InfoPanel extends JPanel implements ActionListener {
 		label.setBounds(90, 180, 100, 25);
 		add(label);
 
-		contentReset(null);
-
 		String[] bstr = { "插入", "保存", "删除", "清空" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
@@ -119,19 +120,30 @@ public class InfoPanel extends JPanel implements ActionListener {
 		btn[BUTTON_DEL].setBackground(ThemeColor.RED);
 		btn[BUTTON_CLEAR].setBackground(Color.LIGHT_GRAY);
 
+		contentReset(null);
+
 		setBackground(Color.WHITE);
 		setPreferredSize(new Dimension(300, 280));
 		validate();
 	}
 
+	/**
+	 * 根据选中的流水记录更新组件内容
+	 * 
+	 * @param rds 选中的流水记录
+	 * @throws SQLException
+	 */
 	public void contentReset(RecordStructure rds) throws SQLException {
+		this.rds = rds;
 		h2 = new H2_DB();
+		// 账户名下拉列表
 		String sql = "SELECT name FROM accounts";
 		ResultSet rs = h2.query(sql);
 		account.removeAllItems();
 		while (rs.next()) {
 			account.addItem(rs.getString("name"));
 		}
+		// 标签下拉列表
 		sql = "SELECT label FROM labels";
 		rs = h2.query(sql);
 		label.removeAllItems();
@@ -139,12 +151,16 @@ public class InfoPanel extends JPanel implements ActionListener {
 			label.addItem(rs.getString("label"));
 		}
 		h2.close();
-
+		// 时间
 		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 		tx[TX_AMOUNT].setText(null);
 		tx[TX_REMARK].setText(null);
 		tx[TX_TIME].setEditable(true);
+		// 插入按钮
+		btn[BUTTON_INSERT].setEnabled(true);
+		// 若记录非空
 		if (rds != null) {
+			btn[BUTTON_INSERT].setEnabled(false);
 			tx[TX_TIME].setText(rds.getCreatetime());
 			tx[TX_AMOUNT].setText(String.valueOf(rds.getAmount()));
 			tx[TX_REMARK].setText(rds.getRemark());
@@ -155,10 +171,20 @@ public class InfoPanel extends JPanel implements ActionListener {
 		}
 	}
 
+	/**
+	 * 新建流水
+	 * 
+	 * @throws SQLException
+	 * @throws ParseException
+	 * @throws NumberFormatException
+	 */
 	private void insert() throws SQLException, ParseException, NumberFormatException {
+		// 时间
 		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date = ft.parse(tx[TX_TIME].getText());
+		// 金额
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
+		// 收入或支出
 		int type = 0;
 		if (this.type.getSelectedIndex() == 0) {
 			type = -1;
@@ -166,10 +192,11 @@ public class InfoPanel extends JPanel implements ActionListener {
 			type = 1;
 		}
 		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft.format(date),
-				account.getSelectedItem().toString(), type, amount, label.getSelectedItem().toString(),
-				tx[TX_REMARK].getText());
+				account.getSelectedItem(), type, amount, label.getSelectedItem(), tx[TX_REMARK].getText());
 		h2 = new H2_DB();
+		logger.info(sql);
 		h2.execute(sql);
+		// 根据流水计算账户余额
 		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", type * amount,
 				account.getSelectedItem().toString());
 		h2.execute(sql);
@@ -177,8 +204,15 @@ public class InfoPanel extends JPanel implements ActionListener {
 	}
 
 	private void delete() throws SQLException {
-		String sql = String.format("DELETE FROM ledger WHERE createtime='%s'", tx[TX_TIME].getText());
 		h2 = new H2_DB();
+		// 恢复余额
+		String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
+				rds.getType() * rds.getAmount(), rds.getName());
+		logger.info("删除流水记录");
+		logger.info(sql);
+		h2.execute(sql);
+		sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
+		logger.info(sql);
 		h2.execute(sql);
 		h2.close();
 	}
@@ -196,6 +230,7 @@ public class InfoPanel extends JPanel implements ActionListener {
 			} catch (ParseException | NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(e1);
+				e1.printStackTrace();
 			}
 		} else if (e.getSource() == btn[BUTTON_CLEAR]) {
 			// 清除
