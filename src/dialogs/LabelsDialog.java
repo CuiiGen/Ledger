@@ -54,12 +54,20 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		public void editingStopped(ChangeEvent e) {
 			int r = getEditingRow();
 			int c = getEditingColumn();
+			// 旧值
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
+			if (pre.equals("退款") || pre.equals("存入")) {
+				table.setValueAt(pre, r, 0);
+				MessageDialog.showError(this, "默认标签，禁止修改！");
+				return;
+			}
 			String sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'", table.getValueAt(r, c),
 					pre);
+			// 更新且数据库随用随取随关
 			try {
 				h2 = new H2_DB();
+				logger.info(sql);
 				h2.execute(sql);
 				h2.close();
 				updateTable();
@@ -195,12 +203,13 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		btn[BUTTON_CLOSE] = new JButton("关闭");
 		for (final JButton b : btn) {
 			b.setFont(font.getFont());
-			b.setForeground(Color.WHITE);
-			b.setBackground(ThemeColor.ORANGE);
+			b.setForeground(Color.DARK_GRAY);
+			b.setBackground(Color.LIGHT_GRAY);
 			b.addActionListener(this);
 			add(b);
 		}
 		btn[BUTTON_INSERT].setBackground(ThemeColor.BLUE);
+		btn[BUTTON_INSERT].setForeground(Color.WHITE);
 		btn[BUTTON_INSERT].setBounds(150, 400, 100, 30);
 		btn[BUTTON_DEL].setBounds(300, 400, 100, 30);
 		btn[BUTTON_CLOSE].setBounds(450, 400, 100, 30);
@@ -220,11 +229,13 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 */
 	private void updateTable() throws SQLException {
 		h2 = new H2_DB();
-		String sql = "SELECT `labels`.*, sum(`ledger`.`amount`) as `amount` FROM `labels` LEFT JOIN `ledger` ON `labels`.`label` = `ledger`.`label` GROUP BY `labels`.`label` ORDER BY `labels`.`createtime` DESC;";
+		String sql = "SELECT * FROM `view_labels`";
 		ResultSet rs = h2.query(sql);
+		logger.info(sql);
 		array.clear();
 		while (rs.next()) {
-			array.add(new LabelStructure(rs.getString("label"), rs.getString("createtime"), rs.getFloat("amount")));
+			array.add(new LabelStructure(rs.getString("label"), rs.getString("createtime"), rs.getFloat("amount"),
+					rs.getInt("count")));
 		}
 		h2.close();
 		// 表格内容更新
@@ -245,6 +256,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			String sql = String.format("INSERT INTO `labels`(`label`) VALUES ('%s')", tx.getText());
 			tx.setText(null);
 			h2 = new H2_DB();
+			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
 		}
@@ -253,26 +265,35 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	private void deleteLabel() throws SQLException {
 		int r = table.getSelectedRow();
 		if (r > -1) {
-			String sql = String.format("DELETE FROM `labels` WHERE `label`='%s'", array.get(r).getLabel());
-			h2 = new H2_DB();
-			h2.execute(sql);
-			h2.close();
+			String l = array.get(r).getLabel();
+			if (l.equals("退款") || l.equals("存入")) {
+				MessageDialog.showError(this, "默认标签，禁止删除！");
+			} else {
+				String sql = String.format("DELETE FROM `labels` WHERE `label`='%s'", array.get(r).getLabel());
+				h2 = new H2_DB();
+				logger.info(sql);
+				h2.execute(sql);
+				h2.close();
+			}
 		}
 	}
 
 	@Override
 	public void actionPerformed(final ActionEvent e) {
 		if (e.getSource() == btn[BUTTON_CLOSE]) {
+			// 关闭窗口
 			dispose();
 		} else if (e.getSource() == btn[BUTTON_INSERT]) {
+			// 插入
 			try {
 				insertLabel();
 				updateTable();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "或重复插入，插入失败！");
-				logger.error(e);
+				logger.error(e1);
 			}
 		} else if (e.getSource() == btn[BUTTON_DEL]) {
+			// 删除
 			try {
 				deleteLabel();
 				updateTable();
@@ -291,7 +312,7 @@ class LabelsModel extends AbstractTableModel {
 	 */
 	private static final long serialVersionUID = -2453177164571829047L;
 
-	private static String[] title = { "标签名", "创建时间", "累计金额" };
+	private static String[] title = { "标签名", "创建时间", "累计金额", "计数（笔）" };
 
 	private ArrayList<LabelStructure> array = new ArrayList<>();
 
@@ -326,6 +347,9 @@ class LabelsModel extends AbstractTableModel {
 			break;
 		case 2:
 			o = array.get(rowIndex).getAmount();
+			break;
+		case 3:
+			o = array.get(rowIndex).getCount();
 			break;
 		}
 		return o;

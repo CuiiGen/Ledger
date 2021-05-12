@@ -250,6 +250,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				new LabelsDialog(this, getLocation(), getSize());
 				infoPanel.contentReset(null);
 			} catch (SQLException e1) {
+				e1.printStackTrace();
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);
 			}
