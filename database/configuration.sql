@@ -19,6 +19,16 @@ CREATE TABLE `labels` (
     PRIMARY KEY (`label`)
 );
 
+INSERT INTO
+    `labels`
+VALUES
+    ('存入', DEFAULT);
+
+INSERT INTO
+    `labels`
+VALUES
+    ('退款', DEFAULT);
+
 -- 账本
 DROP TABLE `ledger` IF EXISTS;
 
@@ -26,18 +36,21 @@ CREATE TABLE `ledger` (
     `createtime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记账时间',
     `name` VARCHAR(32) NOT NULL COMMENT '账户名',
     `type` ENUM('1', '-1') NOT NULL COMMENT '收入或支出',
-    `amount` DOUBLE NOT NULL COMMENT '金额',
+    `amount` DOUBLE DEFAULT 0 NOT NULL COMMENT '金额',
     `label` VARCHAR(32) DEFAULT NULL COMMENT '标签',
-    `remark` VARCHAR(255) DEFAULT NULL COMMENT '备注',
+    `remark` TEXT DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (`createtime`),
     CONSTRAINT `ledger_ibfk_1` FOREIGN KEY (`name`) REFERENCES `accounts` (`name`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `ledger_ibfk_2` FOREIGN KEY (`label`) REFERENCES `labels` (`label`) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- 查询标签
+CREATE
+OR REPLACE VIEW `view_labels` AS
 SELECT
     `labels`.*,
-    sum(`ledger`.`amount`) as `amount`
+    sum(`ledger`.`amount`) AS `amount`,
+    count(`ledger`.`amount`) AS `count`
 FROM
     `labels`
     LEFT JOIN `ledger` ON `labels`.`label` = `ledger`.`label`
