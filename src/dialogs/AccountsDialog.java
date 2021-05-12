@@ -60,6 +60,7 @@ public class AccountsDialog extends JDialog implements ActionListener {
 					pre);
 			try {
 				h2 = new H2_DB();
+				logger.info(sql);
 				h2.execute(sql);
 				h2.close();
 				updateTable();
@@ -195,12 +196,13 @@ public class AccountsDialog extends JDialog implements ActionListener {
 		btn[BUTTON_CLOSE] = new JButton("关闭");
 		for (final JButton b : btn) {
 			b.setFont(font.getFont());
-			b.setForeground(Color.WHITE);
-			b.setBackground(ThemeColor.ORANGE);
+			b.setForeground(Color.DARK_GRAY);
+			b.setBackground(Color.LIGHT_GRAY);
 			b.addActionListener(this);
 			add(b);
 		}
 		btn[BUTTON_INSERT].setBackground(ThemeColor.BLUE);
+		btn[BUTTON_INSERT].setForeground(Color.WHITE);
 		btn[BUTTON_INSERT].setBounds(150, 400, 100, 30);
 		btn[BUTTON_DEL].setBounds(300, 400, 100, 30);
 		btn[BUTTON_CLOSE].setBounds(450, 400, 100, 30);
@@ -221,6 +223,7 @@ public class AccountsDialog extends JDialog implements ActionListener {
 	private void updateTable() throws SQLException {
 		h2 = new H2_DB();
 		String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` DESC;";
+		logger.info(sql);
 		ResultSet rs = h2.query(sql);
 		array.clear();
 		while (rs.next()) {
@@ -239,22 +242,24 @@ public class AccountsDialog extends JDialog implements ActionListener {
 
 	}
 
-	private void insertLabel() throws SQLException {
+	private void insertAccount() throws SQLException {
 		if (tx.getText().isEmpty()) {
 		} else {
 			String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", tx.getText());
 			tx.setText(null);
 			h2 = new H2_DB();
+			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
 		}
 	}
 
-	private void deleteLabel() throws SQLException {
+	private void deleteAccount() throws SQLException {
 		int r = table.getSelectedRow();
 		if (r > -1) {
 			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
 			h2 = new H2_DB();
+			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
 		}
@@ -266,7 +271,7 @@ public class AccountsDialog extends JDialog implements ActionListener {
 			dispose();
 		} else if (e.getSource() == btn[BUTTON_INSERT]) {
 			try {
-				insertLabel();
+				insertAccount();
 				updateTable();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "或重复插入，插入失败！");
@@ -274,10 +279,10 @@ public class AccountsDialog extends JDialog implements ActionListener {
 			}
 		} else if (e.getSource() == btn[BUTTON_DEL]) {
 			try {
-				deleteLabel();
+				deleteAccount();
 				updateTable();
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "删除失败！");
+				MessageDialog.showError(this, "或有关联流水，删除失败！");
 				logger.error(e);
 			}
 		}
