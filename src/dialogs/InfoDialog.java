@@ -58,7 +58,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		setLayout(null);
 		setResizable(false);
 		// 窗口显示位置
-		final int w = 500, h = 300;
+		final int w = 440, h = 350;
 		setBounds(p.x + (d.width - w) / 2, p.y + (d.height - h) / 2, w, h);
 		// 标签
 		JLabel[] l = new JLabel[6];
@@ -67,7 +67,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			l[i] = new JLabel(lstr[i]);
 			l[i].setFont(font.getFont());
 			add(l[i]);
-			l[i].setBounds(30, 35 * i + 40, 50, 25);
+			l[i].setBounds(60, 35 * i + 40, 50, 25);
 		}
 		// 输入框
 		for (int i = 0; i < tx.length; i++) {
@@ -78,23 +78,23 @@ public class InfoDialog extends JDialog implements ActionListener {
 			tx[i].setSelectionColor(ThemeColor.BLUE);
 			add(tx[i]);
 		}
-		tx[TX_TIME].setBounds(90, 40, 200, 25);
-		tx[TX_AMOUNT].setBounds(90, 145, 200, 25);
-		tx[TX_REMARK].setBounds(90, 215, 200, 25);
+		tx[TX_TIME].setBounds(140, 40, 200, 25);
+		tx[TX_AMOUNT].setBounds(140, 145, 200, 25);
+		tx[TX_REMARK].setBounds(140, 215, 200, 25);
 
 		// 下拉列表
 		type.addItem("支出");
 		type.addItem("收入");
 		type.setFont(font.getFont());
-		type.setBounds(90, 110, 80, 25);
+		type.setBounds(140, 110, 80, 25);
 		add(type);
 
 		account.setFont(font.getFont());
-		account.setBounds(90, 75, 100, 25);
+		account.setBounds(140, 75, 100, 25);
 		add(account);
 
 		label.setFont(font.getFont());
-		label.setBounds(90, 180, 100, 25);
+		label.setBounds(140, 180, 100, 25);
 		add(label);
 
 		String[] bstr = { "插入", "保存", "删除", "清空" };
@@ -104,7 +104,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			btn[i].setForeground(Color.WHITE);
 			btn[i].addActionListener(this);
 			this.add(btn[i]);
-			btn[i].setBounds(350, 50 * i + 40, 80, 30);
+			btn[i].setBounds(30 + 100 * i, 270, 80, 30);
 		}
 		btn[BUTTON_INSERT].setBackground(ThemeColor.BLUE);
 		btn[BUTTON_SAVE].setBackground(ThemeColor.BLUE);

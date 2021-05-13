@@ -37,11 +37,11 @@ import org.apache.logging.log4j.Logger;
 import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
-import dialogs.AccountsDialog;
 import dialogs.InfoDialog;
 import dialogs.LabelsDialog;
 import dialogs.MessageDialog;
 import models.RecordStructure;
+import panels.AccountsPanel;
 
 public class MainFrame extends JFrame implements ActionListener {
 
@@ -134,6 +134,9 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	private Logger logger = LogManager.getLogger();
 
+	// 面板
+	private AccountsPanel accounts = null;
+
 	public MainFrame() throws SQLException {
 
 		super("我的账本Ledger");
@@ -207,6 +210,10 @@ public class MainFrame extends JFrame implements ActionListener {
 		scrollPane.setBounds(50, 50, 600, 250);
 		add(scrollPane, BorderLayout.CENTER);
 
+		//
+		accounts = new AccountsPanel(this);
+		add(accounts, BorderLayout.SOUTH);
+
 		validate();
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -256,13 +263,6 @@ public class MainFrame extends JFrame implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getSource() == mit[ITEM_ACCOUNT]) {
-			// 账户管理
-			try {
-				new AccountsDialog(this, getLocation(), getSize());
-			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
-			}
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
 			ArrayList<String> list = new ArrayList<>();
 			list.add("记账时间,相关账户,类型,金额,标签,备注");

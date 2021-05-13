@@ -1,11 +1,10 @@
-package dialogs;
+package panels;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Panel;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -13,14 +12,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
+import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -31,11 +30,12 @@ import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
 import design.ThemeColor;
+import dialogs.MessageDialog;
 import design.DefaultFont;
 import main.MainFrame;
 import models.AccountStructure;
 
-public class AccountsDialog extends JDialog implements ActionListener {
+public class AccountsPanel extends Panel {
 
 	/**
 	 * 
@@ -56,18 +56,26 @@ public class AccountsDialog extends JDialog implements ActionListener {
 			int c = getEditingColumn();
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
-			String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'", table.getValueAt(r, c),
-					pre);
 			try {
-				h2 = new H2_DB();
-				logger.info(sql);
-				h2.execute(sql);
-				h2.close();
+				if (r == array.size() - 1) {
+					// 新建
+					insertAccount(table.getValueAt(r, c).toString());
+				} else {
+					// 更新
+					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'",
+							table.getValueAt(r, c), pre);
+					h2 = new H2_DB();
+					logger.info(sql);
+					h2.execute(sql);
+					h2.close();
+				}
 				updateTable();
 			} catch (SQLException e1) {
+				e1.printStackTrace();
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);
 			}
+
 		};
 	};
 
@@ -86,10 +94,13 @@ public class AccountsDialog extends JDialog implements ActionListener {
 				int row, int column) {
 			setHorizontalAlignment(SwingConstants.CENTER);
 			if (at == row) {
+				setForeground(Color.WHITE);
 				setBackground(ThemeColor.LIGHT_BLUE);
 			} else if (row % 2 == 0) {
+				setForeground(Color.BLACK);
 				setBackground(ThemeColor.LIGHT_GRAY);
 			} else {
+				setForeground(Color.BLACK);
 				setBackground(Color.WHITE);
 			}
 			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -128,11 +139,6 @@ public class AccountsDialog extends JDialog implements ActionListener {
 		}
 	};
 
-	// 输入扩展名及备注
-	private JTextField tx = new JTextField();
-	// 三个按键
-	private JButton[] btn = new JButton[3];
-	private static final int BUTTON_INSERT = 0, BUTTON_DEL = 1, BUTTON_CLOSE = 2;
 	// 数据库
 	private H2_DB h2 = null;
 	// 字体
@@ -140,21 +146,16 @@ public class AccountsDialog extends JDialog implements ActionListener {
 	// 日志
 	private Logger logger = LogManager.getLogger();
 
-	public AccountsDialog(final MainFrame frame, final Point p, final Dimension d) throws SQLException {
-		// 父类构造函数
-		super(frame, "账户管理", true);
+	public AccountsPanel(MainFrame frame) throws SQLException {
 		// 布局管理
-		setLayout(null);
-		setResizable(false);
-		// 窗口位置显示
-		final int w = 700, h = 500;
-		setBounds(p.x + (d.width - w) / 2, p.y + (d.height - h) / 2, w, h);
+		setLayout(new BorderLayout());
 		// 更新列表和表格
 		updateTable();
 		// 表格设置
 		table.getTableHeader().setReorderingAllowed(false);
-		table.getTableHeader().setFont(font.getFont());
-		table.getTableHeader().setBackground(Color.WHITE);
+		table.getTableHeader().setFont(font.getFont(1));
+		table.getTableHeader().setBackground(ThemeColor.BLUE);
+		table.getTableHeader().setForeground(Color.WHITE);
 		// 行高
 		table.setFont(font.getFont());
 		table.setRowHeight(27);
@@ -162,7 +163,7 @@ public class AccountsDialog extends JDialog implements ActionListener {
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
 		// 颜色设置
-		table.setSelectionBackground(ThemeColor.BLUE);
+		table.setSelectionBackground(ThemeColor.LIGHT_BLUE);
 		table.setSelectionForeground(Color.WHITE);
 		// 网格线
 		table.setShowVerticalLines(false);
@@ -176,42 +177,15 @@ public class AccountsDialog extends JDialog implements ActionListener {
 		table.addMouseListener(tcr);
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
-		add(scrollPane);
-		scrollPane.setBounds(50, 50, 600, 250);
 
-		// 输入框设置
-		tx.setFont(font.getFont());
-		tx.setSelectedTextColor(Color.WHITE);
-		tx.setSelectionColor(ThemeColor.BLUE);
-		add(tx);
-		// 标签
-		JLabel label = new JLabel("新建账户名");
-		label.setFont(font.getFont());
-		add(label);
-		label.setBounds(50, 330, 110, 30);
-		tx.setBounds(170, 330, 200, 30);
-		// 按键初始化
-		btn[BUTTON_INSERT] = new JButton("添加");
-		btn[BUTTON_DEL] = new JButton("删除");
-		btn[BUTTON_CLOSE] = new JButton("关闭");
-		for (final JButton b : btn) {
-			b.setFont(font.getFont());
-			b.setForeground(Color.DARK_GRAY);
-			b.setBackground(Color.LIGHT_GRAY);
-			b.addActionListener(this);
-			add(b);
-		}
-		btn[BUTTON_INSERT].setBackground(ThemeColor.BLUE);
-		btn[BUTTON_INSERT].setForeground(Color.WHITE);
-		btn[BUTTON_INSERT].setBounds(150, 400, 100, 30);
-		btn[BUTTON_DEL].setBounds(300, 400, 100, 30);
-		btn[BUTTON_CLOSE].setBounds(450, 400, 100, 30);
+		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.DARK_GRAY), "账户信息显示", TitledBorder.LEFT,
+				TitledBorder.DEFAULT_POSITION, font.getFont());
+		scrollPane.setBorder(tb1);
+		add(scrollPane, BorderLayout.CENTER);
 
-		// 窗口显示
+		scrollPane.setBackground(Color.WHITE);
+		setBackground(Color.WHITE);
 		validate();
-
-		setVisible(true);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
 	}
 
@@ -239,54 +213,28 @@ public class AccountsDialog extends JDialog implements ActionListener {
 		cm.getColumn(1).setMinWidth(220);
 		cm.getColumn(0).setMinWidth(120);
 		cm.getColumn(0).setMaxWidth(160);
-
 	}
 
-	private void insertAccount() throws SQLException {
-		if (tx.getText().isEmpty()) {
-		} else {
-			String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", tx.getText());
-			tx.setText(null);
-			h2 = new H2_DB();
-			logger.info(sql);
-			h2.execute(sql);
-			h2.close();
-		}
+	private void insertAccount(String name) throws SQLException {
+		String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", name);
+		h2 = new H2_DB();
+		logger.info(sql);
+		h2.execute(sql);
+		h2.close();
 	}
 
-	private void deleteAccount() throws SQLException {
-		int r = table.getSelectedRow();
-		if (r > -1) {
-			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
-			h2 = new H2_DB();
-			logger.info(sql);
-			h2.execute(sql);
-			h2.close();
-		}
-	}
+	// TODO 删除账户
+//	private void deleteAccount() throws SQLException {
+//		int r = table.getSelectedRow();
+//		if (r > -1) {
+//			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
+//			h2 = new H2_DB();
+//			logger.info(sql);
+//			h2.execute(sql);
+//			h2.close();
+//		}
+//	}
 
-	@Override
-	public void actionPerformed(final ActionEvent e) {
-		if (e.getSource() == btn[BUTTON_CLOSE]) {
-			dispose();
-		} else if (e.getSource() == btn[BUTTON_INSERT]) {
-			try {
-				insertAccount();
-				updateTable();
-			} catch (SQLException e1) {
-				MessageDialog.showError(this, "或重复插入，插入失败！");
-				logger.error(e);
-			}
-		} else if (e.getSource() == btn[BUTTON_DEL]) {
-			try {
-				deleteAccount();
-				updateTable();
-			} catch (SQLException e1) {
-				MessageDialog.showError(this, "或有关联流水，删除失败！");
-				logger.error(e);
-			}
-		}
-	}
 }
 
 class AccountsModel extends AbstractTableModel {
@@ -302,6 +250,7 @@ class AccountsModel extends AbstractTableModel {
 
 	public AccountsModel(ArrayList<AccountStructure> array) {
 		this.array = array;
+		this.array.add(new AccountStructure("点击新建账户", "--", 0));
 	}
 
 	@Override
