@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Panel;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -12,72 +11,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumnModel;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
-import design.ThemeColor;
-import dialogs.MessageDialog;
 import design.DefaultFont;
+import design.ThemeColor;
+import dialogs.InfoDialog;
 import main.MainFrame;
-import models.AccountStructure;
+import models.RecordStructure;
 
-public class AccountsPanel extends Panel {
+public class LedgerPanel extends JPanel {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6063182420495622194L;
-
-	// 表格及数据列表
-	private ArrayList<AccountStructure> array = new ArrayList<>();
-	private JTable table = new JTable(new AccountsModel(array)) {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 8938369871665016790L;
-
-		public void editingStopped(ChangeEvent e) {
-			int r = getEditingRow();
-			int c = getEditingColumn();
-			String pre = table.getValueAt(r, c).toString();
-			super.editingStopped(e);
-			try {
-				if (r == array.size() - 1) {
-					// 新建
-					insertAccount(table.getValueAt(r, c).toString());
-				} else {
-					// 更新
-					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'",
-							table.getValueAt(r, c), pre);
-					h2 = new H2_DB();
-					logger.info(sql);
-					h2.execute(sql);
-					h2.close();
-				}
-				f.updatePanel();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
-			}
-
-		};
-	};
+	private static final long serialVersionUID = -4577861621524184964L;
+	private ArrayList<RecordStructure> array = new ArrayList<>();
+	private JTable table = new JTable(new RecordsModel(array));
 
 	// 内部类
 	private class CellRenderer extends DefaultTableCellRenderer implements MouseMotionListener, MouseListener {
@@ -100,6 +59,7 @@ public class AccountsPanel extends Panel {
 			} else {
 				setBackground(Color.WHITE);
 			}
+
 			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
 
@@ -115,6 +75,14 @@ public class AccountsPanel extends Panel {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2) {
+				try {
+					showInfoDialog(array.get(table.getSelectedRow()));
+					f.updatePanel();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
 		}
 
 		@Override
@@ -136,20 +104,19 @@ public class AccountsPanel extends Panel {
 		}
 	};
 
-	// 数据库
-	private H2_DB h2 = null;
 	// 字体
 	private DefaultFont font = new DefaultFont();
-	// 日志
+
+	private H2_DB h2 = null;
+
 	private Logger logger = LogManager.getLogger();
-	// 父窗口
+
 	private MainFrame f = null;
 
-	public AccountsPanel(MainFrame frame) throws SQLException {
-		// 布局管理
+	public LedgerPanel(MainFrame frame) throws SQLException {
 		setLayout(new BorderLayout());
 		f = frame;
-		// 更新列表和表格
+		// 更新表格
 		updateTable();
 		// 表格设置
 		table.getTableHeader().setReorderingAllowed(false);
@@ -177,16 +144,7 @@ public class AccountsPanel extends Panel {
 		table.addMouseListener(tcr);
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
-
-		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.DARK_GRAY), "账户信息显示", TitledBorder.LEFT,
-				TitledBorder.DEFAULT_POSITION, font.getFont());
-		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);
-
-		scrollPane.setBackground(Color.WHITE);
-		setBackground(Color.WHITE);
-		validate();
-
 	}
 
 	/**
@@ -196,61 +154,42 @@ public class AccountsPanel extends Panel {
 	 */
 	public void updateTable() throws SQLException {
 		h2 = new H2_DB();
-		String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` DESC;";
+		String sql = "SELECT * FROM ledger ORDER BY createtime DESC";
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
 		array.clear();
 		while (rs.next()) {
-			array.add(new AccountStructure(rs.getString("name"), rs.getString("createtime"), rs.getFloat("balance")));
+			array.add(new RecordStructure(rs.getString("createtime"), rs.getString("name"),
+					Integer.parseInt(rs.getString("type")), rs.getFloat("amount"), rs.getString("label"),
+					rs.getString("remark")));
 		}
 		h2.close();
 		// 表格内容更新
-		table.setModel(new AccountsModel(array));
-
-		// 列宽设置
-		TableColumnModel cm = table.getColumnModel();
-		cm.getColumn(1).setMaxWidth(240);
-		cm.getColumn(1).setMinWidth(220);
-		cm.getColumn(0).setMinWidth(120);
-		cm.getColumn(0).setMaxWidth(160);
+		table.setModel(new RecordsModel(array));
 	}
 
-	private void insertAccount(String name) throws SQLException {
-		String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", name);
-		h2 = new H2_DB();
-		logger.info(sql);
-		h2.execute(sql);
-		h2.close();
+	/**
+	 * @param rds
+	 * @throws SQLException
+	 */
+	private void showInfoDialog(RecordStructure rds) throws SQLException {
+		new InfoDialog(f, f.getLocation(), f.getSize(), rds);
 	}
-
-	// TODO 删除账户
-//	private void deleteAccount() throws SQLException {
-//		int r = table.getSelectedRow();
-//		if (r > -1) {
-//			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
-//			h2 = new H2_DB();
-//			logger.info(sql);
-//			h2.execute(sql);
-//			h2.close();
-//		}
-//	}
-
 }
 
-class AccountsModel extends AbstractTableModel {
+class RecordsModel extends AbstractTableModel {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2453177164571829047L;
 
-	private static String[] title = { "账户名", "创建时间", "当前余额" };
+	private static String[] title = { "记账时间", "相关账户", "类型", "金额", "标签", "备注" };
 
-	private ArrayList<AccountStructure> array = new ArrayList<>();
+	private ArrayList<RecordStructure> array = new ArrayList<>();
 
-	public AccountsModel(ArrayList<AccountStructure> array) {
+	public RecordsModel(ArrayList<RecordStructure> array) {
 		this.array = array;
-		this.array.add(new AccountStructure("点击新建账户", "--", 0));
 	}
 
 	@Override
@@ -273,13 +212,22 @@ class AccountsModel extends AbstractTableModel {
 		Object o = null;
 		switch (columnIndex) {
 		case 0:
-			o = array.get(rowIndex).getName();
-			break;
-		case 1:
 			o = array.get(rowIndex).getCreatetime();
 			break;
+		case 1:
+			o = array.get(rowIndex).getName();
+			break;
 		case 2:
+			o = array.get(rowIndex).getType() == -1 ? "支出" : "收入";
+			break;
+		case 3:
 			o = array.get(rowIndex).getAmount();
+			break;
+		case 4:
+			o = array.get(rowIndex).getLabel();
+			break;
+		case 5:
+			o = array.get(rowIndex).getRemark();
 			break;
 		}
 		return o;
@@ -287,18 +235,7 @@ class AccountsModel extends AbstractTableModel {
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (columnIndex == 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		if (columnIndex == 0) {
-			array.get(rowIndex).setName(aValue.toString());
-		}
+		return false;
 	}
 
 }
