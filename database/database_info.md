@@ -12,7 +12,7 @@
 
 ## 版本说明
 
-1. 该工程中所使用的数据库工具为h2-1.4.200，可通过[官网](http://www.h2database.com/html/download.html)或者[GitHub](https://github.com/h2database/h2database)进行下载。
+1. 该工程中所使用的数据库工具为**h2-1.4.200**，可通过[官网](http://www.h2database.com/html/download.html)或者[GitHub](https://github.com/h2database/h2database)进行下载。
 1. 需要注意不同版本之间数据库工具互不兼容，一般不要随意使用其它版本工具打开数据库文件。
 
 ## 连接说明
@@ -111,7 +111,8 @@ CREATE
 OR REPLACE VIEW `view_labels` AS
 SELECT
     `labels`.*,
-    sum(`ledger`.`amount`) AS `amount`
+    sum(`ledger`.`amount`) AS `amount`,
+    count(`ledger`.`amount`) AS `count`
 FROM
     `labels`
     LEFT JOIN `ledger` ON `labels`.`label` = `ledger`.`label`
