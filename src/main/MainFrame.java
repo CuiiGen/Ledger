@@ -38,10 +38,10 @@ import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
 import dialogs.AccountsDialog;
+import dialogs.InfoDialog;
 import dialogs.LabelsDialog;
 import dialogs.MessageDialog;
 import models.RecordStructure;
-import panels.InfoPanel;
 
 public class MainFrame extends JFrame implements ActionListener {
 
@@ -98,9 +98,10 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if (e.getClickCount() == 1) {
+			if (e.getClickCount() == 2) {
 				try {
-					infoPanel.contentReset(array.get(table.getSelectedRow()));
+					showInfoDialog(array.get(table.getSelectedRow()));
+					updateTable();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				}
@@ -128,9 +129,6 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
-
-	// 详细信息显示面板
-	private InfoPanel infoPanel = null;
 
 	private H2_DB h2 = null;
 
@@ -209,10 +207,6 @@ public class MainFrame extends JFrame implements ActionListener {
 		scrollPane.setBounds(50, 50, 600, 250);
 		add(scrollPane, BorderLayout.CENTER);
 
-		// 信息面板
-		infoPanel = new InfoPanel(this);
-		add(infoPanel, BorderLayout.SOUTH);
-
 		validate();
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -238,6 +232,14 @@ public class MainFrame extends JFrame implements ActionListener {
 		table.setModel(new RecordsModel(array));
 	}
 
+	/**
+	 * @param rds
+	 * @throws SQLException
+	 */
+	private void showInfoDialog(RecordStructure rds) throws SQLException {
+		new InfoDialog(this, getLocation(), getSize(), rds);
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
@@ -248,7 +250,6 @@ public class MainFrame extends JFrame implements ActionListener {
 			// 标签管理
 			try {
 				new LabelsDialog(this, getLocation(), getSize());
-				infoPanel.contentReset(null);
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 				MessageDialog.showError(this, "数据库错误");
@@ -258,7 +259,6 @@ public class MainFrame extends JFrame implements ActionListener {
 			// 账户管理
 			try {
 				new AccountsDialog(this, getLocation(), getSize());
-				infoPanel.contentReset(null);
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);

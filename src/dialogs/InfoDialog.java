@@ -1,7 +1,8 @@
-package panels;
+package dialogs;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
@@ -11,27 +12,21 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
-import dialogs.MessageDialog;
 import main.MainFrame;
 import models.RecordStructure;
 
-public class InfoPanel extends JPanel implements ActionListener {
+public class InfoDialog extends JDialog implements ActionListener {
 
 	/**
 	 * 
@@ -53,22 +48,18 @@ public class InfoPanel extends JPanel implements ActionListener {
 
 	private Logger logger = LogManager.getLogger();
 
-	private MainFrame f = null;
-
 	// 保存流水记录方便删除和修改
 	RecordStructure rds = null;
 
-	public InfoPanel(MainFrame frame) throws SQLException {
-
-		// 父窗口指针
-		f = frame;
-
+	public InfoDialog(MainFrame frame, Point p, Dimension d, RecordStructure rds) throws SQLException {
+		// 父类构造函数
+		super(frame, "流水记录信息新建或设置", true);
 		// 布局设置
 		setLayout(null);
-		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.DARK_GRAY), "流水记录信息新建或设置", TitledBorder.LEFT,
-				TitledBorder.DEFAULT_POSITION, font.getFont());
-		setBorder(tb1);
-
+		setResizable(false);
+		// 窗口显示位置
+		final int w = 500, h = 300;
+		setBounds(p.x + (d.width - w) / 2, p.y + (d.height - h) / 2, w, h);
 		// 标签
 		JLabel[] l = new JLabel[6];
 		String[] lstr = { "时间：", "账户：", "类型：", "金额：", "标签：", "备注：" };
@@ -120,11 +111,11 @@ public class InfoPanel extends JPanel implements ActionListener {
 		btn[BUTTON_DEL].setBackground(ThemeColor.RED);
 		btn[BUTTON_CLEAR].setBackground(Color.LIGHT_GRAY);
 
-		contentReset(null);
+		contentReset(rds);
 
 		setBackground(Color.WHITE);
-		setPreferredSize(new Dimension(300, 280));
-		validate();
+		setVisible(true);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
 
 	/**
@@ -205,10 +196,10 @@ public class InfoPanel extends JPanel implements ActionListener {
 
 	private void delete() throws SQLException {
 		h2 = new H2_DB();
+		logger.info("删除流水记录");
 		// 恢复余额
 		String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
 				rds.getType() * rds.getAmount(), rds.getName());
-		logger.info("删除流水记录");
 		logger.info(sql);
 		h2.execute(sql);
 		sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
@@ -223,8 +214,7 @@ public class InfoPanel extends JPanel implements ActionListener {
 			// 插入
 			try {
 				insert();
-				f.updateTable();
-				contentReset(null);
+				dispose();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			} catch (ParseException | NumberFormatException e1) {
@@ -244,8 +234,7 @@ public class InfoPanel extends JPanel implements ActionListener {
 			// 删除
 			try {
 				delete();
-				f.updateTable();
-				contentReset(null);
+				dispose();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);
@@ -255,8 +244,7 @@ public class InfoPanel extends JPanel implements ActionListener {
 			try {
 				delete();
 				insert();
-				f.updateTable();
-				contentReset(null);
+				dispose();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);
