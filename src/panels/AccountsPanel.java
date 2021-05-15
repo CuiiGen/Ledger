@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Panel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -13,6 +15,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -21,6 +25,8 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.plaf.basic.BasicMenuItemUI;
+import javax.swing.plaf.basic.BasicMenuUI;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -29,13 +35,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
+import design.DefaultFont;
 import design.ThemeColor;
 import dialogs.MessageDialog;
-import design.DefaultFont;
 import main.MainFrame;
 import models.AccountStructure;
 
-public class AccountsPanel extends Panel {
+public class AccountsPanel extends Panel implements ActionListener {
 
 	/**
 	 * 
@@ -86,7 +92,6 @@ public class AccountsPanel extends Panel {
 		 */
 		private static final long serialVersionUID = -1108124244265230115L;
 
-		// 鼠标所在行
 		int at = -1;
 
 		@Override
@@ -94,7 +99,7 @@ public class AccountsPanel extends Panel {
 				int row, int column) {
 			setHorizontalAlignment(SwingConstants.CENTER);
 			if (at == row) {
-				setBackground(ThemeColor.LIGHT_BLUE);
+				setBackground(ThemeColor.ORANGE);
 			} else if (row % 2 == 0) {
 				setBackground(ThemeColor.LIGHT_GRAY);
 			} else {
@@ -115,6 +120,10 @@ public class AccountsPanel extends Panel {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			if (e.getButton() == MouseEvent.BUTTON3 && at == table.getSelectedRow()) {
+				// 必须先选中在右键单击进行删除操作
+				pop.show(table, e.getX(), e.getY());
+			}
 		}
 
 		@Override
@@ -144,6 +153,9 @@ public class AccountsPanel extends Panel {
 	private Logger logger = LogManager.getLogger();
 	// 父窗口
 	private MainFrame f = null;
+	// 弹出式菜单
+	private JPopupMenu pop = new JPopupMenu();
+	private JMenuItem del = new JMenuItem("删除");
 
 	public AccountsPanel(MainFrame frame) throws SQLException {
 		// 布局管理
@@ -184,7 +196,13 @@ public class AccountsPanel extends Panel {
 		add(scrollPane, BorderLayout.CENTER);
 
 		scrollPane.setBackground(Color.WHITE);
-		setBackground(Color.WHITE);
+
+		pop.add(del);
+		del.setFont(font.getFont(15f));
+		del.setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
+		del.setBackground(Color.WHITE);
+		del.addActionListener(this);
+
 		validate();
 
 	}
@@ -223,18 +241,24 @@ public class AccountsPanel extends Panel {
 		h2.close();
 	}
 
-	// TODO 删除账户
-//	private void deleteAccount() throws SQLException {
-//		int r = table.getSelectedRow();
-//		if (r > -1) {
-//			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
-//			h2 = new H2_DB();
-//			logger.info(sql);
-//			h2.execute(sql);
-//			h2.close();
-//		}
-//	}
-
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == del) {
+			int r = table.getSelectedRow();
+			if (r > -1) {
+				String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
+				try {
+					h2 = new H2_DB();
+					logger.info(sql);
+					h2.execute(sql);
+					h2.close();
+					updateTable();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+	}
 }
 
 class AccountsModel extends AbstractTableModel {
@@ -300,5 +324,18 @@ class AccountsModel extends AbstractTableModel {
 			array.get(rowIndex).setName(aValue.toString());
 		}
 	}
+}
 
+class DefaultMemuItemUI extends BasicMenuItemUI {
+	public DefaultMemuItemUI(Color bgColor, Color fgColor) {
+		super.selectionBackground = bgColor;
+		super.selectionForeground = fgColor;
+	}
+}
+
+class DefaultMenuUI extends BasicMenuUI {
+	public DefaultMenuUI(Color bgColor, Color fgColor) {
+		super.selectionBackground = bgColor;
+		super.selectionForeground = fgColor;
+	}
 }
