@@ -169,6 +169,30 @@ public class LedgerPanel extends JPanel {
 	}
 
 	/**
+	 * 删除当前选中记录
+	 * 
+	 * @throws SQLException
+	 */
+	public void deleteLedger() throws SQLException {
+		int r = table.getSelectedRow();
+		if (r > -1) {
+			h2 = new H2_DB();
+			logger.info("删除流水记录");
+			// 恢复余额
+			RecordStructure rds = array.get(r);
+			String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
+					rds.getType() * rds.getAmount(), rds.getName());
+			logger.info(sql);
+			h2.execute(sql);
+			// 删除流水记录
+			sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
+			logger.info(sql);
+			h2.execute(sql);
+			h2.close();
+		}
+	}
+
+	/**
 	 * @param rds
 	 * @throws SQLException
 	 */

@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.plaf.basic.BasicMenuItemUI;
 import javax.swing.plaf.basic.BasicMenuUI;
 import javax.swing.table.AbstractTableModel;
@@ -36,12 +37,13 @@ public class MainFrame extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 2630322136338626255L;
 
 	// 菜单及菜单项
-	private JMenu[] m = new JMenu[2];
-	private JMenuItem[] mit = new JMenuItem[4];
+	private JMenu[] m = new JMenu[3];
+	private JMenuItem[] mit = new JMenuItem[7];
 
 	// 菜单及菜单项索引
-	private static final int MENU_MANAGE = 0, MENU_HELP = 1;
-	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_EXPORT = 2, ITEM_ABOUT = 3;
+	private static final int MENU_RECORD = 0, MENU_MANAGE = 1, MENU_HELP = 2;
+	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_LEDGER = 2, ITEM_EXPORT = 3, ITEM_ABOUT = 4,
+			ITEM_RECORD = 5, ITEM_TRANSFER = 6;
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
@@ -74,7 +76,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		add(bar, BorderLayout.NORTH);
 		bar.setBackground(Color.WHITE);
 		// 菜单
-		String[] mstr = { " 管理 ", " 帮助 " };
+		String[] mstr = { "记账", " 管理 ", " 帮助 " };
 		for (int i = 0; i < mstr.length; i++) {
 			m[i] = new JMenu(mstr[i]);
 			bar.add(m[i]);
@@ -82,7 +84,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i].setFont(font.getFont());
 		}
 		// 菜单项
-		String[] istr = { " 标签 ", " 账户 ", " 导出CSV ", " 关于 " };
+		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
 			mit[i].setFont(font.getFont());
@@ -90,8 +92,11 @@ public class MainFrame extends JFrame implements ActionListener {
 			mit[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 			mit[i].setBackground(Color.WHITE);
 		}
+		m[MENU_RECORD].add(mit[ITEM_RECORD]);
+		m[MENU_RECORD].add(mit[ITEM_TRANSFER]);
 		m[MENU_MANAGE].add(mit[ITEM_LABEL]);
 		m[MENU_MANAGE].add(mit[ITEM_ACCOUNT]);
+		m[MENU_MANAGE].add(mit[ITEM_LEDGER]);
 		m[MENU_MANAGE].add(mit[ITEM_EXPORT]);
 		m[MENU_HELP].add(mit[ITEM_ABOUT]);
 
@@ -133,6 +138,26 @@ public class MainFrame extends JFrame implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getSource() == mit[ITEM_ACCOUNT]) {
+			try {
+				if (MessageDialog.showConfirm(this, "确认删除当前账户？\r\n注意仅在账户无关联流水时可删除！") == JOptionPane.YES_OPTION) {
+					accounts.deleteAccount();
+					updatePanel();
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				MessageDialog.showError(this, "删除失败！");
+			}
+		} else if (e.getSource() == mit[ITEM_LEDGER]) {
+			try {
+				if (MessageDialog.showConfirm(this, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
+					ledgerPanel.deleteLedger();
+					updatePanel();
+
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				MessageDialog.showError(this, "删除失败！");
+			}
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
 
 		}

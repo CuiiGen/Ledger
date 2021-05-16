@@ -5,8 +5,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Panel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -15,8 +13,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -41,7 +37,7 @@ import dialogs.MessageDialog;
 import main.MainFrame;
 import models.AccountStructure;
 
-public class AccountsPanel extends Panel implements ActionListener {
+public class AccountsPanel extends Panel {
 
 	/**
 	 * 
@@ -65,7 +61,10 @@ public class AccountsPanel extends Panel implements ActionListener {
 			try {
 				if (r == array.size() - 1) {
 					// 新建
-					insertAccount(table.getValueAt(r, c).toString());
+					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("点击新建账户")) {
+					} else {
+						insertAccount(table.getValueAt(r, c).toString());
+					}
 				} else {
 					// 更新
 					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'",
@@ -78,7 +77,7 @@ public class AccountsPanel extends Panel implements ActionListener {
 				f.updatePanel();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				MessageDialog.showError(this, "数据库错误");
+				MessageDialog.showError(this, "数据库错误，注意账户名不可重复！");
 				logger.error(e1);
 			}
 
@@ -120,10 +119,6 @@ public class AccountsPanel extends Panel implements ActionListener {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if (e.getButton() == MouseEvent.BUTTON3 && at == table.getSelectedRow()) {
-				// 必须先选中在右键单击进行删除操作
-				pop.show(table, e.getX(), e.getY());
-			}
 		}
 
 		@Override
@@ -153,9 +148,6 @@ public class AccountsPanel extends Panel implements ActionListener {
 	private Logger logger = LogManager.getLogger();
 	// 父窗口
 	private MainFrame f = null;
-	// 弹出式菜单
-	private JPopupMenu pop = new JPopupMenu();
-	private JMenuItem del = new JMenuItem("删除");
 
 	public AccountsPanel(MainFrame frame) throws SQLException {
 		// 布局管理
@@ -197,12 +189,6 @@ public class AccountsPanel extends Panel implements ActionListener {
 
 		scrollPane.setBackground(Color.WHITE);
 
-		pop.add(del);
-		del.setFont(font.getFont(15f));
-		del.setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
-		del.setBackground(Color.WHITE);
-		del.addActionListener(this);
-
 		validate();
 
 	}
@@ -214,7 +200,7 @@ public class AccountsPanel extends Panel implements ActionListener {
 	 */
 	public void updateTable() throws SQLException {
 		h2 = new H2_DB();
-		String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` DESC;";
+		String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` ASC;";
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
 		array.clear();
@@ -233,6 +219,10 @@ public class AccountsPanel extends Panel implements ActionListener {
 		cm.getColumn(0).setMaxWidth(160);
 	}
 
+	/**
+	 * @param name 账户名
+	 * @throws SQLException
+	 */
 	private void insertAccount(String name) throws SQLException {
 		String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", name);
 		h2 = new H2_DB();
@@ -241,22 +231,20 @@ public class AccountsPanel extends Panel implements ActionListener {
 		h2.close();
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == del) {
-			int r = table.getSelectedRow();
-			if (r > -1) {
-				String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
-				try {
-					h2 = new H2_DB();
-					logger.info(sql);
-					h2.execute(sql);
-					h2.close();
-					updateTable();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
+	/**
+	 * 删除当前选中账户
+	 * 
+	 * @throws SQLException
+	 */
+	public void deleteAccount() throws SQLException {
+		int r = table.getSelectedRow();
+		if (r > -1) {
+			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
+			h2 = new H2_DB();
+			logger.info(sql);
+			h2.execute(sql);
+			h2.close();
+			updateTable();
 		}
 	}
 }
