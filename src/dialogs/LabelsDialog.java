@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -57,7 +58,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			// 旧值
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
-			if (pre.equals("退款") || pre.equals("存入")) {
+			if (pre.equals("退款")) {
 				table.setValueAt(pre, r, 0);
 				MessageDialog.showError(this, "默认标签，禁止修改！");
 				return;
@@ -250,6 +251,11 @@ public class LabelsDialog extends JDialog implements ActionListener {
 
 	}
 
+	/**
+	 * 插入标签
+	 * 
+	 * @throws SQLException
+	 */
 	private void insertLabel() throws SQLException {
 		if (tx.getText().isEmpty()) {
 		} else {
@@ -262,19 +268,34 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		}
 	}
 
-	private void deleteLabel() throws SQLException {
+	/**
+	 * 删除标签
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
+	private boolean deleteLabel() throws SQLException {
 		int r = table.getSelectedRow();
-		if (r > -1) {
-			String l = array.get(r).getLabel();
-			if (l.equals("退款") || l.equals("存入")) {
-				MessageDialog.showError(this, "默认标签，禁止删除！");
-			} else {
-				String sql = String.format("DELETE FROM `labels` WHERE `label`='%s'", array.get(r).getLabel());
-				h2 = new H2_DB();
-				logger.info(sql);
-				h2.execute(sql);
-				h2.close();
-			}
+		// 未选中
+		if (r < 0) {
+			return false;
+		}
+		// 默认标签不删除
+		String l = array.get(r).getLabel();
+		if (l.equals("退款")) {
+			MessageDialog.showError(this, "默认标签，禁止删除！");
+			return false;
+		}
+		// 确认删除
+		if (MessageDialog.showConfirm(this, "确认删除当前标签？") == JOptionPane.YES_OPTION) {
+			String sql = String.format("DELETE FROM `labels` WHERE `label`='%s'", array.get(r).getLabel());
+			h2 = new H2_DB();
+			logger.info(sql);
+			h2.execute(sql);
+			h2.close();
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -295,8 +316,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		} else if (e.getSource() == btn[BUTTON_DEL]) {
 			// 删除
 			try {
-				deleteLabel();
-				updateTable();
+				if (deleteLabel()) {
+					updateTable();
+				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "删除失败！");
 				logger.error(e);

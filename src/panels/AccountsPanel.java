@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -76,11 +77,11 @@ public class AccountsPanel extends Panel {
 				}
 				f.updatePanel();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
-				MessageDialog.showError(this, "数据库错误，注意账户名不可重复！");
+				MessageDialog.showError(f, "数据库错误，注意账户名不可重复！");
 				logger.error(e1);
+				table.setValueAt(pre, r, c);
+				table.updateUI();
 			}
-
 		};
 	};
 
@@ -232,20 +233,30 @@ public class AccountsPanel extends Panel {
 	}
 
 	/**
-	 * 删除当前选中账户
+	 * 删除账户
 	 * 
+	 * @return
 	 * @throws SQLException
 	 */
-	public void deleteAccount() throws SQLException {
+	public boolean deleteAccount() throws SQLException {
 		int r = table.getSelectedRow();
-		if (r > -1) {
+		if (r < 0) {
+			return false;
+		}
+		if (array.get(r).getAmount() != 0) {
+			MessageDialog.showError(f, "账户余额清零前禁止删除！");
+			return false;
+		}
+		if (MessageDialog.showConfirm(f, "确认删除当前账户？\r\n注意仅在账户无关联流水，即余额清零时可删除！") == JOptionPane.YES_OPTION) {
 			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
 			h2 = new H2_DB();
 			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
 			updateTable();
+			return true;
 		}
+		return false;
 	}
 }
 

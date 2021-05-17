@@ -139,8 +139,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == mit[ITEM_ACCOUNT]) {
 			try {
-				if (MessageDialog.showConfirm(this, "确认删除当前账户？\r\n注意仅在账户无关联流水时可删除！") == JOptionPane.YES_OPTION) {
-					accounts.deleteAccount();
+				if (accounts.deleteAccount()) {
 					updatePanel();
 				}
 			} catch (SQLException e1) {
