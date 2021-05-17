@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -26,6 +27,7 @@ import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
 import dialogs.InfoDialog;
+import dialogs.MessageDialog;
 import main.MainFrame;
 import models.RecordStructure;
 
@@ -172,11 +174,15 @@ public class LedgerPanel extends JPanel {
 	/**
 	 * 删除当前选中记录
 	 * 
+	 * @return
 	 * @throws SQLException
 	 */
-	public void deleteLedger() throws SQLException {
+	public boolean deleteLedger() throws SQLException {
 		int r = table.getSelectedRow();
-		if (r > -1) {
+		if (r < 0) {
+			return false;
+		}
+		if (MessageDialog.showConfirm(f, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
 			h2 = new H2_DB();
 			logger.info("删除流水记录");
 			// 恢复余额
@@ -190,6 +196,9 @@ public class LedgerPanel extends JPanel {
 			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
+			return true;
+		} else {
+			return false;
 		}
 	}
 

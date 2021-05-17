@@ -13,7 +13,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.plaf.basic.BasicMenuItemUI;
 import javax.swing.plaf.basic.BasicMenuUI;
 import javax.swing.table.AbstractTableModel;
@@ -151,10 +150,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_LEDGER]) {
 			// 删除流水
 			try {
-				if (MessageDialog.showConfirm(this, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
-					ledgerPanel.deleteLedger();
+				if (ledgerPanel.deleteLedger()) {
 					updatePanel();
-
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -165,7 +162,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		} else if (e.getSource() == mit[ITEM_RECORD]) {
 			try {
-				InfoDialog infoDialog =  new InfoDialog(this, getLocation(), getSize(), null);
+				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null);
 				if (infoDialog.showDialog()) {
 					this.updatePanel();
 				}
