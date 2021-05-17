@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import design.DefaultFont;
 import design.ThemeColor;
+import dialogs.InfoDialog;
 import dialogs.LabelsDialog;
 import dialogs.MessageDialog;
 import models.RecordStructure;
@@ -138,6 +139,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getSource() == mit[ITEM_ACCOUNT]) {
+			// 删除账户
 			try {
 				if (accounts.deleteAccount()) {
 					updatePanel();
@@ -147,6 +149,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				MessageDialog.showError(this, "删除失败！");
 			}
 		} else if (e.getSource() == mit[ITEM_LEDGER]) {
+			// 删除流水
 			try {
 				if (MessageDialog.showConfirm(this, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
 					ledgerPanel.deleteLedger();
@@ -158,7 +161,17 @@ public class MainFrame extends JFrame implements ActionListener {
 				MessageDialog.showError(this, "删除失败！");
 			}
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
+			// 导出
 
+		} else if (e.getSource() == mit[ITEM_RECORD]) {
+			try {
+				InfoDialog infoDialog =  new InfoDialog(this, getLocation(), getSize(), null);
+				if (infoDialog.showDialog()) {
+					this.updatePanel();
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 }

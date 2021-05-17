@@ -24,6 +24,7 @@ import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
 import main.MainFrame;
+import models.CustomListCellRenderer;
 import models.RecordStructure;
 
 public class InfoDialog extends JDialog implements ActionListener {
@@ -39,14 +40,16 @@ public class InfoDialog extends JDialog implements ActionListener {
 	// 下拉列表
 	private JComboBox<String> account = new JComboBox<>(), type = new JComboBox<>(), label = new JComboBox<>();
 	// 按钮
-	private JButton[] btn = new JButton[4];
-	private static int BUTTON_INSERT = 0, BUTTON_SAVE = 1, BUTTON_DEL = 2, BUTTON_CLEAR = 3;
+	private JButton[] btn = new JButton[5];
+	private static int BUTTON_INSERT = 0, BUTTON_SAVE = 1, BUTTON_REFUND = 2, BUTTON_DEL = 3, BUTTON_EXIT = 4;
 
 	private DefaultFont font = new DefaultFont();
 
 	private H2_DB h2 = null;
 
 	private Logger logger = LogManager.getLogger();
+	// 标志位
+	private boolean flag = false;
 
 	// 保存流水记录方便删除和修改
 	RecordStructure rds = null;
@@ -89,33 +92,76 @@ public class InfoDialog extends JDialog implements ActionListener {
 		type.setBounds(140, 110, 80, 25);
 		add(type);
 
+		type.setRenderer(new CustomListCellRenderer());
+		type.setOpaque(true);
+		type.setBackground(ThemeColor.BLUE);
+		type.setForeground(Color.WHITE);
+
 		account.setFont(font.getFont());
 		account.setBounds(140, 75, 100, 25);
 		add(account);
+		account.setRenderer(new CustomListCellRenderer());
+		account.setOpaque(true);
+		account.setBackground(ThemeColor.BLUE);
+		account.setForeground(Color.WHITE);
+
+		h2 = new H2_DB();
+		// 账户名下拉列表
+		String sql = "SELECT name FROM accounts";
+		ResultSet rs = h2.query(sql);
+		while (rs.next()) {
+			account.addItem(rs.getString("name"));
+		}
+		// 标签下拉列表
+		label.addItem(null);
+		sql = "SELECT label FROM labels";
+		rs = h2.query(sql);
+		while (rs.next()) {
+			label.addItem(rs.getString("label"));
+		}
+		h2.close();
 
 		label.setFont(font.getFont());
 		label.setBounds(140, 180, 100, 25);
 		add(label);
+		label.setRenderer(new CustomListCellRenderer());
+		label.setOpaque(true);
+		label.setBackground(ThemeColor.BLUE);
+		label.setForeground(Color.WHITE);
 
-		String[] bstr = { "插入", "保存", "删除", "清空" };
+		String[] bstr = { "插入", "保存", "退款", "删除", "清空" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
 			btn[i].setFont(font.getFont());
 			btn[i].setForeground(Color.WHITE);
+			btn[i].setBackground(ThemeColor.BLUE);
 			btn[i].addActionListener(this);
 			this.add(btn[i]);
-			btn[i].setBounds(30 + 100 * i, 270, 80, 30);
 		}
-		btn[BUTTON_INSERT].setBackground(ThemeColor.BLUE);
-		btn[BUTTON_SAVE].setBackground(ThemeColor.BLUE);
-		btn[BUTTON_DEL].setBackground(ThemeColor.RED);
-		btn[BUTTON_CLEAR].setBackground(Color.LIGHT_GRAY);
-
+		btn[BUTTON_EXIT].setBackground(Color.DARK_GRAY);
+		btn[BUTTON_DEL].setBackground(ThemeColor.ORANGE);
+		if (rds == null) {
+			btn[BUTTON_INSERT].setBounds(130, 270, 80, 30);
+			btn[BUTTON_EXIT].setBounds(230, 270, 80, 30);
+		} else {
+			for (int i = 1; i < bstr.length; i++) {
+				btn[i].setBounds(-70 + 100 * i, 270, 80, 30);
+			}
+		}
 		contentReset(rds);
 
 		setBackground(Color.WHITE);
-		setVisible(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+	}
+
+	/**
+	 * 显示窗口
+	 * 
+	 * @return
+	 */
+	public boolean showDialog() {
+		setVisible(true);
+		return flag;
 	}
 
 	/**
@@ -126,29 +172,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 */
 	public void contentReset(RecordStructure rds) throws SQLException {
 		this.rds = rds;
-		h2 = new H2_DB();
-		// 账户名下拉列表
-		String sql = "SELECT name FROM accounts";
-		ResultSet rs = h2.query(sql);
-		account.removeAllItems();
-		while (rs.next()) {
-			account.addItem(rs.getString("name"));
-		}
-		// 标签下拉列表
-		sql = "SELECT label FROM labels";
-		rs = h2.query(sql);
-		label.removeAllItems();
-		while (rs.next()) {
-			label.addItem(rs.getString("label"));
-		}
-		h2.close();
 		// 时间
 		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 		tx[TX_AMOUNT].setText(null);
 		tx[TX_REMARK].setText(null);
 		tx[TX_TIME].setEditable(true);
-		// 插入按钮
-		btn[BUTTON_INSERT].setEnabled(true);
 		// 若记录非空
 		if (rds != null) {
 			btn[BUTTON_INSERT].setEnabled(false);
@@ -184,6 +212,10 @@ public class InfoDialog extends JDialog implements ActionListener {
 		}
 		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft.format(date),
 				account.getSelectedItem(), type, amount, label.getSelectedItem(), tx[TX_REMARK].getText());
+		if (label.getSelectedItem() == null) {
+			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, null, '%s');", ft.format(date),
+					account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
+		}
 		h2 = new H2_DB();
 		logger.info(sql);
 		h2.execute(sql);
@@ -194,6 +226,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 		h2.close();
 	}
 
+	/**
+	 * 删除流水
+	 * 
+	 * @throws SQLException
+	 */
 	private void delete() throws SQLException {
 		h2 = new H2_DB();
 		logger.info("删除流水记录");
@@ -215,6 +252,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			try {
 				insert();
 				dispose();
+				flag = true;
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			} catch (ParseException | NumberFormatException e1) {
@@ -222,19 +260,16 @@ public class InfoDialog extends JDialog implements ActionListener {
 				logger.error(e1);
 				e1.printStackTrace();
 			}
-		} else if (e.getSource() == btn[BUTTON_CLEAR]) {
+		} else if (e.getSource() == btn[BUTTON_EXIT]) {
 			// 清除
-			try {
-				contentReset(null);
-			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
-			}
+			flag = false;
+			dispose();
 		} else if (e.getSource() == btn[BUTTON_DEL]) {
 			// 删除
 			try {
 				delete();
 				dispose();
+				flag = true;
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);
@@ -245,6 +280,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				delete();
 				insert();
 				dispose();
+				flag = true;
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
 				logger.error(e1);
@@ -252,6 +288,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(e1);
 			}
+		} else if (e.getSource() == btn[BUTTON_REFUND]) {
+
 		}
 	}
 

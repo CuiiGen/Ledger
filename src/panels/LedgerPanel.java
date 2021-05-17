@@ -77,8 +77,9 @@ public class LedgerPanel extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
 				try {
-					showInfoDialog(array.get(table.getSelectedRow()));
-					f.updatePanel();
+					if (showInfoDialog(array.get(table.getSelectedRow()))) {
+						f.updatePanel();
+					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				}
@@ -194,10 +195,12 @@ public class LedgerPanel extends JPanel {
 
 	/**
 	 * @param rds
+	 * @return
 	 * @throws SQLException
 	 */
-	private void showInfoDialog(RecordStructure rds) throws SQLException {
-		new InfoDialog(f, f.getLocation(), f.getSize(), rds);
+	private boolean showInfoDialog(RecordStructure rds) throws SQLException {
+		InfoDialog dialog = new InfoDialog(f, f.getLocation(), f.getSize(), rds);
+		return dialog.showDialog();
 	}
 }
 
