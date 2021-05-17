@@ -7,6 +7,9 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -200,6 +204,26 @@ public class LedgerPanel extends JPanel {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * 导出数据
+	 * 
+	 * @throws IOException
+	 */
+	public void export() throws IOException {
+		ArrayList<String> list = new ArrayList<>();
+		list.add("记账时间,相关账户,类型,金额,标签,备注");
+		for (RecordStructure rds : array) {
+			list.add(rds.toString());
+		}
+			FileSystemView fsv = FileSystemView.getFileSystemView();
+			File file = new File(fsv.getHomeDirectory().getAbsolutePath() + "\\流水.csv");
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(String.join("\r\n", list).getBytes());
+			fos.flush();
+			fos.close();
+			MessageDialog.showMessage(this, "成功导出至桌面下“流水.csv”！");
 	}
 
 	/**

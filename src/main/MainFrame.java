@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -159,6 +160,12 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
 			// 导出
+			try {
+				ledgerPanel.export();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				logger.error(e1);
+			}
 
 		} else if (e.getSource() == mit[ITEM_RECORD]) {
 			try {
