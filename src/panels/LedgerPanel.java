@@ -58,6 +58,12 @@ public class LedgerPanel extends JPanel {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
 			setHorizontalAlignment(SwingConstants.CENTER);
+			int TYPE_COLUMN = 2;
+			if (table.getValueAt(row, TYPE_COLUMN).equals("收入")) {
+				setForeground(ThemeColor.ORANGE);
+			} else {
+				setForeground(Color.BLACK);
+			}
 			if (at == row) {
 				setBackground(ThemeColor.LIGHT_BLUE);
 			} else if (row % 2 == 0) {
@@ -217,13 +223,13 @@ public class LedgerPanel extends JPanel {
 		for (RecordStructure rds : array) {
 			list.add(rds.toString());
 		}
-			FileSystemView fsv = FileSystemView.getFileSystemView();
-			File file = new File(fsv.getHomeDirectory().getAbsolutePath() + "\\流水.csv");
-			FileOutputStream fos = new FileOutputStream(file);
-			fos.write(String.join("\r\n", list).getBytes());
-			fos.flush();
-			fos.close();
-			MessageDialog.showMessage(this, "成功导出至桌面下“流水.csv”！");
+		FileSystemView fsv = FileSystemView.getFileSystemView();
+		File file = new File(fsv.getHomeDirectory().getAbsolutePath() + "\\流水.csv");
+		FileOutputStream fos = new FileOutputStream(file);
+		fos.write(String.join("\r\n", list).getBytes());
+		fos.flush();
+		fos.close();
+		MessageDialog.showMessage(this, "成功导出至桌面下“流水.csv”！");
 	}
 
 	/**

@@ -273,7 +273,11 @@ class AccountsModel extends AbstractTableModel {
 
 	public AccountsModel(ArrayList<AccountStructure> array) {
 		this.array = array;
-		this.array.add(new AccountStructure("点击新建账户", "--", 0));
+		float amount = 0;
+		for (AccountStructure a : array) {
+			amount += a.getAmount();
+		}
+		this.array.add(new AccountStructure("点击新建账户", "--", amount));
 	}
 
 	@Override
