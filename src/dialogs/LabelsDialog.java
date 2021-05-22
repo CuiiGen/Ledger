@@ -58,7 +58,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			// 旧值
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
-			if (pre.equals("退款")) {
+			if (pre.equals("退款") || pre.equals("转账")) {
 				table.setValueAt(pre, r, 0);
 				MessageDialog.showError(this, "默认标签，禁止修改！");
 				return;
@@ -282,7 +282,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		}
 		// 默认标签不删除
 		String l = array.get(r).getLabel();
-		if (l.equals("退款")) {
+		if (l.equals("退款") || l.equals("转账")) {
 			MessageDialog.showError(this, "默认标签，禁止删除！");
 			return false;
 		}

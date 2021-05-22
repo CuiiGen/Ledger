@@ -8,10 +8,15 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -74,6 +79,7 @@ public class TransferDialog extends JDialog implements ActionListener {
 			add(tx[i]);
 		}
 		tx[TX_TIME].setBounds(100, 40, 200, 25);
+		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 		tx[TX_AMOUNT].setBounds(100, 110, 200, 25);
 		tx[TX_REMARK].setBounds(100, 145, 200, 25);
 
@@ -129,46 +135,74 @@ public class TransferDialog extends JDialog implements ActionListener {
 	}
 
 	/**
-	 * 新建流水
+	 * 新建转账相关的两条流水
 	 * 
 	 * @throws SQLException
 	 * @throws ParseException
 	 * @throws NumberFormatException
 	 */
 	private void insert() throws SQLException, ParseException, NumberFormatException {
-//		
-//		// 时间
-//		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-//				ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
-//		Date date = null;
-//		if (tx[TX_TIME].getText().matches("\\d{14}")) {
-//			date = ft2.parse(tx[TX_TIME].getText());
-//		} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
-//			date = ft1.parse(tx[TX_TIME].getText());
-//		} else {
-//			throw new ParseException(tx[TX_TIME].getText(), 0);
-//		}
-//		// 金额
-//		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
-//		// 收入或支出
-//		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
-//				from.getSelectedItem(), type, amount, label.getSelectedItem(), tx[TX_REMARK].getText());
-//		if (label.getSelectedItem() == null) {
-//			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, null, '%s');", ft1.format(date),
-//					from.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
-//		}
-//		h2 = new H2_DB();
-//		logger.info(sql);
-//		h2.execute(sql);
-//		// 根据流水计算账户余额
-//		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", type * amount,
-//				from.getSelectedItem().toString());
-//		h2.execute(sql);
-//		h2.close();
+		// 时间
+		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+				ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
+		Date date = null;
+		if (tx[TX_TIME].getText().matches("\\d{14}")) {
+			date = ft2.parse(tx[TX_TIME].getText());
+		} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
+			date = ft1.parse(tx[TX_TIME].getText());
+		} else {
+			throw new ParseException(tx[TX_TIME].getText(), 0);
+		}
+		// 金额
+		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
+		// 数据库初始化
+		h2 = new H2_DB();
+		// 付款
+		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
+				from.getSelectedItem(), -1, amount, "转账", "转账付款：" + tx[TX_REMARK].getText());
+		logger.info(sql);
+		h2.execute(sql);
+		// 根据流水计算账户余额
+		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", -amount,
+				from.getSelectedItem());
+		h2.execute(sql);
+		// 收款
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.SECOND, 1);
+		sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');",
+				String.format("%1$tF %1$tT", c), to.getSelectedItem(), 1, amount, "转账",
+				"转账收款：" + tx[TX_REMARK].getText());
+		logger.info(sql);
+		h2.execute(sql);
+		// 根据流水计算账户余额
+		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", amount,
+				to.getSelectedItem());
+		h2.execute(sql);
+
+		h2.close();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == btn[BUTTON_EXIT]) {
+			// 退出
+			dispose();
+		} else if (e.getSource() == btn[BUTTON_INSERT]) {
+			// 确认转账
+			try {
+				if (MessageDialog.showConfirm(this, "确认转账信息正确？") == JOptionPane.YES_OPTION) {
+					insert();
+					dispose();
+				}
+			} catch (NumberFormatException e1) {
+				e1.printStackTrace();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			}
+		}
 
 	}
 

@@ -180,8 +180,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_TRANSFER]) {
 			try {
 				new TransferDialog(this, getLocation(), getSize());
+				this.updatePanel();
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
