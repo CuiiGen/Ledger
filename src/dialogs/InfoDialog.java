@@ -99,7 +99,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		type.setForeground(Color.WHITE);
 
 		account.setFont(font.getFont());
-		account.setBounds(140, 75, 100, 25);
+		account.setBounds(140, 75, 120, 25);
 		add(account);
 		account.setRenderer(new CustomListCellRenderer());
 		account.setOpaque(true);
@@ -133,7 +133,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		String[] bstr = { "插入", "保存", "退款", "删除", "清空" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
-			btn[i].setFont(font.getFont());
+			btn[i].setFont(font.getFont(1));
 			btn[i].setForeground(Color.WHITE);
 			btn[i].setBackground(ThemeColor.BLUE);
 			btn[i].addActionListener(this);
@@ -188,6 +188,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			account.setSelectedItem(rds.getName());
 			label.setSelectedItem(rds.getLabel());
 			tx[TX_TIME].setEditable(false);
+			tx[TX_TIME].setBackground(Color.WHITE);
 		}
 	}
 
@@ -254,6 +255,30 @@ public class InfoDialog extends JDialog implements ActionListener {
 		h2.close();
 	}
 
+	/**
+	 * 退款
+	 * 
+	 * @throws SQLException
+	 */
+	private void refund() throws SQLException {
+		h2 = new H2_DB();
+		String sql = String.format("UPDATE ledger SET remark = '%s' WHERE createtime = '%s'", rds.getRemark() + "：已退款！",
+				rds.getCreatetime());
+		logger.info(sql);
+		h2.execute(sql);
+		sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');",
+				String.format("%1$tF %1$tT", Calendar.getInstance()), rds.getName(), -rds.getType(), rds.getAmount(),
+				"退款", "退款，原流水时间：" + rds.getCreatetime());
+		logger.info(sql);
+		h2.execute(sql);
+		// 恢复余额
+		sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
+				rds.getType() * rds.getAmount(), rds.getName());
+		logger.info(sql);
+		h2.execute(sql);
+		h2.close();
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btn[BUTTON_INSERT]) {
@@ -301,7 +326,16 @@ public class InfoDialog extends JDialog implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getSource() == btn[BUTTON_REFUND]) {
-
+			// 退款
+			try {
+				if (MessageDialog.showConfirm(this, "确认该订单已退款？") == JOptionPane.YES_OPTION) {
+					refund();
+					flag = true;
+					dispose();
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 
