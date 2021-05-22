@@ -26,6 +26,7 @@ import design.ThemeColor;
 import dialogs.InfoDialog;
 import dialogs.LabelsDialog;
 import dialogs.MessageDialog;
+import dialogs.TransferDialog;
 import models.RecordStructure;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
@@ -174,6 +175,13 @@ public class MainFrame extends JFrame implements ActionListener {
 					this.updatePanel();
 				}
 			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} else if (e.getSource() == mit[ITEM_TRANSFER]) {
+			try {
+				new TransferDialog(this, getLocation(), getSize());
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}

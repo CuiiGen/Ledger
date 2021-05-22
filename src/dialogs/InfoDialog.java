@@ -130,7 +130,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		label.setBackground(ThemeColor.BLUE);
 		label.setForeground(Color.WHITE);
 
-		String[] bstr = { "插入", "保存", "退款", "删除", "清空" };
+		String[] bstr = { "插入", "保存", "退款", "删除", "退出" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
 			btn[i].setFont(font.getFont(1));
