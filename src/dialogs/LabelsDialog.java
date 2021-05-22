@@ -35,6 +35,7 @@ import design.ThemeColor;
 import design.DefaultFont;
 import main.MainFrame;
 import models.LabelStructure;
+import tool.LogHelper;
 
 public class LabelsDialog extends JDialog implements ActionListener {
 
@@ -229,6 +230,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private void updateTable() throws SQLException {
+		logger.info("刷新标签表格");
 		h2 = new H2_DB();
 		String sql = "SELECT * FROM `view_labels`";
 		ResultSet rs = h2.query(sql);
@@ -257,7 +259,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private void insertLabel() throws SQLException {
+		logger.info("开始新建标签");
 		if (tx.getText().isEmpty()) {
+			logger.error("标签为空");
 		} else {
 			String sql = String.format("INSERT INTO `labels`(`label`) VALUES ('%s')", tx.getText());
 			tx.setText(null);
@@ -275,7 +279,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private boolean deleteLabel() throws SQLException {
+		// 当前选中行
 		int r = table.getSelectedRow();
+		logger.info("删除当前选中账户，当前选中行为：" + r);
 		// 未选中
 		if (r < 0) {
 			return false;
@@ -283,11 +289,13 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		// 默认标签不删除
 		String l = array.get(r).getLabel();
 		if (l.equals("退款") || l.equals("转账")) {
+			logger.error("默认标签，禁止删除！");
 			MessageDialog.showError(this, "默认标签，禁止删除！");
 			return false;
 		}
 		// 确认删除
 		if (MessageDialog.showConfirm(this, "确认删除当前标签？") == JOptionPane.YES_OPTION) {
+			logger.info("确认删除标签");
 			String sql = String.format("DELETE FROM `labels` WHERE `label`='%s'", array.get(r).getLabel());
 			h2 = new H2_DB();
 			logger.info(sql);
@@ -295,6 +303,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			h2.close();
 			return true;
 		} else {
+			logger.info("取消删除");
 			return false;
 		}
 	}
@@ -311,17 +320,18 @@ public class LabelsDialog extends JDialog implements ActionListener {
 				updateTable();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "或重复插入，插入失败！");
-				logger.error(e1);
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_DEL]) {
 			// 删除
 			try {
 				if (deleteLabel()) {
+					logger.info("已删除，刷新表格");
 					updateTable();
 				}
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "删除失败！");
-				logger.error(e);
+				MessageDialog.showError(this, "数据库访问失败，删除失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
 	}

@@ -41,7 +41,9 @@ public class LedgerPanel extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -4577861621524184964L;
+	// 数据
 	private ArrayList<RecordStructure> array = new ArrayList<>();
+	// 显示表格
 	private JTable table = new JTable(new RecordsModel(array));
 
 	// 内部类
@@ -88,8 +90,10 @@ public class LedgerPanel extends JPanel {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
+				logger.info("打开流水记录详情对话框");
 				try {
 					if (showInfoDialog(array.get(table.getSelectedRow()))) {
+						logger.info("有信息修改，刷新页面");
 						f.updatePanel();
 					}
 				} catch (SQLException e1) {
@@ -119,19 +123,21 @@ public class LedgerPanel extends JPanel {
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
-
+	// 数据库
 	private H2_DB h2 = null;
-
+	// 日志
 	private Logger logger = LogManager.getLogger();
-
+	// 父窗口
 	private MainFrame f = null;
 
 	public LedgerPanel(MainFrame frame) throws SQLException {
+		// 布局管理器
 		setLayout(new BorderLayout());
+		// 父窗口
 		f = frame;
 		// 更新表格
 		updateTable();
-		// 表格设置
+		// 表头设置
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setFont(font.getFont(1));
 		table.getTableHeader().setBackground(ThemeColor.BLUE);
@@ -149,7 +155,6 @@ public class LedgerPanel extends JPanel {
 		table.setShowVerticalLines(false);
 		table.setShowGrid(false);
 		table.setIntercellSpacing(new Dimension(0, 0));
-
 		// 单行选择模式
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// 鼠标监听
@@ -166,6 +171,7 @@ public class LedgerPanel extends JPanel {
 	 * @throws SQLException
 	 */
 	public void updateTable() throws SQLException {
+		logger.info("刷新流水表格");
 		h2 = new H2_DB();
 		String sql = "SELECT * FROM ledger ORDER BY createtime DESC";
 		logger.info(sql);
@@ -188,26 +194,32 @@ public class LedgerPanel extends JPanel {
 	 * @throws SQLException
 	 */
 	public boolean deleteLedger() throws SQLException {
+		// 当前选中行
 		int r = table.getSelectedRow();
+		logger.info("删除当前选中记录，当前选中行为：" + r);
+		// 开始判断
 		if (r < 0) {
 			return false;
 		}
 		if (MessageDialog.showConfirm(f, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
+			logger.info("确认删除流水记录");
 			h2 = new H2_DB();
-			logger.info("删除流水记录");
 			// 恢复余额
 			RecordStructure rds = array.get(r);
 			String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
 					rds.getType() * rds.getAmount(), rds.getName());
+			logger.info("恢复相关账户余额");
 			logger.info(sql);
 			h2.execute(sql);
 			// 删除流水记录
 			sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
+			logger.info("删除流水记录");
 			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
 			return true;
 		} else {
+			logger.info("取消删除");
 			return false;
 		}
 	}
@@ -229,7 +241,6 @@ public class LedgerPanel extends JPanel {
 		fos.write(String.join("\r\n", list).getBytes());
 		fos.flush();
 		fos.close();
-		MessageDialog.showMessage(this, "成功导出至桌面下“流水.csv”！");
 	}
 
 	/**

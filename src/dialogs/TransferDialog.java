@@ -28,6 +28,7 @@ import design.DefaultFont;
 import design.ThemeColor;
 import main.MainFrame;
 import models.CustomListCellRenderer;
+import tool.LogHelper;
 
 public class TransferDialog extends JDialog implements ActionListener {
 
@@ -48,6 +49,8 @@ public class TransferDialog extends JDialog implements ActionListener {
 	private DefaultFont font = new DefaultFont();
 
 	private H2_DB h2 = null;
+	// 标志位
+	private boolean flag = false;
 
 	private Logger logger = LogManager.getLogger();
 
@@ -131,7 +134,16 @@ public class TransferDialog extends JDialog implements ActionListener {
 
 		setBackground(Color.WHITE);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+	}
+
+	/**
+	 * 显示窗口
+	 * 
+	 * @return
+	 */
+	public boolean showDialog() {
 		setVisible(true);
+		return flag;
 	}
 
 	/**
@@ -160,11 +172,13 @@ public class TransferDialog extends JDialog implements ActionListener {
 		// 付款
 		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
 				from.getSelectedItem(), -1, amount, "转账", "转账付款：" + tx[TX_REMARK].getText());
+		logger.info("转账付款记录");
 		logger.info(sql);
 		h2.execute(sql);
 		// 根据流水计算账户余额
 		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", -amount,
 				from.getSelectedItem());
+		logger.info("转账付款账户修改金额");
 		h2.execute(sql);
 		// 收款
 		Calendar c = Calendar.getInstance();
@@ -173,13 +187,14 @@ public class TransferDialog extends JDialog implements ActionListener {
 		sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');",
 				String.format("%1$tF %1$tT", c), to.getSelectedItem(), 1, amount, "转账",
 				"转账收款：" + tx[TX_REMARK].getText());
+		logger.info("转账收款记录");
 		logger.info(sql);
 		h2.execute(sql);
 		// 根据流水计算账户余额
 		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", amount,
 				to.getSelectedItem());
+		logger.info("转账收款账户修改金额");
 		h2.execute(sql);
-
 		h2.close();
 	}
 
@@ -187,20 +202,24 @@ public class TransferDialog extends JDialog implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btn[BUTTON_EXIT]) {
 			// 退出
+			flag = false;
 			dispose();
 		} else if (e.getSource() == btn[BUTTON_INSERT]) {
 			// 确认转账
+			logger.info("开始进行转账流程");
 			try {
 				if (MessageDialog.showConfirm(this, "确认转账信息正确？") == JOptionPane.YES_OPTION) {
+					logger.info("确认进行转账");
 					insert();
+					flag = true;
 					dispose();
 				}
-			} catch (NumberFormatException e1) {
-				e1.printStackTrace();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
-			} catch (ParseException e1) {
-				e1.printStackTrace();
+				MessageDialog.showError(this, "数据库访问错误，保存失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (ParseException | NumberFormatException e1) {
+				MessageDialog.showError(this, "数据格式错误！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
 

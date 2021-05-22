@@ -27,6 +27,7 @@ import design.ThemeColor;
 import main.MainFrame;
 import models.CustomListCellRenderer;
 import models.RecordStructure;
+import tool.LogHelper;
 
 public class InfoDialog extends JDialog implements ActionListener {
 
@@ -43,11 +44,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 	// 按钮
 	private JButton[] btn = new JButton[5];
 	private static int BUTTON_INSERT = 0, BUTTON_SAVE = 1, BUTTON_REFUND = 2, BUTTON_DEL = 3, BUTTON_EXIT = 4;
-
+	// 字体
 	private DefaultFont font = new DefaultFont();
-
+	// 数据库
 	private H2_DB h2 = null;
-
+	// 日志
 	private Logger logger = LogManager.getLogger();
 	// 标志位
 	private boolean flag = false;
@@ -129,7 +130,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		label.setOpaque(true);
 		label.setBackground(ThemeColor.BLUE);
 		label.setForeground(Color.WHITE);
-
+		// 按钮设置
 		String[] bstr = { "插入", "保存", "退款", "删除", "退出" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
@@ -149,9 +150,9 @@ public class InfoDialog extends JDialog implements ActionListener {
 				btn[i].setBounds(-70 + 100 * i, 270, 80, 30);
 			}
 		}
+		// 内容设置
 		contentReset(rds);
 
-		setBackground(Color.WHITE);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
 
@@ -200,6 +201,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * @throws NumberFormatException
 	 */
 	private void insert() throws SQLException, ParseException, NumberFormatException {
+		logger.info("插入流水记录");
 		// 时间
 		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
 				ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -261,19 +263,25 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private void refund() throws SQLException {
+		logger.info("退款记录保存");
 		h2 = new H2_DB();
+		// 原纪录备注更改
 		String sql = String.format("UPDATE ledger SET remark = '%s' WHERE createtime = '%s'", rds.getRemark() + "：已退款！",
 				rds.getCreatetime());
+		logger.info("原纪录备注更改");
 		logger.info(sql);
 		h2.execute(sql);
+		// 插入退款记录
 		sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');",
 				String.format("%1$tF %1$tT", Calendar.getInstance()), rds.getName(), -rds.getType(), rds.getAmount(),
 				"退款", "退款，原流水时间：" + rds.getCreatetime());
+		logger.info("插入退款记录");
 		logger.info(sql);
 		h2.execute(sql);
 		// 恢复余额
 		sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
 				rds.getType() * rds.getAmount(), rds.getName());
+		logger.info("恢复余额");
 		logger.info(sql);
 		h2.execute(sql);
 		h2.close();
@@ -286,16 +294,17 @@ public class InfoDialog extends JDialog implements ActionListener {
 			try {
 				if (MessageDialog.showConfirm(this,
 						"流水时间无法更改，确认为：" + tx[TX_TIME].getText()) == JOptionPane.YES_OPTION) {
+					logger.info("确认插入");
 					insert();
 					dispose();
 					flag = true;
 				}
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				MessageDialog.showError(this, "数据库访问错误，插入失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			} catch (ParseException | NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
-				logger.error(e1);
-				e1.printStackTrace();
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_EXIT]) {
 			// 退出
@@ -308,8 +317,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 				dispose();
 				flag = true;
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
+				MessageDialog.showError(this, "数据库访问失败");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_SAVE]) {
 			// 更新保存
@@ -319,11 +328,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 				dispose();
 				flag = true;
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
-			} catch (NumberFormatException | ParseException e1) {
+				MessageDialog.showError(this, "数据库访问错误，插入失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (ParseException | NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
-				logger.error(e1);
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_REFUND]) {
 			// 退款
@@ -338,5 +347,4 @@ public class InfoDialog extends JDialog implements ActionListener {
 			}
 		}
 	}
-
 }

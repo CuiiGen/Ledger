@@ -16,6 +16,6 @@ public class LogHelper {
 		for (StackTraceElement element : e.getStackTrace()) {
 			list.add(element.toString());
 		}
-		return String.join("\n\t\t", list);
+		return String.join("\n\t", list);
 	}
 }

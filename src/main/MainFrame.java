@@ -30,6 +30,7 @@ import dialogs.TransferDialog;
 import models.RecordStructure;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
+import tool.LogHelper;
 
 public class MainFrame extends JFrame implements ActionListener {
 
@@ -49,7 +50,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
-
+	// 日志
 	private Logger logger = LogManager.getLogger();
 
 	// 面板
@@ -120,6 +121,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	 * @throws SQLException
 	 */
 	public void updatePanel() throws SQLException {
+		logger.info("主界面中更新面板内容");
 		accounts.updateTable();
 		ledgerPanel.updateTable();
 	}
@@ -129,60 +131,76 @@ public class MainFrame extends JFrame implements ActionListener {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
 			MessageDialog.showMessage(this,
-					"我的账本Ledger V2.2，由iamroot开发使用\r\n" + "时间：2021年5月12日\r\n" + "邮箱：cuigen@buaa.edu.cn");
+					"我的账本Ledger V2.5，由iamroot开发使用\r\n" + "时间：2021年5月12日\r\n" + "邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
+			logger.info("打开标签管理对话框");
 			try {
 				new LabelsDialog(this, getLocation(), getSize());
 			} catch (SQLException e1) {
-				e1.printStackTrace();
-				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
+				MessageDialog.showError(this, "数据库访问错误");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_ACCOUNT]) {
 			// 删除账户
+			logger.info("是否删除账户");
 			try {
 				if (accounts.deleteAccount()) {
+					logger.info("已确认删除");
 					updatePanel();
 				}
 			} catch (SQLException e1) {
-				e1.printStackTrace();
-				MessageDialog.showError(this, "删除失败！");
+				MessageDialog.showError(this, "数据库访问错误，删除失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_LEDGER]) {
 			// 删除流水
+			logger.info("是否删除流水");
 			try {
 				if (ledgerPanel.deleteLedger()) {
+					logger.info("已确认删除");
 					updatePanel();
 				}
 			} catch (SQLException e1) {
-				e1.printStackTrace();
-				MessageDialog.showError(this, "删除失败！");
+				MessageDialog.showError(this, "数据库访问错误，删除失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
 			// 导出
+			logger.info("导出数据至CSV中");
 			try {
 				ledgerPanel.export();
+				logger.info("导出成功");
+				MessageDialog.showMessage(this, "成功导出至桌面下“流水.csv”！");
 			} catch (IOException e1) {
-				e1.printStackTrace();
-				logger.error(e1);
+				MessageDialog.showError(this, "导出失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
-
 		} else if (e.getSource() == mit[ITEM_RECORD]) {
+			// 记一笔账
+			logger.info("打开记账对话框，未输出成功便为未记账");
 			try {
 				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null);
 				if (infoDialog.showDialog()) {
+					logger.info("记账成功");
 					this.updatePanel();
 				}
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				MessageDialog.showError(this, "数据库访问错误，记录失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_TRANSFER]) {
+			// 转账
+			logger.info("打开转账对话框，未输出成功便为未转账");
 			try {
-				new TransferDialog(this, getLocation(), getSize());
-				this.updatePanel();
+				TransferDialog transferDialog = new TransferDialog(this, getLocation(), getSize());
+				if (transferDialog.showDialog()) {
+					logger.info("转账成功");
+					this.updatePanel();
+				}
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				MessageDialog.showError(this, "数据库访问错误，记录失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
 	}

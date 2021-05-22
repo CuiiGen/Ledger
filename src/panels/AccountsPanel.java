@@ -37,6 +37,7 @@ import design.ThemeColor;
 import dialogs.MessageDialog;
 import main.MainFrame;
 import models.AccountStructure;
+import tool.LogHelper;
 
 public class AccountsPanel extends Panel {
 
@@ -62,8 +63,11 @@ public class AccountsPanel extends Panel {
 			try {
 				if (r == array.size() - 1) {
 					// 新建
+					logger.info("准备新建账户");
 					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("点击新建账户")) {
+						logger.error("账户名不能空或点击新建账户");
 					} else {
+						logger.error("账户名非禁止，可以新建");
 						insertAccount(table.getValueAt(r, c).toString());
 					}
 				} else {
@@ -71,14 +75,15 @@ public class AccountsPanel extends Panel {
 					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'",
 							table.getValueAt(r, c), pre);
 					h2 = new H2_DB();
+					logger.info("更新账户名");
 					logger.info(sql);
 					h2.execute(sql);
 					h2.close();
 				}
 				f.updatePanel();
 			} catch (SQLException e1) {
-				MessageDialog.showError(f, "数据库错误，注意账户名不可重复！");
-				logger.error(e1);
+				MessageDialog.showError(f, "数据库访问错误，注意账户名不可重复！");
+				logger.error(LogHelper.exceptionToString(e1));
 				table.setValueAt(pre, r, c);
 				table.updateUI();
 			}
@@ -153,10 +158,11 @@ public class AccountsPanel extends Panel {
 	public AccountsPanel(MainFrame frame) throws SQLException {
 		// 布局管理
 		setLayout(new BorderLayout());
+		// 父窗口
 		f = frame;
 		// 更新列表和表格
 		updateTable();
-		// 表格设置
+		// 表头设置
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setFont(font.getFont(1));
 		table.getTableHeader().setBackground(ThemeColor.BLUE);
@@ -174,7 +180,6 @@ public class AccountsPanel extends Panel {
 		table.setShowVerticalLines(false);
 		table.setShowGrid(false);
 		table.setIntercellSpacing(new Dimension(0, 0));
-
 		// 单行选择模式
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// 鼠标监听
@@ -200,6 +205,7 @@ public class AccountsPanel extends Panel {
 	 * @throws SQLException
 	 */
 	public void updateTable() throws SQLException {
+		logger.info("刷新账户表格");
 		h2 = new H2_DB();
 		String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` ASC;";
 		logger.info(sql);
@@ -225,6 +231,7 @@ public class AccountsPanel extends Panel {
 	 * @throws SQLException
 	 */
 	private void insertAccount(String name) throws SQLException {
+		logger.info("开始新建账户");
 		String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", name);
 		h2 = new H2_DB();
 		logger.info(sql);
@@ -239,7 +246,10 @@ public class AccountsPanel extends Panel {
 	 * @throws SQLException
 	 */
 	public boolean deleteAccount() throws SQLException {
+		// 当前选中行
 		int r = table.getSelectedRow();
+		logger.info("删除当前选中账户，当前选中行为：" + r);
+		// 开始判断
 		if (r < 0) {
 			return false;
 		}
@@ -248,6 +258,7 @@ public class AccountsPanel extends Panel {
 			return false;
 		}
 		if (MessageDialog.showConfirm(f, "确认删除当前账户？\r\n注意仅在账户无关联流水，即余额清零时可删除！") == JOptionPane.YES_OPTION) {
+			logger.info("确认删除流水记录");
 			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
 			h2 = new H2_DB();
 			logger.info(sql);
@@ -256,6 +267,7 @@ public class AccountsPanel extends Panel {
 			updateTable();
 			return true;
 		}
+		logger.info("取消删除");
 		return false;
 	}
 }
