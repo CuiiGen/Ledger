@@ -23,6 +23,7 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,7 +60,12 @@ public class LedgerPanel extends JPanel {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
-			setHorizontalAlignment(SwingConstants.CENTER);
+			if (column < 5) {
+				setHorizontalAlignment(SwingConstants.CENTER);
+			} else {
+				setHorizontalAlignment(SwingConstants.LEFT);
+
+			}
 			int TYPE_COLUMN = 2;
 			if (table.getValueAt(row, TYPE_COLUMN).equals("收入")) {
 				setForeground(ThemeColor.ORANGE);
@@ -185,6 +191,18 @@ public class LedgerPanel extends JPanel {
 		h2.close();
 		// 表格内容更新
 		table.setModel(new RecordsModel(array));
+		// 列宽设置
+		TableColumnModel cm = table.getColumnModel();
+		cm.getColumn(0).setMaxWidth(220);
+		cm.getColumn(0).setMinWidth(200);
+		cm.getColumn(1).setMaxWidth(180);
+		cm.getColumn(1).setMinWidth(150);
+		cm.getColumn(2).setMaxWidth(120);
+		cm.getColumn(2).setMinWidth(100);
+		cm.getColumn(3).setMaxWidth(120);
+		cm.getColumn(3).setMinWidth(100);
+		cm.getColumn(4).setMaxWidth(150);
+		cm.getColumn(4).setMinWidth(130);
 	}
 
 	/**
