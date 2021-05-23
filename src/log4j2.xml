@@ -5,9 +5,14 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
         </Console>
-        <File name="Log" fileName="log/info.log" append="true">
+        <RollingFile name="Log" fileName="logs/info.log" filePattern="logs/info-%d{yyyy-MM-dd}-%i.log.zip" append="true">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>
-        </File>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="64MB"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="nomax"/>
+        </RollingFile>
     </appenders>
     <loggers>
         <root level="ALL">
