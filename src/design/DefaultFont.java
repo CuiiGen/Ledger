@@ -10,7 +10,7 @@ public class DefaultFont {
 	private Font font = null;
 
 	private static final int fontDefaultStyle = 0;
-	private static final float fontDefaultSize = 15;
+	private static final float fontDefaultSize = 14;
 
 	/**
 	 * 构造函数

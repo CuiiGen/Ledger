@@ -169,7 +169,7 @@ public class AccountsPanel extends Panel {
 		table.getTableHeader().setForeground(Color.WHITE);
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(27);
+		table.setRowHeight(30);
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
