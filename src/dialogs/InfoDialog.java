@@ -91,21 +91,20 @@ public class InfoDialog extends JDialog implements ActionListener {
 		type.addItem("支出");
 		type.addItem("收入");
 		type.setFont(font.getFont());
-		type.setBounds(140, 110, 80, 25);
-		add(type);
-
 		type.setRenderer(new CustomListCellRenderer());
 		type.setOpaque(true);
 		type.setBackground(ThemeColor.BLUE);
 		type.setForeground(Color.WHITE);
+		type.setBounds(140, 110, 80, 25);
+		add(type);
 
 		account.setFont(font.getFont());
-		account.setBounds(140, 75, 120, 25);
-		add(account);
 		account.setRenderer(new CustomListCellRenderer());
 		account.setOpaque(true);
 		account.setBackground(ThemeColor.BLUE);
 		account.setForeground(Color.WHITE);
+		account.setBounds(140, 75, 120, 25);
+		add(account);
 
 		h2 = new H2_DB();
 		// 账户名下拉列表

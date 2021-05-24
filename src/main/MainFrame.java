@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicMenuItemUI;
 import javax.swing.plaf.basic.BasicMenuUI;
 import javax.swing.table.AbstractTableModel;
@@ -30,6 +31,7 @@ import dialogs.TransferDialog;
 import models.RecordStructure;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
+import panels.SortPanel;
 import tool.LogHelper;
 
 public class MainFrame extends JFrame implements ActionListener {
@@ -56,6 +58,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	// 面板
 	private AccountsPanel accounts = null;
 	private LedgerPanel ledgerPanel = null;
+	private SortPanel sortPanel = null;
 
 	public MainFrame() throws SQLException {
 
@@ -103,12 +106,17 @@ public class MainFrame extends JFrame implements ActionListener {
 		m[MENU_MANAGE].add(mit[ITEM_EXPORT]);
 		m[MENU_HELP].add(mit[ITEM_ABOUT]);
 
+		JPanel temtPanel = new JPanel(new BorderLayout());
+		add(temtPanel, BorderLayout.CENTER);
 		// 账户
 		accounts = new AccountsPanel(this);
-		add(accounts, BorderLayout.SOUTH);
+		temtPanel.add(accounts, BorderLayout.SOUTH);
 		// 账本
 		ledgerPanel = new LedgerPanel(this);
-		add(ledgerPanel, BorderLayout.CENTER);
+		temtPanel.add(ledgerPanel, BorderLayout.CENTER);
+		// 筛选
+		sortPanel = new SortPanel();
+		add(sortPanel, BorderLayout.WEST);
 
 		validate();
 		setVisible(true);
