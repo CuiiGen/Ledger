@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -135,6 +136,7 @@ public class LedgerPanel extends JPanel {
 	private Logger logger = LogManager.getLogger();
 	// 父窗口
 	private MainFrame f = null;
+	private JLabel balence = new JLabel();
 
 	public LedgerPanel(MainFrame frame) throws SQLException {
 		// 布局管理器
@@ -169,6 +171,12 @@ public class LedgerPanel extends JPanel {
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
 		add(scrollPane, BorderLayout.CENTER);
+		// 余额
+		balence.setFont(font.getFont(2, 13f));
+		balence.setOpaque(true);
+		balence.setBackground(Color.WHITE);
+		balence.setHorizontalAlignment(JLabel.RIGHT);
+		add(balence, BorderLayout.NORTH);
 	}
 
 	/**
@@ -190,6 +198,16 @@ public class LedgerPanel extends JPanel {
 					rs.getString("remark")));
 		}
 		h2.close();
+		// 金额状态更新
+		float in = 0, out = 0;
+		for (RecordStructure r : array) {
+			if (r.getType() == 1) {
+				in += r.getAmount();
+			} else {
+				out += r.getAmount();
+			}
+		}
+		balence.setText(String.format("当前总收入金额￥%.2f，总支出金额￥%.2f    ", in, out));
 		// 表格内容更新
 		table.setModel(new RecordsModel(array));
 		// 列宽设置

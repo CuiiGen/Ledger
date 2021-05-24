@@ -166,6 +166,8 @@ public class SortPanel extends JPanel implements ActionListener {
 				QueryConditions.init();
 				tx[0].setText(QueryConditions.getStartTime());
 				tx[1].setText(QueryConditions.getStopTime());
+				type.setSelectedIndex(0);
+				tag.setSelectedIndex(0);
 				f.updateLedger();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，查询失败！");
