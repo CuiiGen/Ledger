@@ -177,9 +177,9 @@ public class LedgerPanel extends JPanel {
 	 * @throws SQLException
 	 */
 	public void updateTable() throws SQLException {
+		String sql = QueryConditions.getSQL();
 		logger.info("刷新流水表格");
 		h2 = new H2_DB();
-		String sql = "SELECT * FROM ledger ORDER BY createtime DESC";
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
 		array.clear();

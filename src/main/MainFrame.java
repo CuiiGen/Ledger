@@ -31,6 +31,7 @@ import dialogs.TransferDialog;
 import models.RecordStructure;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
+import panels.QueryConditions;
 import panels.SortPanel;
 import tool.LogHelper;
 
@@ -108,6 +109,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		JPanel temtPanel = new JPanel(new BorderLayout());
 		add(temtPanel, BorderLayout.CENTER);
+		QueryConditions.init();
 		// 账户
 		accounts = new AccountsPanel(this);
 		temtPanel.add(accounts, BorderLayout.SOUTH);
@@ -115,7 +117,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		ledgerPanel = new LedgerPanel(this);
 		temtPanel.add(ledgerPanel, BorderLayout.CENTER);
 		// 筛选
-		sortPanel = new SortPanel();
+		sortPanel = new SortPanel(this);
 		add(sortPanel, BorderLayout.WEST);
 
 		validate();
@@ -131,6 +133,15 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void updatePanel() throws SQLException {
 		logger.info("主界面中更新面板内容");
 		accounts.updateTable();
+		ledgerPanel.updateTable();
+	}
+
+	/**
+	 * 筛选流水
+	 * 
+	 * @throws SQLException
+	 */
+	public void updateLedger() throws SQLException {
 		ledgerPanel.updateTable();
 	}
 

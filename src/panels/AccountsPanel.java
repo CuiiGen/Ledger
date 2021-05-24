@@ -125,6 +125,16 @@ public class AccountsPanel extends Panel {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+				int r = table.getSelectedRow();
+				try {
+					QueryConditions.setName(table.getValueAt(r, 0).toString());
+					f.updateLedger();
+				} catch (SQLException e1) {
+					MessageDialog.showError(this, "数据库访问错误");
+					logger.error(LogHelper.exceptionToString(e1));
+				}
+			}
 		}
 
 		@Override
