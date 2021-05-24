@@ -127,6 +127,9 @@ public class AccountsPanel extends Panel {
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
 				int r = table.getSelectedRow();
+				if (r == array.size() - 1) {
+					return;
+				}
 				try {
 					QueryConditions.setName(table.getValueAt(r, 0).toString());
 					f.updateLedger();

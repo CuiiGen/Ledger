@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -19,8 +20,10 @@ import org.apache.logging.log4j.Logger;
 import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
+import dialogs.MessageDialog;
 import main.MainFrame;
 import models.CustomListCellRenderer;
+import tool.LogHelper;
 
 public class SortPanel extends JPanel implements ActionListener {
 
@@ -80,7 +83,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		tag.setBackground(ThemeColor.BLUE);
 		tag.setForeground(Color.WHITE);
 		tag.addItem("全部");
-		tag.addItem(null);
+		tag.addItem("");
 		h2 = new H2_DB();
 		String sql = "SELECT label FROM labels";
 		ResultSet rs = h2.query(sql);
@@ -135,15 +138,38 @@ public class SortPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btn[0]) {
+			// 筛选
 			try {
+				if (tx[0].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2}") == false) {
+					throw new ParseException(tx[0].getText(), 0);
+				}
+				if (tx[1].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2}") == false) {
+					throw new ParseException(tx[1].getText(), 0);
+				}
+				// 设置筛选条件
 				QueryConditions.setStartTime(tx[0].getText());
 				QueryConditions.setStopTime(tx[1].getText());
 				QueryConditions.setLabel(tag.getSelectedItem().toString());
 				QueryConditions.setType(type.getSelectedIndex());
+				// 筛选结果更新
 				f.updateLedger();
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				MessageDialog.showError(f, "数据库访问错误，查询失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (ParseException e1) {
+				MessageDialog.showError(f, "日期格式错误！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else if (e.getSource() == btn[1]) {
+			// 重置筛选
+			try {
+				QueryConditions.init();
+				tx[0].setText(QueryConditions.getStartTime());
+				tx[1].setText(QueryConditions.getStopTime());
+				f.updateLedger();
+			} catch (SQLException e1) {
+				MessageDialog.showError(this, "数据库访问错误，查询失败！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
 	}

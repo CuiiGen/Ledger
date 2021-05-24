@@ -177,6 +177,7 @@ public class LedgerPanel extends JPanel {
 	 * @throws SQLException
 	 */
 	public void updateTable() throws SQLException {
+		// 根据筛选条件生成SQL并查询
 		String sql = QueryConditions.getSQL();
 		logger.info("刷新流水表格");
 		h2 = new H2_DB();

@@ -14,11 +14,17 @@ public class QueryConditions {
 	// 账户名
 	private static String name = "%";
 
+	/**
+	 * 初始化筛选默认条件
+	 */
 	public static void init() {
 		Calendar c = Calendar.getInstance();
 		stopTime = String.format("%tF", c);
 		c.add(Calendar.MONTH, -1);
 		startTime = String.format("%tF", c);
+		label = "全部";
+		type = 0;
+		name = "%";
 	}
 
 	public static String getStartTime() {
@@ -68,20 +74,23 @@ public class QueryConditions {
 	 */
 	public static String getSQL() {
 		String sortLabel = null, sortType = null;
-		if (label == null) {
+		// 标签
+		if (label.isEmpty()) {
 			sortLabel = "label IS NULL";
 		} else if (label.equals("全部")) {
 			sortLabel = "1 = 1";
 		} else {
 			sortLabel = String.format("label LIKE '%s'", label);
 		}
+		// 类别
 		if (type == 0) {
 			sortType = "1 = 1";
 		} else {
 			sortType = String.format("type = '%d'", 2 * type - 3);
 		}
+		// SQL语句
 		String sql = String.format(
-				"SELECT * FROM ledger WHERE name LIKE '%s' and createtime > '%s' and createtime < '%s' and %s and %s ORDER BY createtime DESC ",
+				"SELECT * FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and %s ORDER BY createtime DESC ",
 				name, startTime, stopTime, sortLabel, sortType);
 		return sql;
 	}
