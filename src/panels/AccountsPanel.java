@@ -201,15 +201,14 @@ public class AccountsPanel extends Panel {
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
 
-		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.DARK_GRAY), "账户信息显示", TitledBorder.LEFT,
-				TitledBorder.DEFAULT_POSITION, font.getFont());
+		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(ThemeColor.LIGHT_BLUE), "账户信息显示",
+				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION, font.getFont(2, 14f));
 		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);
 
 		scrollPane.setBackground(Color.WHITE);
 
 		validate();
-
 	}
 
 	/**

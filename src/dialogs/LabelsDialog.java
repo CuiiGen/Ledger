@@ -156,22 +156,23 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		setLayout(null);
 		setResizable(false);
 		// 窗口位置显示
-		final int w = 700, h = 500;
+		final int w = 700, h = 420;
 		setBounds(p.x + (d.width - w) / 2, p.y + (d.height - h) / 2, w, h);
 		// 更新列表和表格
 		updateTable();
 		// 表格设置
 		table.getTableHeader().setReorderingAllowed(false);
-		table.getTableHeader().setFont(font.getFont());
-		table.getTableHeader().setBackground(Color.WHITE);
+		table.getTableHeader().setFont(font.getFont(1));
+		table.getTableHeader().setBackground(ThemeColor.BLUE);
+		table.getTableHeader().setForeground(Color.WHITE);
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(27);
+		table.setRowHeight(30);
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
 		// 颜色设置
-		table.setSelectionBackground(ThemeColor.BLUE);
+		table.setSelectionBackground(ThemeColor.LIGHT_BLUE);
 		table.setSelectionForeground(Color.WHITE);
 		// 网格线
 		table.setShowVerticalLines(false);
@@ -186,7 +187,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
 		add(scrollPane);
-		scrollPane.setBounds(50, 50, 600, 250);
+		scrollPane.setBounds(50, 25, 600, 250);
 
 		// 输入框设置
 		tx.setFont(font.getFont());
@@ -197,31 +198,30 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		JLabel label = new JLabel("新建标签名");
 		label.setFont(font.getFont());
 		add(label);
-		label.setBounds(50, 330, 110, 30);
-		tx.setBounds(170, 330, 200, 30);
+		label.setBounds(50, 290, 110, 30);
+		tx.setBounds(170, 290, 200, 30);
 		// 按键初始化
 		btn[BUTTON_INSERT] = new JButton("添加");
 		btn[BUTTON_DEL] = new JButton("删除");
 		btn[BUTTON_CLOSE] = new JButton("关闭");
 		for (final JButton b : btn) {
-			b.setFont(font.getFont());
-			b.setForeground(Color.DARK_GRAY);
-			b.setBackground(Color.LIGHT_GRAY);
+			b.setFont(font.getFont(1));
+			b.setForeground(Color.WHITE);
+			b.setBackground(Color.DARK_GRAY);
 			b.addActionListener(this);
 			add(b);
 		}
 		btn[BUTTON_INSERT].setBackground(ThemeColor.BLUE);
 		btn[BUTTON_INSERT].setForeground(Color.WHITE);
-		btn[BUTTON_INSERT].setBounds(150, 400, 100, 30);
-		btn[BUTTON_DEL].setBounds(300, 400, 100, 30);
-		btn[BUTTON_CLOSE].setBounds(450, 400, 100, 30);
+		btn[BUTTON_INSERT].setBounds(150, 340, 100, 30);
+		btn[BUTTON_DEL].setBounds(300, 340, 100, 30);
+		btn[BUTTON_CLOSE].setBounds(450, 340, 100, 30);
 
 		// 窗口显示
 		validate();
 
 		setVisible(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
 	}
 
 	/**

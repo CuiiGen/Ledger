@@ -69,7 +69,7 @@ CREATE TABLE `labels` (
     PRIMARY KEY (`label`)
 );
 -- 默认标签拒绝删除
-INSERT INTO `labels` VALUES('存入', DEFAULT);
+INSERT INTO `labels` VALUES('转账', DEFAULT);
 INSERT INTO `labels` VALUES('退款', DEFAULT);
 ```
 

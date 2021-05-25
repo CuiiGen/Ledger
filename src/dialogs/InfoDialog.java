@@ -72,7 +72,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			l[i] = new JLabel(lstr[i]);
 			l[i].setFont(font.getFont());
 			add(l[i]);
-			l[i].setBounds(60, 35 * i + 40, 50, 25);
+			l[i].setBounds(80, 35 * i + 40, 50, 25);
 		}
 		// 输入框
 		for (int i = 0; i < tx.length; i++) {
@@ -312,9 +312,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else if (e.getSource() == btn[BUTTON_DEL]) {
 			// 删除
 			try {
-				delete();
-				dispose();
-				flag = true;
+				if (MessageDialog.showConfirm(this, "确认删除？，删除后无法复原！") == JOptionPane.YES_OPTION) {
+					delete();
+					dispose();
+					flag = true;
+				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问失败");
 				logger.error(LogHelper.exceptionToString(e1));

@@ -10,14 +10,14 @@ public class DefaultFont {
 	private Font font = null;
 
 	private static final int fontDefaultStyle = 0;
-	private static final float fontDefaultSize = 14;
+	private static final float fontDefaultSize = 15;
 
 	/**
 	 * 构造函数
 	 */
 	public DefaultFont() {
 		try {
-			font = Font.createFont(Font.TRUETYPE_FONT, new File("./font/SourceHanSansSC-Normal.ttf"));
+			font = Font.createFont(Font.TRUETYPE_FONT, new File("./font/SourceHanSerifCN-Medium.otf"));
 		} catch (FontFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
