@@ -24,6 +24,7 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.logging.log4j.LogManager;
@@ -146,13 +147,15 @@ public class LedgerPanel extends JPanel {
 		// 更新表格
 		updateTable();
 		// 表头设置
-		table.getTableHeader().setReorderingAllowed(false);
-		table.getTableHeader().setFont(font.getFont(1));
-		table.getTableHeader().setBackground(ThemeColor.BLUE);
-		table.getTableHeader().setForeground(Color.WHITE);
+		JTableHeader header = table.getTableHeader();
+		header.setReorderingAllowed(false);
+		header.setFont(font.getFont(1));
+		header.setBackground(ThemeColor.BLUE);
+		header.setForeground(Color.WHITE);
+		header.setPreferredSize(new Dimension(header.getWidth(), 30));
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(30);
+		table.setRowHeight(32);
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);

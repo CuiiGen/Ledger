@@ -25,6 +25,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.logging.log4j.LogManager;
@@ -161,10 +162,12 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		// 更新列表和表格
 		updateTable();
 		// 表格设置
-		table.getTableHeader().setReorderingAllowed(false);
-		table.getTableHeader().setFont(font.getFont(1));
-		table.getTableHeader().setBackground(ThemeColor.BLUE);
-		table.getTableHeader().setForeground(Color.WHITE);
+		JTableHeader header = table.getTableHeader();
+		header.setReorderingAllowed(false);
+		header.setFont(font.getFont(1));
+		header.setBackground(ThemeColor.BLUE);
+		header.setForeground(Color.WHITE);
+		header.setPreferredSize(new Dimension(header.getWidth(), 30));
 		// 行高
 		table.setFont(font.getFont());
 		table.setRowHeight(30);
