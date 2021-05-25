@@ -5,6 +5,12 @@ import java.awt.FontFormatException;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import dialogs.MessageDialog;
+import tool.LogHelper;
+
 public class DefaultFont {
 
 	private Font font = null;
@@ -18,10 +24,10 @@ public class DefaultFont {
 	public DefaultFont() {
 		try {
 			font = Font.createFont(Font.TRUETYPE_FONT, new File("./font/SourceHanSerifCN-Medium.otf"));
-		} catch (FontFormatException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (FontFormatException | IOException e) {
+			Logger logger = LogManager.getLogger();
+			logger.error(LogHelper.exceptionToString(e));
+			MessageDialog.showError(null, "自定义字体加载失败！");
 		}
 	}
 
