@@ -115,7 +115,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		}
 		// 标签下拉列表
 		label.addItem(null);
-		sql = "SELECT label FROM labels";
+		sql = "SELECT label FROM labels ORDER BY createtime DESC";
 		rs = h2.query(sql);
 		while (rs.next()) {
 			label.addItem(rs.getString("label"));
