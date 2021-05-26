@@ -8,15 +8,14 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dialogs.MessageDialog;
 import tool.LogHelper;
 
 public class DefaultFont {
 
-	private Font font = null;
-
 	private static final int fontDefaultStyle = 0;
 	private static final float fontDefaultSize = 15;
+
+	private Font font = new Font("默认字体", 0, (int) fontDefaultSize);
 
 	/**
 	 * 构造函数
@@ -26,8 +25,8 @@ public class DefaultFont {
 			font = Font.createFont(Font.TRUETYPE_FONT, new File("./font/SourceHanSerifCN-Medium.otf"));
 		} catch (FontFormatException | IOException e) {
 			Logger logger = LogManager.getLogger();
+			logger.error("字体文件加载错误！");
 			logger.error(LogHelper.exceptionToString(e));
-			MessageDialog.showError(null, "自定义字体加载失败！");
 		}
 	}
 
