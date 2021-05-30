@@ -199,19 +199,10 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * @throws ParseException
 	 * @throws NumberFormatException
 	 */
-	private void insert() throws SQLException, ParseException, NumberFormatException {
+	private void insert(Date date) throws SQLException, ParseException, NumberFormatException {
 		logger.info("插入流水记录");
 		// 时间
-		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-				ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
-		Date date = null;
-		if (tx[TX_TIME].getText().matches("\\d{14}")) {
-			date = ft2.parse(tx[TX_TIME].getText());
-		} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
-			date = ft1.parse(tx[TX_TIME].getText());
-		} else {
-			throw new ParseException(tx[TX_TIME].getText(), 0);
-		}
+		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		// 金额
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 		// 收入或支出
@@ -291,10 +282,19 @@ public class InfoDialog extends JDialog implements ActionListener {
 		if (e.getSource() == btn[BUTTON_INSERT]) {
 			// 插入
 			try {
-				if (MessageDialog.showConfirm(this,
-						"流水时间无法更改，确认为：" + tx[TX_TIME].getText()) == JOptionPane.YES_OPTION) {
+				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+						ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
+				Date date = null;
+				if (tx[TX_TIME].getText().matches("\\d{14}")) {
+					date = ft2.parse(tx[TX_TIME].getText());
+				} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
+					date = ft1.parse(tx[TX_TIME].getText());
+				} else {
+					throw new ParseException(tx[TX_TIME].getText(), 0);
+				}
+				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
 					logger.info("确认插入");
-					insert();
+					insert(date);
 					dispose();
 					flag = true;
 				}
@@ -324,8 +324,9 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else if (e.getSource() == btn[BUTTON_SAVE]) {
 			// 更新保存
 			try {
+				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				delete();
-				insert();
+				insert(ft1.parse(tx[TX_TIME].getText()));
 				dispose();
 				flag = true;
 			} catch (SQLException e1) {
