@@ -67,10 +67,10 @@ public class LedgerPanel extends JPanel {
 				setHorizontalAlignment(SwingConstants.CENTER);
 			} else {
 				setHorizontalAlignment(SwingConstants.LEFT);
-
 			}
-			int TYPE_COLUMN = 3;
-			if (table.getValueAt(row, TYPE_COLUMN).equals("收入")) {
+			if (array.get(row).getIsValid() == false) {
+				setForeground(Color.LIGHT_GRAY);
+			} else if (array.get(row).getType() == 1) {
 				setForeground(ThemeColor.ORANGE);
 			} else {
 				setForeground(Color.BLACK);
@@ -109,10 +109,12 @@ public class LedgerPanel extends JPanel {
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
+						logger.info(LogHelper.exceptionToString(e1));
 					}
 				} else {
 					// 修改isValid
 					try {
+						logger.info("修改有效性标记");
 						h2 = new H2_DB();
 						String t = "o";
 						if (array.get(table.getSelectedRow()).getIsValid()) {
@@ -122,10 +124,12 @@ public class LedgerPanel extends JPanel {
 								array.get(table.getSelectedRow()).getCreatetime());
 						logger.info(sql);
 						h2.execute(sql);
+						h2.close();
 						updateTable();
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						logger.info(LogHelper.exceptionToString(e1));
+						MessageDialog.showError(f, "编辑出错，数据库访问异常！");
 					}
 				}
 			}
