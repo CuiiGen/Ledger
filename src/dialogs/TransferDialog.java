@@ -170,7 +170,7 @@ public class TransferDialog extends JDialog implements ActionListener {
 		// 数据库初始化
 		h2 = new H2_DB();
 		// 付款
-		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
+		String sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
 				from.getSelectedItem(), -1, amount, "转账", "转账付款：" + tx[TX_REMARK].getText());
 		logger.info("转账付款记录");
 		logger.info(sql);
@@ -184,7 +184,7 @@ public class TransferDialog extends JDialog implements ActionListener {
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
 		c.add(Calendar.SECOND, 1);
-		sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');",
+		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
 				String.format("%1$tF %1$tT", c), to.getSelectedItem(), 1, amount, "转账",
 				"转账收款：" + tx[TX_REMARK].getText());
 		logger.info("转账收款记录");

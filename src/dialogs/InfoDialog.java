@@ -212,10 +212,10 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else {
 			type = 1;
 		}
-		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
+		String sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
 				account.getSelectedItem(), type, amount, label.getSelectedItem(), tx[TX_REMARK].getText());
 		if (label.getSelectedItem() == null) {
-			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, null, '%s');", ft1.format(date),
+			sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, null, '%s');", ft1.format(date),
 					account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
 		}
 		h2 = new H2_DB();
@@ -256,13 +256,13 @@ public class InfoDialog extends JDialog implements ActionListener {
 		logger.info("退款记录保存");
 		h2 = new H2_DB();
 		// 原纪录备注更改
-		String sql = String.format("UPDATE ledger SET remark = '%s' WHERE createtime = '%s'", rds.getRemark() + "：已退款！",
+		String sql = String.format("UPDATE ledger SET isValid = 'i', remark = '%s' WHERE createtime = '%s'", rds.getRemark() + "：已退款！",
 				rds.getCreatetime());
 		logger.info("原纪录备注更改");
 		logger.info(sql);
 		h2.execute(sql);
 		// 插入退款记录
-		sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%d', %.2f, '%s', '%s');",
+		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
 				String.format("%1$tF %1$tT", Calendar.getInstance()), rds.getName(), -rds.getType(), rds.getAmount(),
 				"退款", "退款，原流水时间：" + rds.getCreatetime());
 		logger.info("插入退款记录");

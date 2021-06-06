@@ -21,6 +21,22 @@
 1. 在弹出的控制台中，选项`JDBC URL`一般为`jdbc:h2:file:[数据库文件存在路径]\[数据库文件名]`，`用户名`为`root`，`密码`为`sH6AkexU93exhBB`，其它项一般保持不变；
 1. 点击`连接`即可连接本地数据库，若数据库文件不存在则会自动创建。
 
+## 备份和恢复命令
+
+在`h2*.jar`目录下启动命令行界面执行以下命令分别进行备份和恢复：
+
+**备份**
+
+```bash
+java -cp h2-1.4.200.jar org.h2.tools.Script -url [连接URL] -user [用户名] -password [密码] -script [文件名].zip -options compression zip
+```
+
+**恢复**
+
+```bash
+java -cp h2-1.4.200.jar org.h2.tools.RunScript -url [连接URL] -user [用户名] -password [密码] -script [文件名].zip -options compression zip
+```
+
 ## 关系表说明
 
 根据软件需求分析，该项目中共需要三张关系表，分别为
@@ -75,15 +91,15 @@ INSERT INTO `labels` VALUES('退款', DEFAULT);
 
 ### 账本
 
-|    字段名    |     数据类型      |         注释         | 非空 |        备注         |
-| :----------: | :---------------: | :------------------: | :--: | :-----------------: |
-|  `isvalid`   |   `varchar(1)`    | 是否计入总收入或支出 |  是  | `i`表示有效否则无效 |
-| `createtime` |    `DATETIME`     |       记账时间       |  是  |        主键         |
-|    `name`    |   `VARCHAR(32)`   |      相关账户名      |  是  |      关联外键       |
-|    `type`    | `ENUM('1', '-1')` |      收入或支出      |  是  |                     |
-|   `amount`   |     `DOUBLE`      |         金额         |  是  |                     |
-|   `label`    |   `VARCHAR(32)`   |         标签         |  是  |      关联外键       |
-|   `remark`   |      `TEXT`       |         备注         |  否  |                     |
+|    字段名    |     数据类型      |       注释       | 非空 |        备注         |
+| :----------: | :---------------: | :--------------: | :--: | :-----------------: |
+|  `isValid`   |   `varchar(1)`    | 计入总收入或支出 |  是  | `i`表示有效否则无效 |
+| `createtime` |    `DATETIME`     |     记账时间     |  是  |        主键         |
+|    `name`    |   `VARCHAR(32)`   |    相关账户名    |  是  |      关联外键       |
+|    `type`    | `ENUM('1', '-1')` |    收入或支出    |  是  |                     |
+|   `amount`   |     `DOUBLE`      |       金额       |  是  |                     |
+|   `label`    |   `VARCHAR(32)`   |       标签       |  是  |      关联外键       |
+|   `remark`   |      `TEXT`       |       备注       |  否  |                     |
 
 注：所有外键限制删除，级联更新。建表命令为：
 

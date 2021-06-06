@@ -20,7 +20,8 @@ public class QueryConditions {
 	public static void init() {
 		Calendar c = Calendar.getInstance();
 		stopTime = String.format("%tF", c);
-		c.add(Calendar.MONTH, -1);
+		// c.add(Calendar.MONTH, -1);
+		c.set(Calendar.DAY_OF_MONTH, 1);
 		startTime = String.format("%tF", c);
 		label = "全部";
 		type = 0;

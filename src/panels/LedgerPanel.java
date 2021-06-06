@@ -37,6 +37,7 @@ import dialogs.InfoDialog;
 import dialogs.MessageDialog;
 import main.MainFrame;
 import models.RecordStructure;
+import tool.LogHelper;
 
 public class LedgerPanel extends JPanel {
 
@@ -62,13 +63,13 @@ public class LedgerPanel extends JPanel {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
-			if (column < 5) {
+			if (column < 6) {
 				setHorizontalAlignment(SwingConstants.CENTER);
 			} else {
 				setHorizontalAlignment(SwingConstants.LEFT);
 
 			}
-			int TYPE_COLUMN = 2;
+			int TYPE_COLUMN = 3;
 			if (table.getValueAt(row, TYPE_COLUMN).equals("收入")) {
 				setForeground(ThemeColor.ORANGE);
 			} else {
@@ -98,14 +99,34 @@ public class LedgerPanel extends JPanel {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
-				logger.info("打开流水记录详情对话框");
-				try {
-					if (showInfoDialog(array.get(table.getSelectedRow()))) {
-						logger.info("有信息修改，刷新页面");
-						f.updatePanel();
+				if (table.getSelectedColumn() > 0) {
+					// 打开流水记录详情对话框
+					logger.info("打开流水记录详情对话框");
+					try {
+						if (showInfoDialog(array.get(table.getSelectedRow()))) {
+							logger.info("有信息修改，刷新页面");
+							f.updatePanel();
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
 					}
-				} catch (SQLException e1) {
-					e1.printStackTrace();
+				} else {
+					// 修改isValid
+					try {
+						h2 = new H2_DB();
+						String t = "o";
+						if (array.get(table.getSelectedRow()).getIsValid()) {
+							t = "i";
+						}
+						String sql = String.format("UPDATE ledger SET `isValid` = '%s' WHERE createtime = '%s'", t,
+								array.get(table.getSelectedRow()).getCreatetime());
+						logger.info(sql);
+						h2.execute(sql);
+						updateTable();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+						logger.info(LogHelper.exceptionToString(e1));
+					}
 				}
 			}
 		}
@@ -198,16 +219,18 @@ public class LedgerPanel extends JPanel {
 		while (rs.next()) {
 			array.add(new RecordStructure(rs.getString("createtime"), rs.getString("name"),
 					Integer.parseInt(rs.getString("type")), rs.getFloat("amount"), rs.getString("label"),
-					rs.getString("remark")));
+					rs.getString("remark"), rs.getString("isValid")));
 		}
 		h2.close();
 		// 金额状态更新
 		float in = 0, out = 0;
 		for (RecordStructure r : array) {
-			if (r.getType() == 1) {
-				in += r.getAmount();
-			} else {
-				out += r.getAmount();
+			if (r.getIsValid()) {
+				if (r.getType() == 1) {
+					in += r.getAmount();
+				} else {
+					out += r.getAmount();
+				}
 			}
 		}
 		balence.setText(String.format("当前总收入金额￥%.2f，总支出金额￥%.2f    ", in, out));
@@ -215,16 +238,18 @@ public class LedgerPanel extends JPanel {
 		table.setModel(new RecordsModel(array));
 		// 列宽设置
 		TableColumnModel cm = table.getColumnModel();
-		cm.getColumn(0).setMaxWidth(220);
-		cm.getColumn(0).setMinWidth(200);
-		cm.getColumn(1).setMaxWidth(180);
-		cm.getColumn(1).setMinWidth(150);
-		cm.getColumn(2).setMaxWidth(120);
-		cm.getColumn(2).setMinWidth(100);
+		cm.getColumn(0).setMaxWidth(30);
+		cm.getColumn(0).setMinWidth(40);
+		cm.getColumn(1).setMaxWidth(220);
+		cm.getColumn(1).setMinWidth(200);
+		cm.getColumn(2).setMaxWidth(180);
+		cm.getColumn(2).setMinWidth(150);
 		cm.getColumn(3).setMaxWidth(120);
 		cm.getColumn(3).setMinWidth(100);
-		cm.getColumn(4).setMaxWidth(150);
-		cm.getColumn(4).setMinWidth(130);
+		cm.getColumn(4).setMaxWidth(120);
+		cm.getColumn(4).setMinWidth(100);
+		cm.getColumn(5).setMaxWidth(150);
+		cm.getColumn(5).setMinWidth(130);
 	}
 
 	/**
@@ -301,7 +326,7 @@ class RecordsModel extends AbstractTableModel {
 	 */
 	private static final long serialVersionUID = -2453177164571829047L;
 
-	private static String[] title = { "记账时间", "相关账户", "类型", "金额", "标签", "备注" };
+	private static String[] title = { "#", "记账时间", "相关账户", "类型", "金额", "标签", "备注" };
 
 	private ArrayList<RecordStructure> array = new ArrayList<>();
 
@@ -329,21 +354,24 @@ class RecordsModel extends AbstractTableModel {
 		Object o = null;
 		switch (columnIndex) {
 		case 0:
-			o = array.get(rowIndex).getCreatetime();
+			o = array.get(rowIndex).getIsValid() ? "o" : "";
 			break;
 		case 1:
-			o = array.get(rowIndex).getName();
+			o = array.get(rowIndex).getCreatetime();
 			break;
 		case 2:
-			o = array.get(rowIndex).getType() == -1 ? "支出" : "收入";
+			o = array.get(rowIndex).getName();
 			break;
 		case 3:
-			o = array.get(rowIndex).getAmount();
+			o = array.get(rowIndex).getType() == -1 ? "支出" : "收入";
 			break;
 		case 4:
-			o = array.get(rowIndex).getLabel();
+			o = array.get(rowIndex).getAmount();
 			break;
 		case 5:
+			o = array.get(rowIndex).getLabel();
+			break;
+		case 6:
 			o = array.get(rowIndex).getRemark();
 			break;
 		}
