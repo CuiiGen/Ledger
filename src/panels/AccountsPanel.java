@@ -68,7 +68,7 @@ public class AccountsPanel extends Panel {
 					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("点击新建账户")) {
 						logger.error("账户名不能空或点击新建账户");
 					} else {
-						logger.error("账户名非禁止，可以新建");
+						logger.info("账户名非禁止，可以新建");
 						insertAccount(table.getValueAt(r, c).toString());
 					}
 				} else {
