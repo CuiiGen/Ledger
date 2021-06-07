@@ -11,7 +11,6 @@ import java.util.Calendar;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.h2.tools.RunScript;
 import org.h2.tools.Script;
 
 import dialogs.FileChooserDialog;
