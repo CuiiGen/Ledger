@@ -5,8 +5,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.h2.tools.Script;
 
 import dialogs.MessageDialog;
 
@@ -66,4 +70,18 @@ public class H2_DB {
 		statement.execute(sql);
 	}
 
+	/**
+	 * 备份
+	 * 
+	 * @throws SQLException
+	 */
+	public static void backup() throws SQLException {
+		SimpleDateFormat ft = new SimpleDateFormat("yyyyMMddHHmmss");
+		String filename = String.format("./database/backup_%s.zip", ft.format(Calendar.getInstance().getTime()));
+		Script.process(url, user, pw, filename, "", "compression zip");
+	}
+
+	public static void restore() {
+
+	}
 }

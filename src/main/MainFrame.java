@@ -22,6 +22,7 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
 import dialogs.InfoDialog;
@@ -44,12 +45,12 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	// 菜单及菜单项
 	private JMenu[] m = new JMenu[3];
-	private JMenuItem[] mit = new JMenuItem[7];
+	private JMenuItem[] mit = new JMenuItem[9];
 
 	// 菜单及菜单项索引
 	private static final int MENU_RECORD = 0, MENU_MANAGE = 1, MENU_HELP = 2;
 	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_LEDGER = 2, ITEM_EXPORT = 3, ITEM_ABOUT = 4,
-			ITEM_RECORD = 5, ITEM_TRANSFER = 6;
+			ITEM_RECORD = 5, ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8;
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
@@ -91,7 +92,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i].setFont(font.getFont());
 		}
 		// 菜单项
-		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 " };
+		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
 			mit[i].setFont(font.getFont());
@@ -99,12 +100,17 @@ public class MainFrame extends JFrame implements ActionListener {
 			mit[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 			mit[i].setBackground(Color.WHITE);
 		}
+
 		m[MENU_RECORD].add(mit[ITEM_RECORD]);
 		m[MENU_RECORD].add(mit[ITEM_TRANSFER]);
 		m[MENU_MANAGE].add(mit[ITEM_LABEL]);
 		m[MENU_MANAGE].add(mit[ITEM_ACCOUNT]);
 		m[MENU_MANAGE].add(mit[ITEM_LEDGER]);
+		m[MENU_MANAGE].addSeparator();
 		m[MENU_MANAGE].add(mit[ITEM_EXPORT]);
+		m[MENU_MANAGE].add(mit[ITEM_BACKUP]);
+		m[MENU_MANAGE].add(mit[ITEM_RESTORE]);
+
 		m[MENU_HELP].add(mit[ITEM_ABOUT]);
 
 		JPanel temtPanel = new JPanel(new BorderLayout());
@@ -219,6 +225,14 @@ public class MainFrame extends JFrame implements ActionListener {
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，记录失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else if (e.getSource() == mit[ITEM_BACKUP]) {
+			try {
+				H2_DB.backup();
+				MessageDialog.showMessage(this, "备份成功！");
+			} catch (SQLException e1) {
+				MessageDialog.showError(this, "备份失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
