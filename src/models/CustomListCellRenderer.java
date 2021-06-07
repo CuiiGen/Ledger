@@ -30,7 +30,7 @@ public class CustomListCellRenderer extends DefaultListCellRenderer {
 		} else {
 			// 非选中状态
 			label.setForeground(Color.BLACK);
-			label.setBackground(ThemeColor.LIGHT_GRAY);
+			label.setBackground(Color.WHITE);
 		}
 		// 选择结束状态
 		list.setSelectionForeground(Color.WHITE);
