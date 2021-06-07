@@ -228,6 +228,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_BACKUP]) {
+			// 备份
 			try {
 				H2_DB.backup();
 				MessageDialog.showMessage(this, "备份成功！");
@@ -235,6 +236,8 @@ public class MainFrame extends JFrame implements ActionListener {
 				MessageDialog.showError(this, "备份失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
+		} else if (e.getSource() == mit[ITEM_RESTORE]) {
+			// 恢复
 		}
 	}
 }

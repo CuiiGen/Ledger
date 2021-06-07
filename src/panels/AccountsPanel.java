@@ -333,7 +333,7 @@ class AccountsModel extends AbstractTableModel {
 			o = array.get(rowIndex).getCreatetime();
 			break;
 		case 2:
-			o = array.get(rowIndex).getAmount();
+			o = String.format("%.2f", array.get(rowIndex).getAmount());
 			break;
 		}
 		return o;
