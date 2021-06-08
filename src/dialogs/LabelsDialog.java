@@ -36,6 +36,7 @@ import design.ThemeColor;
 import design.DefaultFont;
 import main.MainFrame;
 import models.LabelStructure;
+import panels.QueryConditions;
 import tool.LogHelper;
 
 public class LabelsDialog extends JDialog implements ActionListener {
@@ -64,6 +65,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 				table.setValueAt(pre, r, 0);
 				MessageDialog.showError(this, "默认标签，禁止修改！");
 				return;
+			}
+			if (QueryConditions.getLabel().equals(pre)) {
+				QueryConditions.setLabel(table.getValueAt(r, c).toString());
 			}
 			String sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'", table.getValueAt(r, c),
 					pre);
@@ -149,10 +153,13 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	private DefaultFont font = new DefaultFont();
 	// 日志
 	private Logger logger = LogManager.getLogger();
+	// 父窗口
+	private MainFrame f = null;
 
 	public LabelsDialog(final MainFrame frame, final Point p, final Dimension d) throws SQLException {
 		// 父类构造函数
 		super(frame, "标签管理", true);
+		f = frame;
 		// 布局管理
 		setLayout(null);
 		setResizable(false);
@@ -296,6 +303,10 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			MessageDialog.showError(this, "默认标签，禁止删除！");
 			return false;
 		}
+		if (array.get(r).getAmount() != 0) {
+			MessageDialog.showError(f, "标签存在对应记录，禁止删除！");
+			return false;
+		}
 		// 确认删除
 		if (MessageDialog.showConfirm(this, "确认删除当前标签？") == JOptionPane.YES_OPTION) {
 			logger.info("确认删除标签");
@@ -304,6 +315,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
+			if (QueryConditions.getLabel().equals(l)) {
+				QueryConditions.setLabel("全部");
+			}
 			return true;
 		} else {
 			logger.info("取消删除");

@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -89,13 +90,13 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i] = new JMenu(mstr[i]);
 			bar.add(m[i]);
 			m[i].setUI(new DefaultMenuUI(ThemeColor.BLUE, Color.WHITE));
-			m[i].setFont(font.getFont());
+			m[i].setFont(font.getFont(14f));
 		}
 		// 菜单项
 		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
-			mit[i].setFont(font.getFont());
+			mit[i].setFont(font.getFont(14f));
 			mit[i].addActionListener(this);
 			mit[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 			mit[i].setBackground(Color.WHITE);
@@ -162,6 +163,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			logger.info("打开标签管理对话框");
 			try {
 				new LabelsDialog(this, getLocation(), getSize());
+				sortPanel.updateContent();
+				ledgerPanel.updateTable();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -239,6 +242,28 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == mit[ITEM_RESTORE]) {
 			// 恢复
+			// 数据库文件重命名备份
+			File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db");
+			try {
+				file.renameTo(distFile);
+				// 恢复数据
+				H2_DB.restore();
+				//
+				if (file.exists()) {
+					distFile.delete();
+				} else {
+					distFile.renameTo(file);
+				}
+				// 更新页面
+				QueryConditions.init();
+				updatePanel();
+				sortPanel.updateContent();
+			} catch (SQLException e1) {
+				// 日志
+				logger.error(LogHelper.exceptionToString(e1));
+				// 删除文件
+				distFile.renameTo(file);
+			}
 		}
 	}
 }

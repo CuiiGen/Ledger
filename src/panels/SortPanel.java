@@ -58,8 +58,6 @@ public class SortPanel extends JPanel implements ActionListener {
 			tx[i].setSelectedTextColor(Color.WHITE);
 			tx[i].setSelectionColor(ThemeColor.BLUE);
 		}
-		tx[0].setText(QueryConditions.getStartTime());
-		tx[1].setText(QueryConditions.getStopTime());
 		// 标签设置
 		JLabel[] labels = new JLabel[4];
 		String[] lstr = { "起始时间", "结束时间", "类别：", "标签：" };
@@ -82,15 +80,9 @@ public class SortPanel extends JPanel implements ActionListener {
 		tag.setOpaque(true);
 		tag.setBackground(ThemeColor.BLUE);
 		tag.setForeground(Color.WHITE);
-		tag.addItem("全部");
-		tag.addItem("");
-		h2 = new H2_DB();
-		String sql = "SELECT label FROM labels";
-		ResultSet rs = h2.query(sql);
-		while (rs.next()) {
-			tag.addItem(rs.getString("label"));
-		}
-		h2.close();
+		// 更新内容
+		QueryConditions.init();
+		updateContent();
 		// 按钮
 		String[] bstr = { "筛选", "重置" };
 		for (int i = 0; i < bstr.length; i++) {
@@ -135,6 +127,27 @@ public class SortPanel extends JPanel implements ActionListener {
 		vbox.add(hbox3);
 	}
 
+	/**
+	 * 更新页面内容
+	 * 
+	 * @throws SQLException
+	 */
+	public void updateContent() throws SQLException {
+		tag.removeAllItems();
+		tag.addItem("全部");
+		h2 = new H2_DB();
+		String sql = "SELECT label FROM labels";
+		ResultSet rs = h2.query(sql);
+		while (rs.next()) {
+			tag.addItem(rs.getString("label"));
+		}
+		h2.close();
+		tx[0].setText(QueryConditions.getStartTime());
+		tx[1].setText(QueryConditions.getStopTime());
+		type.setSelectedIndex(QueryConditions.getType());
+		tag.setSelectedItem(QueryConditions.getLabel());
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btn[0]) {
@@ -164,10 +177,7 @@ public class SortPanel extends JPanel implements ActionListener {
 			// 重置筛选
 			try {
 				QueryConditions.init();
-				tx[0].setText(QueryConditions.getStartTime());
-				tx[1].setText(QueryConditions.getStopTime());
-				type.setSelectedIndex(0);
-				tag.setSelectedIndex(0);
+				updateContent();
 				f.updateLedger();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，查询失败！");

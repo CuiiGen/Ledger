@@ -45,7 +45,7 @@ public class FileChooserDialog {
 		fileChooser.setApproveButtonText("上传");
 		// 文件过滤器
 		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-		fileChooser.setFileFilter(new FileNameExtensionFilter("ZIP压缩文件", "sql"));
+		fileChooser.setFileFilter(new FileNameExtensionFilter("SQL 数据库脚本", "sql"));
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		// 待返回文件

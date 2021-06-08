@@ -1,6 +1,7 @@
 package database;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,14 +12,16 @@ import java.util.Calendar;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.h2.tools.RunScript;
 import org.h2.tools.Script;
 
 import dialogs.FileChooserDialog;
 import dialogs.MessageDialog;
+import tool.LogHelper;
 
 public class H2_DB {
 
-	private static String url = "jdbc:h2:file:./database/Ledger";
+	private static final String url = "jdbc:h2:file:./database/Ledger";
 	private static final String user = "root";
 	private static final String pw = "sH6AkexU93exhBB";
 
@@ -34,8 +37,7 @@ public class H2_DB {
 			statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		} catch (ClassNotFoundException e) {
 			// 大概率不会发生不进行抛出处理
-			e.printStackTrace();
-			logger.error(e);
+			logger.error(LogHelper.exceptionToString(e));
 			MessageDialog.showError(null, e.toString());
 		}
 	}
@@ -79,14 +81,19 @@ public class H2_DB {
 	 */
 	public static void backup() throws SQLException {
 		SimpleDateFormat ft = new SimpleDateFormat("yyyyMMddHHmmss");
-		String filename = String.format("./database/backup_%s.zip", ft.format(Calendar.getInstance().getTime()));
-		Script.process(url, user, pw, filename, "", "compression zip");
+		String filename = String.format("./database/backup_%s.sql", ft.format(Calendar.getInstance().getTime()));
+		Script.process(url, user, pw, filename, "", "");
 	}
 
+	/**
+	 * 恢复备份
+	 * 
+	 * @throws SQLException
+	 */
 	public static void restore() throws SQLException {
 		File file = FileChooserDialog.openFileChooser(null);
 		if (file != null) {
-			System.out.println(file.getAbsolutePath());
+			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
 		}
 	}
 }
