@@ -3,4 +3,4 @@
 /logs
 /log
 *.zip
-*.sql
+/backup

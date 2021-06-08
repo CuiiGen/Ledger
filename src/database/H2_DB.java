@@ -81,7 +81,7 @@ public class H2_DB {
 	 */
 	public static void backup() throws SQLException {
 		SimpleDateFormat ft = new SimpleDateFormat("yyyyMMddHHmmss");
-		String filename = String.format("./database/backup_%s.sql", ft.format(Calendar.getInstance().getTime()));
+		String filename = String.format("./backup/backup_%s.sql", ft.format(Calendar.getInstance().getTime()));
 		Script.process(url, user, pw, filename, "", "");
 	}
 
