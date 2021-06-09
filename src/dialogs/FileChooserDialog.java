@@ -39,7 +39,7 @@ public class FileChooserDialog {
 			e.printStackTrace();
 		}
 		// 桌面
-		JFileChooser fileChooser = new JFileChooser("./database/");
+		JFileChooser fileChooser = new JFileChooser("./backup/");
 		fileChooser.setFont(font.getFont());
 		// 打开
 		fileChooser.setApproveButtonText("上传");

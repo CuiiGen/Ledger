@@ -2,6 +2,9 @@ package panels;
 
 import java.util.Calendar;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class QueryConditions {
 
 	// 起始结束时间
@@ -18,6 +21,8 @@ public class QueryConditions {
 	 * 初始化筛选默认条件
 	 */
 	public static void init() {
+		Logger logger = LogManager.getLogger();
+		logger.info("查询条件初始化");
 		Calendar c = Calendar.getInstance();
 		stopTime = String.format("%tF", c);
 		// c.add(Calendar.MONTH, -1);

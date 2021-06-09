@@ -133,6 +133,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	 * @throws SQLException
 	 */
 	public void updateContent() throws SQLException {
+		logger.info("查询面板内容更新");
 		tag.removeAllItems();
 		tag.addItem("全部");
 		h2 = new H2_DB();

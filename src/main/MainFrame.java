@@ -157,7 +157,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
 			MessageDialog.showMessage(this,
-					"我的账本Ledger V3.3，由iamroot开发使用\r\n" + "时间：2021年6月6日\r\n" + "邮箱：cuigen@buaa.edu.cn");
+					"我的账本Ledger V3.4，由iamroot开发使用\r\n" + "时间：2021年6月8日\r\n" + "邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
@@ -243,21 +243,26 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_RESTORE]) {
 			// 恢复
 			// 数据库文件重命名备份
-			File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db");
+			File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db"),
+					temp = new File("./database/Ledger_temp.mv.db");
 			try {
-				file.renameTo(distFile);
+				file.renameTo(temp);
 				// 恢复数据
 				H2_DB.restore();
-				//
+				// 判断是否恢复
 				if (file.exists()) {
+					// 删除临时数据库
+					logger.info("数据库已恢复");
 					distFile.delete();
+					temp.renameTo(distFile);
+					// 更新页面
+					QueryConditions.init();
+					updatePanel();
+					sortPanel.updateContent();
 				} else {
-					distFile.renameTo(file);
+					temp.renameTo(file);
+					logger.info("数据库未恢复，复原旧数据库");
 				}
-				// 更新页面
-				QueryConditions.init();
-				updatePanel();
-				sortPanel.updateContent();
 			} catch (SQLException e1) {
 				// 日志
 				logger.error(LogHelper.exceptionToString(e1));
