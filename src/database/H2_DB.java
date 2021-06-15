@@ -93,6 +93,8 @@ public class H2_DB {
 	public static void restore() throws SQLException {
 		File file = FileChooserDialog.openFileChooser(null);
 		if (file != null) {
+			// 恢复前自动备份
+			backup();
 			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
 		}
 	}
