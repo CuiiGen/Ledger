@@ -259,6 +259,7 @@ public class MainFrame extends JFrame implements ActionListener {
 					QueryConditions.init();
 					updatePanel();
 					sortPanel.updateContent();
+					MessageDialog.showMessage(this, "数据库恢复成功，页面刷新完成！");
 				} else {
 					temp.renameTo(file);
 					logger.info("数据库未恢复，复原旧数据库");
