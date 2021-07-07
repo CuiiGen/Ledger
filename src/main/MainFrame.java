@@ -253,13 +253,14 @@ public class MainFrame extends JFrame implements ActionListener {
 				if (file.exists()) {
 					// 删除临时数据库
 					logger.info("数据库已恢复");
+					MessageDialog.showMessage(this, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
 					distFile.delete();
 					temp.renameTo(distFile);
 					// 更新页面
 					QueryConditions.init();
 					updatePanel();
 					sortPanel.updateContent();
-					MessageDialog.showMessage(this, "数据库恢复成功，页面刷新完成！");
+					MessageDialog.showMessage(this, "页面刷新完成！");
 				} else {
 					temp.renameTo(file);
 					logger.info("数据库未恢复，复原旧数据库");
