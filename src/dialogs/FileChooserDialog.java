@@ -8,7 +8,6 @@ import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import design.DefaultFont;
 
 /**
  * @author CuiGen 文件及路径选择对话框
@@ -17,8 +16,6 @@ public class FileChooserDialog {
 
 	private static final LookAndFeel original = UIManager.getLookAndFeel();
 	private static final String system = UIManager.getSystemLookAndFeelClassName();
-	// 字体
-	private static DefaultFont font = new DefaultFont();
 
 	/**
 	 * 打开文件的文件选择器
@@ -40,9 +37,8 @@ public class FileChooserDialog {
 		}
 		// 桌面
 		JFileChooser fileChooser = new JFileChooser("./backup/");
-		fileChooser.setFont(font.getFont());
 		// 打开
-		fileChooser.setApproveButtonText("上传");
+		fileChooser.setApproveButtonText("确定");
 		// 文件过滤器
 		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(new FileNameExtensionFilter("SQL 数据库脚本", "sql"));
