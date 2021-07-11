@@ -246,6 +246,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db"),
 					temp = new File("./database/Ledger_temp.mv.db");
 			try {
+				temp.delete();
 				file.renameTo(temp);
 				// 恢复数据
 				H2_DB.restore();
@@ -269,7 +270,9 @@ public class MainFrame extends JFrame implements ActionListener {
 				// 日志
 				logger.error(LogHelper.exceptionToString(e1));
 				// 删除文件
-				distFile.renameTo(file);
+				file.delete();
+				temp.renameTo(file);
+				MessageDialog.showError(this, "页面刷新失败，恢复旧数据库！");
 			}
 		}
 	}
