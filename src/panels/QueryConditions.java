@@ -1,5 +1,7 @@
 package panels;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,10 +26,11 @@ public class QueryConditions {
 		Logger logger = LogManager.getLogger();
 		logger.info("查询条件初始化");
 		Calendar c = Calendar.getInstance();
-		stopTime = String.format("%tF", c);
-		// c.add(Calendar.MONTH, -1);
 		c.set(Calendar.DAY_OF_MONTH, 1);
 		startTime = String.format("%tF", c);
+		c.add(Calendar.MONDAY, 1);
+		c.add(Calendar.DAY_OF_MONTH, -1);
+		stopTime = String.format("%tF", c);
 		label = "全部";
 		type = 0;
 		name = "%";
@@ -71,6 +74,34 @@ public class QueryConditions {
 
 	public static void setName(String name) {
 		QueryConditions.name = name;
+	}
+
+	/**
+	 * 上个月或下个月
+	 * 
+	 * @param delta
+	 */
+	public static void nextMonth(int delta) {
+		try {
+			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
+			Calendar calendar = Calendar.getInstance();
+			// 起始时间
+			calendar.setTime(ft.parse(startTime));
+			calendar.set(Calendar.DAY_OF_MONTH, 1);
+			calendar.add(Calendar.MONTH, delta);
+			startTime = String.format("%tF", calendar);
+			// 结束时间
+			calendar.setTime(ft.parse(stopTime));
+			// 调整为1号
+			calendar.set(Calendar.DAY_OF_MONTH, 1);
+			// 移动至后一月的一号
+			calendar.add(Calendar.MONTH, 1 + delta);
+			// 前一天
+			calendar.add(Calendar.DAY_OF_MONTH, -1);
+			stopTime = String.format("%tF", calendar);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

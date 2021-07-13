@@ -37,7 +37,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	// 类型和标签
 	private JComboBox<String> type = new JComboBox<>(), tag = new JComboBox<>();
 	// 按钮
-	private JButton[] btn = new JButton[2];
+	private JButton[] btn = new JButton[4];
 	// 数据库
 	private H2_DB h2 = null;
 	// 字体
@@ -84,7 +84,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		QueryConditions.init();
 		updateContent();
 		// 按钮
-		String[] bstr = { "筛选", "重置" };
+		String[] bstr = { "筛选", "重置", "<<", ">>" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
 			btn[i].setFont(font.getFont());
@@ -104,6 +104,15 @@ public class SortPanel extends JPanel implements ActionListener {
 		vbox.add(tx[0]);
 		vbox.add(labels[1]);
 		vbox.add(tx[1]);
+		// 空白
+		vbox.add(Box.createVerticalStrut(7));
+		// 上下个月
+		Box hbox4 = Box.createHorizontalBox();
+		hbox4.add(btn[2]);
+		hbox4.add(Box.createHorizontalStrut(15));
+		hbox4.add(btn[3]);
+		vbox.add(hbox4);
+		// 空白
 		vbox.add(Box.createVerticalStrut(10));
 		// 类别
 		Box hbox1 = Box.createHorizontalBox(), hbox2 = Box.createHorizontalBox();
@@ -111,12 +120,14 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox1.add(Box.createHorizontalStrut(5));
 		hbox1.add(type);
 		vbox.add(hbox1);
-		// 标签
+		// 空白
 		vbox.add(Box.createVerticalStrut(7));
+		// 标签
 		hbox2.add(labels[3]);
 		hbox2.add(Box.createHorizontalStrut(5));
 		hbox2.add(tag);
 		vbox.add(hbox2);
+		// 空白
 		vbox.add(Box.createVerticalStrut(10));
 		// 按钮
 		add(Box.createHorizontalStrut(5));
@@ -182,6 +193,24 @@ public class SortPanel extends JPanel implements ActionListener {
 				f.updateLedger();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，查询失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else {
+			// 上下个月
+			if (e.getSource() == btn[2]) {
+				QueryConditions.nextMonth(-1);
+				logger.info(String.format("上个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
+			} else {
+				QueryConditions.nextMonth(1);
+				logger.info(String.format("下个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
+
+			}
+			tx[0].setText(QueryConditions.getStartTime());
+			tx[1].setText(QueryConditions.getStopTime());
+			try {
+				f.updateLedger();
+			} catch (SQLException e1) {
+				MessageDialog.showError(f, "数据库访问错误，查询失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
