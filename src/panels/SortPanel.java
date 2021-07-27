@@ -147,6 +147,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		logger.info("查询面板内容更新");
 		tag.removeAllItems();
 		tag.addItem("全部");
+		tag.addItem("  ");
 		h2 = new H2_DB();
 		String sql = "SELECT label FROM labels";
 		ResultSet rs = h2.query(sql);

@@ -112,7 +112,7 @@ public class QueryConditions {
 	public static String getSQL() {
 		String sortLabel = null, sortType = null;
 		// 标签
-		if (label.isEmpty()) {
+		if (label.equals("  ")) {
 			sortLabel = "label IS NULL";
 		} else if (label.equals("全部")) {
 			sortLabel = "1 = 1";

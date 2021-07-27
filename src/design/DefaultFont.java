@@ -20,7 +20,7 @@ public class DefaultFont {
 	// 字体文件是否存在
 	private static boolean isFontFileExists = true;
 
-	private Font font = new Font("默认字体", 0, (int) fontDefaultSize);
+	private Font font = new Font("默认字体", fontDefaultStyle, (int) fontDefaultSize);
 
 	/**
 	 * 构造函数
