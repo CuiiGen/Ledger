@@ -93,6 +93,7 @@ public class H2_DB {
 	public static void restore() throws SQLException {
 		File file = FileChooserDialog.openFileChooser(null);
 		if (file != null) {
+			LogManager.getLogger().info("待恢复文件路径：" + file.getAbsolutePath());
 			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
 		}
 	}

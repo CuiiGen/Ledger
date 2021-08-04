@@ -157,7 +157,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
 			MessageDialog.showMessage(this,
-					"我的账本Ledger V3.4.2，由iamroot开发使用\r\n" + "时间：2021年7月26日\r\n" + "邮箱：cuigen@buaa.edu.cn");
+					"我的账本Ledger V3.4.4，由iamroot开发使用\r\n" + "时间：2021年7月26日\r\n" + "邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
