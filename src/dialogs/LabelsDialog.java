@@ -69,18 +69,30 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			if (QueryConditions.getLabel().equals(pre)) {
 				QueryConditions.setLabel(table.getValueAt(r, c).toString());
 			}
-			String sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'", table.getValueAt(r, c),
-					pre);
-			// 更新且数据库随用随取随关
 			try {
 				h2 = new H2_DB();
+				String sql = "";
+				if (isTagUnique(table.getValueAt(r, c).toString())) {
+					// 修改后标签无重复
+					sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'", table.getValueAt(r, c),
+							pre);
+					logger.info("标签不重复");
+				} else {
+					// 修改后标签重复
+					if (MessageDialog.showConfirm(this, "修改后标签重复，是否整合两重复标签？") == JOptionPane.NO_OPTION) {
+						return;
+					}
+					sql = String.format("UPDATE `ledger` SET `label`='%1$s' WHERE `label`='%2$s';DELETE FROM `labels` WHERE `label`='%2$s'", table.getValueAt(r, c),
+							pre);
+					logger.info("标签重复");
+				}
 				logger.info(sql);
 				h2.execute(sql);
 				h2.close();
 				updateTable();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
-				logger.error(e1);
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		};
 	};
@@ -272,13 +284,15 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		logger.info("开始新建标签");
 		if (tx.getText().isEmpty()) {
 			logger.error("标签为空");
-		} else {
+		} else if (isTagUnique(tx.getText())) {
 			String sql = String.format("INSERT INTO `labels`(`label`) VALUES ('%s')", tx.getText());
 			tx.setText(null);
 			h2 = new H2_DB();
 			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
+		} else {
+			MessageDialog.showError(this, "标签重复");
 		}
 	}
 
@@ -291,7 +305,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	private boolean deleteLabel() throws SQLException {
 		// 当前选中行
 		int r = table.getSelectedRow();
-		logger.info("删除当前选中账户，当前选中行为：" + r);
+		logger.info("删除当前选中标签，当前选中行为：" + r);
 		// 未选中
 		if (r < 0) {
 			return false;
@@ -323,6 +337,30 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			logger.info("取消删除");
 			return false;
 		}
+	}
+
+	/**
+	 * 检验当前标签是否重复
+	 * 
+	 * @param tag 标签
+	 * @return
+	 * @throws SQLException
+	 */
+	private static boolean isTagUnique(String tag) throws SQLException {
+		String sql = String.format("SELECT * FROM `labels` WHERE `label`='%s'", tag);
+		// 静态类定义对象
+		H2_DB h2 = new H2_DB();
+		Logger logger = LogManager.getLogger();
+		// 日志输出
+		logger.info(sql);
+		// 执行
+		h2.execute(sql);
+		// 结果
+		ResultSet rs = h2.query(sql);
+		rs.last();
+		int row = rs.getRow();
+		h2.close();
+		return row == 0;
 	}
 
 	@Override
