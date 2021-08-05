@@ -107,9 +107,9 @@ public class AccountsPanel extends Panel {
 			if (at == row) {
 				setBackground(ThemeColor.ORANGE);
 			} else if (row % 2 == 0) {
-				setBackground(ThemeColor.LIGHT_GRAY);
-			} else {
 				setBackground(Color.WHITE);
+			} else {
+				setBackground(ThemeColor.LIGHT_GRAY);
 			}
 			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
@@ -205,7 +205,7 @@ public class AccountsPanel extends Panel {
 		JScrollPane scrollPane = new JScrollPane(table);
 
 		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.BLACK), "账户信息显示", TitledBorder.LEFT,
-				TitledBorder.DEFAULT_POSITION, font.getFont(2, 13f));
+				TitledBorder.DEFAULT_POSITION, font.getFont(0, 13f));
 		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);
 

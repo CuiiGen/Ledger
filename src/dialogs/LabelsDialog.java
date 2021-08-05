@@ -115,9 +115,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			if (at == row) {
 				setBackground(ThemeColor.LIGHT_BLUE);
 			} else if (row % 2 == 0) {
-				setBackground(ThemeColor.LIGHT_GRAY);
-			} else {
 				setBackground(Color.WHITE);
+			} else {
+				setBackground(ThemeColor.LIGHT_GRAY);
 			}
 			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}

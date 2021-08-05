@@ -7,13 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
+import javax.swing.border.Border;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -136,8 +137,11 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox3.add(Box.createHorizontalStrut(20));
 		hbox3.add(btn[1]);
 		vbox.add(hbox3);
-		
+
 		setBackground(Color.WHITE);
+
+		Border tb1 = BorderFactory.createMatteBorder(0, 0, 0, 3, ThemeColor.BACKGROUND);
+		setBorder(tb1);
 	}
 
 	/**
