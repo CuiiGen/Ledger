@@ -98,7 +98,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		add(Box.createHorizontalStrut(5));
 		add(vbox);
 		// 最上层空白
-		vbox.add(Box.createVerticalStrut(20));
+		vbox.add(Box.createVerticalStrut(10));
 		// 时间
 		vbox.add(labels[0]);
 		vbox.add(tx[0]);
@@ -136,6 +136,8 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox3.add(Box.createHorizontalStrut(20));
 		hbox3.add(btn[1]);
 		vbox.add(hbox3);
+		
+		setBackground(Color.WHITE);
 	}
 
 	/**

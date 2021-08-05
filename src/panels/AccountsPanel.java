@@ -204,13 +204,14 @@ public class AccountsPanel extends Panel {
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
 
-		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(ThemeColor.LIGHT_BLUE), "账户信息显示",
-				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION, font.getFont(2, 14f));
+		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.BLACK), "账户信息显示", TitledBorder.LEFT,
+				TitledBorder.DEFAULT_POSITION, font.getFont(2, 13f));
 		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);
 
 		scrollPane.setBackground(Color.WHITE);
-
+		setBackground(Color.WHITE);
+		table.setBackground(Color.WHITE);
 		validate();
 	}
 
@@ -235,10 +236,10 @@ public class AccountsPanel extends Panel {
 
 		// 列宽设置
 		TableColumnModel cm = table.getColumnModel();
-		cm.getColumn(1).setMaxWidth(240);
-		cm.getColumn(1).setMinWidth(220);
-		cm.getColumn(0).setMinWidth(120);
-		cm.getColumn(0).setMaxWidth(160);
+		cm.getColumn(1).setMaxWidth(260);
+		cm.getColumn(1).setMinWidth(240);
+		cm.getColumn(0).setMinWidth(160);
+		cm.getColumn(0).setMaxWidth(180);
 	}
 
 	/**

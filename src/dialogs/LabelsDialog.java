@@ -82,8 +82,9 @@ public class LabelsDialog extends JDialog implements ActionListener {
 					if (MessageDialog.showConfirm(this, "修改后标签重复，是否整合两重复标签？") == JOptionPane.NO_OPTION) {
 						return;
 					}
-					sql = String.format("UPDATE `ledger` SET `label`='%1$s' WHERE `label`='%2$s';DELETE FROM `labels` WHERE `label`='%2$s'", table.getValueAt(r, c),
-							pre);
+					sql = String.format(
+							"UPDATE `ledger` SET `label`='%1$s' WHERE `label`='%2$s';DELETE FROM `labels` WHERE `label`='%2$s'",
+							table.getValueAt(r, c), pre);
 					logger.info("标签重复");
 				}
 				logger.info(sql);

@@ -28,7 +28,7 @@ public class DefaultFont {
 	public DefaultFont() {
 		if (isFontFileExists) {
 			try {
-				font = Font.createFont(Font.TRUETYPE_FONT, new File("./font/SourceHanSerifCN-Medium.otf"));
+				font = Font.createFont(Font.TRUETYPE_FONT, new File("./font/SourceHanSansCN-Regular.otf"));
 			} catch (FontFormatException | IOException e) {
 				isFontFileExists = false;
 				Logger logger = LogManager.getLogger();
