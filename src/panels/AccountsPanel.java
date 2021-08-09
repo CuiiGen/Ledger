@@ -105,7 +105,7 @@ public class AccountsPanel extends Panel {
 				int row, int column) {
 			setHorizontalAlignment(SwingConstants.CENTER);
 			if (at == row) {
-				setBackground(ThemeColor.ORANGE);
+				setBackground(ThemeColor.LIGHT_BLUE);
 			} else if (row % 2 == 0) {
 				setBackground(Color.WHITE);
 			} else {
