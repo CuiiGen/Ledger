@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.apache.logging.log4j.LogManager;
@@ -95,6 +96,32 @@ public class H2_DB {
 		if (file != null) {
 			LogManager.getLogger().info("待恢复文件路径：" + file.getAbsolutePath());
 			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
+			checkusers();
 		}
+	}
+
+	/**
+	 * 检查用户
+	 * 
+	 * @throws SQLException
+	 */
+	public static void checkusers() throws SQLException {
+		H2_DB h2 = new H2_DB();
+		String sql = "SELECT * FROM INFORMATION_SCHEMA.USERS";
+		ResultSet rs = h2.query(sql);
+		// 用户名列表
+		ArrayList<String> list = new ArrayList<>();
+		while (rs.next()) {
+			list.add(rs.getString(1));
+		}
+		for (String username : list) {
+			if (user.equals(username.toLowerCase())) {
+				continue;
+			} else {
+				LogManager.getLogger().info("删除用户：" + username);
+				h2.execute(String.format("DROP USER IF EXISTS %s", username));
+			}
+		}
+		h2.close();
 	}
 }
