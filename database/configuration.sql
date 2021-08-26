@@ -33,7 +33,7 @@ VALUES
 DROP TABLE `ledger` IF EXISTS;
 
 CREATE TABLE `ledger` (
-    `isValid` VARCHAR(1) NOT NULL DEFAULT 'i' COMMENT '是否计数',
+    `isValid` VARCHAR(1) NOT NULL DEFAULT 'o' COMMENT '是否计数',
     `createtime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记账时间',
     `name` VARCHAR(32) NOT NULL COMMENT '账户名',
     `type` ENUM('1', '-1') NOT NULL COMMENT '收入或支出',

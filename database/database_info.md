@@ -93,7 +93,7 @@ INSERT INTO `labels` VALUES('退款', DEFAULT);
 
 |    字段名    |     数据类型      |       注释       | 非空 |        备注         |
 | :----------: | :---------------: | :--------------: | :--: | :-----------------: |
-|  `isValid`   |   `varchar(1)`    | 计入总收入或支出 |  是  | `i`表示有效否则无效 |
+|  `isValid`   |   `varchar(1)`    | 计入总收入或支出 |  是  | `o`表示有效否则无效 |
 | `createtime` |    `DATETIME`     |     记账时间     |  是  |        主键         |
 |    `name`    |   `VARCHAR(32)`   |    相关账户名    |  是  |      关联外键       |
 |    `type`    | `ENUM('1', '-1')` |    收入或支出    |  是  |                     |
@@ -107,7 +107,7 @@ INSERT INTO `labels` VALUES('退款', DEFAULT);
 DROP TABLE `ledger` IF EXISTS;
 
 CREATE TABLE `ledger` (
-    `isValid` VARCHAR(1) NOT NULL DEFAULT 'i' COMMENT '是否计数',
+    `isValid` VARCHAR(1) NOT NULL DEFAULT 'o' COMMENT '是否计数',
     `createtime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记账时间',
     `name` VARCHAR(32) NOT NULL COMMENT '账户名',
     `type` ENUM('1', '-1') NOT NULL COMMENT '收入或支出',
