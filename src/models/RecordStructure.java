@@ -46,7 +46,8 @@ public class RecordStructure {
 	}
 
 	public String toString() {
-		return String.format("%s,%s,%s,%.2f,%s,%s", createtime, name, type == -1 ? "支出" : "收入", amount, label, remark);
+		return String.format("%s,%s,%s,%s,%.2f,%s,%s", isValid ? "o" : "", createtime, name, type == -1 ? "支出" : "收入",
+				amount, label, remark);
 	}
 
 	public boolean getIsValid() {

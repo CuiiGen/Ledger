@@ -300,14 +300,14 @@ public class LedgerPanel extends JPanel {
 	 */
 	public void export() throws IOException {
 		ArrayList<String> list = new ArrayList<>();
-		list.add("记账时间,相关账户,类型,金额,标签,备注");
+		list.add("#,记账时间,相关账户,类型,金额,标签,备注");
 		for (RecordStructure rds : array) {
 			list.add(rds.toString());
 		}
 		FileSystemView fsv = FileSystemView.getFileSystemView();
 		File file = new File(fsv.getHomeDirectory().getAbsolutePath() + "\\流水.csv");
 		FileOutputStream fos = new FileOutputStream(file);
-		fos.write(String.join("\r\n", list).getBytes());
+		fos.write(String.join("\r\n", list).getBytes("GBK"));
 		fos.flush();
 		fos.close();
 	}
