@@ -34,7 +34,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 3949915897977563970L;
 
 	// 时间输入框
-	private JTextField[] tx = new JTextField[2];
+	private JTextField[] tx = new JTextField[3];
 	// 类型和标签
 	private JComboBox<String> type = new JComboBox<>(), tag = new JComboBox<>();
 	// 按钮
@@ -60,8 +60,8 @@ public class SortPanel extends JPanel implements ActionListener {
 			tx[i].setSelectionColor(ThemeColor.BLUE);
 		}
 		// 标签设置
-		JLabel[] labels = new JLabel[4];
-		String[] lstr = { "起始时间", "结束时间", "类别：", "标签：" };
+		JLabel[] labels = new JLabel[5];
+		String[] lstr = { "起始时间", "结束时间", "类别：", "标签：", "全局模糊搜索" };
 		for (int i = 0; i < lstr.length; i++) {
 			labels[i] = new JLabel(lstr[i]);
 			labels[i].setFont(font.getFont());
@@ -137,6 +137,12 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox3.add(Box.createHorizontalStrut(20));
 		hbox3.add(btn[1]);
 		vbox.add(hbox3);
+		// 空白
+		vbox.add(Box.createVerticalStrut(50));
+		// 搜索框
+		vbox.add(labels[4]);
+		vbox.add(tx[2]);
+		tx[2].addActionListener(this);
 
 		setBackground(Color.WHITE);
 
@@ -153,6 +159,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		logger.info("查询面板内容更新");
 		tag.removeAllItems();
 		tag.addItem("全部");
+		// 两个空格
 		tag.addItem("  ");
 		h2 = new H2_DB();
 		String sql = "SELECT label FROM labels";
@@ -171,6 +178,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btn[0]) {
 			// 筛选
+			QueryConditions.setIsFuzzy(false);
 			try {
 				if (tx[0].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2}") == false) {
 					throw new ParseException(tx[0].getText(), 0);
@@ -194,12 +202,23 @@ public class SortPanel extends JPanel implements ActionListener {
 			}
 		} else if (e.getSource() == btn[1]) {
 			// 重置筛选
+			QueryConditions.setIsFuzzy(false);
 			try {
 				QueryConditions.init();
 				updateContent();
 				f.updateLedger();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，查询失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else if (e.getSource() == tx[2]) {
+			// 筛选结果更新
+			QueryConditions.setFuzzyWord(tx[2].getText());
+			tx[2].setText(null);
+			try {
+				f.updateLedger();
+			} catch (SQLException e1) {
+				MessageDialog.showError(f, "数据库访问错误，查询失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else {

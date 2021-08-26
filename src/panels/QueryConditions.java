@@ -18,6 +18,10 @@ public class QueryConditions {
 	private static int type = 0;
 	// 账户名
 	private static String name = "%";
+	// 模糊搜索
+	private static boolean isFuzzy = false;
+	// 模糊搜索关键词
+	private static String fuzzyWord = "%";
 
 	/**
 	 * 初始化筛选默认条件
@@ -105,30 +109,56 @@ public class QueryConditions {
 	}
 
 	/**
+	 * 设置是否进行模糊查询
+	 * 
+	 * @param is
+	 */
+	public static void setIsFuzzy(boolean is) {
+		isFuzzy = is;
+	}
+
+	/**
+	 * 设置进行模糊查询并设定关键词
+	 * 
+	 * @param word
+	 */
+	public static void setFuzzyWord(String word) {
+		isFuzzy = true;
+		fuzzyWord = String.format("%%%s%%", word);
+	}
+
+	/**
 	 * 根据筛选条件返回SQL语句
 	 * 
 	 * @return
 	 */
 	public static String getSQL() {
-		String sortLabel = null, sortType = null;
-		// 标签
-		if (label.equals("  ")) {
-			sortLabel = "label IS NULL";
-		} else if (label.equals("全部")) {
-			sortLabel = "1 = 1";
+		String sql = "";
+		if (isFuzzy) {
+			sql = String.format(
+					"SELECT * FROM ledger WHERE label LIKE '%1$s' OR remark LIKE '%1$s' ORDER BY createtime DESC;",
+					fuzzyWord);
 		} else {
-			sortLabel = String.format("label LIKE '%s'", label);
+			String sortLabel = null, sortType = null;
+			// 标签
+			if (label.equals("  ")) {
+				sortLabel = "label IS NULL";
+			} else if (label.equals("全部")) {
+				sortLabel = "1 = 1";
+			} else {
+				sortLabel = String.format("label LIKE '%s'", label);
+			}
+			// 类别
+			if (type == 0) {
+				sortType = "1 = 1";
+			} else {
+				sortType = String.format("type = '%d'", 2 * type - 3);
+			}
+			// SQL语句
+			sql = String.format(
+					"SELECT * FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and %s ORDER BY createtime DESC;",
+					name, startTime, stopTime, sortLabel, sortType);
 		}
-		// 类别
-		if (type == 0) {
-			sortType = "1 = 1";
-		} else {
-			sortType = String.format("type = '%d'", 2 * type - 3);
-		}
-		// SQL语句
-		String sql = String.format(
-				"SELECT * FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and %s ORDER BY createtime DESC ",
-				name, startTime, stopTime, sortLabel, sortType);
 		return sql;
 	}
 }

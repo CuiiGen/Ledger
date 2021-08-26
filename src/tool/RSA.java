@@ -45,7 +45,6 @@ public class RSA {
 		String privateKeyString = encoder.encodeToString(privateKey.getEncoded());
 		String[] result = { publicKeyString, privateKeyString };
 		return result;
-
 	}
 
 	public static String encrypt(String str, String publicKey)
@@ -69,7 +68,7 @@ public class RSA {
 
 	public static String decrypt(String str, String privateKey)
 			throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
-			IllegalBlockSizeException, BadPaddingException {
+			IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
 		// base64解码加密后的信息和秘钥
 		Decoder decoder = Base64.getDecoder();
 		byte[] inputByte = decoder.decode(str);
@@ -79,8 +78,7 @@ public class RSA {
 		// RSA解密
 		Cipher cipher = Cipher.getInstance("RSA");
 		cipher.init(Cipher.DECRYPT_MODE, priKey);
-		String outStr = new String(cipher.doFinal(inputByte));
+		String outStr = new String(cipher.doFinal(inputByte), "UTF-8");
 		return outStr;
 	}
-
 }
