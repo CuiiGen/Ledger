@@ -46,12 +46,12 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	// 菜单及菜单项
 	private JMenu[] m = new JMenu[3];
-	private JMenuItem[] mit = new JMenuItem[9];
+	private JMenuItem[] mit = new JMenuItem[10];
 
 	// 菜单及菜单项索引
 	private static final int MENU_RECORD = 0, MENU_MANAGE = 1, MENU_HELP = 2;
 	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_LEDGER = 2, ITEM_EXPORT = 3, ITEM_ABOUT = 4,
-			ITEM_RECORD = 5, ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8;
+			ITEM_RECORD = 5, ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8, ITEM_LOG = 9;
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
@@ -77,7 +77,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		setLayout(new BorderLayout());
 
-		// TODO 程序小图标
+		// 程序小图标
 		setIconImage(getToolkit().getImage("./icon/Ledger.png"));
 
 		// 菜单栏
@@ -93,7 +93,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i].setFont(font.getFont(14f));
 		}
 		// 菜单项
-		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 " };
+		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 ",
+				" 查看日志 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
 			mit[i].setFont(font.getFont(14f));
@@ -112,6 +113,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		m[MENU_MANAGE].add(mit[ITEM_BACKUP]);
 		m[MENU_MANAGE].add(mit[ITEM_RESTORE]);
 
+		m[MENU_HELP].add(mit[ITEM_LOG]);
 		m[MENU_HELP].add(mit[ITEM_ABOUT]);
 
 		JPanel temtPanel = new JPanel(new BorderLayout());
@@ -274,6 +276,17 @@ public class MainFrame extends JFrame implements ActionListener {
 				file.delete();
 				temp.renameTo(file);
 				MessageDialog.showError(this, "页面刷新失败，恢复旧数据库！");
+			}
+		} else if (e.getSource() == mit[ITEM_LOG]) {
+			try {
+				logger.info("查看日志");
+				File file = new File("./database/Ledger.trace.db");
+				if (file.exists()) {
+					Runtime.getRuntime().exec("notepad ./database/Ledger.trace.db");
+				}
+				Runtime.getRuntime().exec("notepad ./logs/info.log");
+			} catch (IOException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
 	}

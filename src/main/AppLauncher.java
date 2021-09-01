@@ -17,6 +17,7 @@ public class AppLauncher {
 			MessageDialog.showError(null, e.toString());
 			Logger logger = LogManager.getLogger();
 			logger.error(LogHelper.exceptionToString(e));
+			System.exit(0);
 		}
 	}
 
