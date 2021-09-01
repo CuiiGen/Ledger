@@ -78,7 +78,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		setLayout(new BorderLayout());
 
 		// TODO 程序小图标
-		setIconImage(getToolkit().getImage("./icon/FileHub.png"));
+		setIconImage(getToolkit().getImage("./icon/Ledger.png"));
 
 		// 菜单栏
 		JMenuBar bar = new JMenuBar();
