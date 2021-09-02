@@ -195,13 +195,13 @@ public class InfoDialog extends JDialog implements ActionListener {
 	}
 
 	/**
-	 * 新建流水
+	 * 插入或保存流水
 	 * 
+	 * @param date 流水交易时间，调用该函数新建流水前需要校验时间输入是否准确，修改保存时无需校验
 	 * @throws SQLException
-	 * @throws ParseException
 	 * @throws NumberFormatException
 	 */
-	private void insert(Date date) throws SQLException, ParseException, NumberFormatException {
+	private void insert(Date date) throws SQLException, NumberFormatException {
 		logger.info("插入流水记录");
 		// 时间
 		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -299,14 +299,17 @@ public class InfoDialog extends JDialog implements ActionListener {
 				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
 					logger.info("确认插入");
 					insert(date);
-					dispose();
 					flag = true;
+					dispose();
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，插入失败！");
 				logger.error(LogHelper.exceptionToString(e1));
-			} catch (ParseException | NumberFormatException e1) {
+			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (ParseException e1) {
+				MessageDialog.showError(this, "交易时间输入错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_EXIT]) {
@@ -337,8 +340,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，插入失败！");
 				logger.error(LogHelper.exceptionToString(e1));
-			} catch (ParseException | NumberFormatException e1) {
+			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (ParseException e1) {
+				MessageDialog.showError(this, "交易时间输入错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_REFUND]) {

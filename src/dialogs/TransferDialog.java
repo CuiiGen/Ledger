@@ -151,22 +151,13 @@ public class TransferDialog extends JDialog implements ActionListener {
 	/**
 	 * 新建转账相关的两条流水
 	 * 
+	 * @param date
 	 * @throws SQLException
-	 * @throws ParseException
 	 * @throws NumberFormatException
 	 */
-	private void insert() throws SQLException, ParseException, NumberFormatException {
+	private void insert(Date date) throws SQLException, NumberFormatException {
 		// 时间
-		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-				ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
-		Date date = null;
-		if (tx[TX_TIME].getText().matches("\\d{14}")) {
-			date = ft2.parse(tx[TX_TIME].getText());
-		} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
-			date = ft1.parse(tx[TX_TIME].getText());
-		} else {
-			throw new ParseException(tx[TX_TIME].getText(), 0);
-		}
+		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		// 金额
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 		// 数据库初始化
@@ -211,17 +202,31 @@ public class TransferDialog extends JDialog implements ActionListener {
 			// 确认转账
 			logger.info("开始进行转账流程");
 			try {
-				if (MessageDialog.showConfirm(this, "确认转账信息正确？") == JOptionPane.YES_OPTION) {
+				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+						ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
+				Date date = null;
+				if (tx[TX_TIME].getText().matches("\\d{14}")) {
+					date = ft2.parse(tx[TX_TIME].getText());
+				} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
+					date = ft1.parse(tx[TX_TIME].getText());
+				} else {
+					throw new ParseException(tx[TX_TIME].getText(), 0);
+				}
+				if (MessageDialog.showConfirm(this,
+						"确认转账信息正确？\r\n流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
 					logger.info("确认进行转账");
-					insert();
+					insert(date);
 					flag = true;
 					dispose();
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，保存失败！");
 				logger.error(LogHelper.exceptionToString(e1));
-			} catch (ParseException | NumberFormatException e1) {
+			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (ParseException e1) {
+				MessageDialog.showError(this, "交易时间输入错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
