@@ -86,6 +86,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 		tx[TX_TIME].setBounds(140, 40, 200, 25);
 		tx[TX_AMOUNT].setBounds(140, 145, 200, 25);
 		tx[TX_REMARK].setBounds(140, 215, 200, 25);
+		tx[TX_AMOUNT].addActionListener(this);
+		tx[TX_REMARK].addActionListener(this);
 
 		// 下拉列表
 		type.addItem("支出");
@@ -212,11 +214,12 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else {
 			type = 1;
 		}
-		String sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
-				account.getSelectedItem(), type, amount, label.getSelectedItem(), tx[TX_REMARK].getText());
+		String sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, '%s', '%s');",
+				ft1.format(date), account.getSelectedItem(), type, amount, label.getSelectedItem(),
+				tx[TX_REMARK].getText());
 		if (label.getSelectedItem() == null) {
-			sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, null, '%s');", ft1.format(date),
-					account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
+			sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, null, '%s');",
+					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
 		}
 		h2 = new H2_DB();
 		logger.info(sql);
@@ -256,8 +259,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 		logger.info("退款记录保存");
 		h2 = new H2_DB();
 		// 原纪录备注更改
-		String sql = String.format("UPDATE ledger SET isValid = 'i', remark = '%s' WHERE createtime = '%s'", rds.getRemark() + "：已退款！",
-				rds.getCreatetime());
+		String sql = String.format("UPDATE ledger SET isValid = 'i', remark = '%s' WHERE createtime = '%s'",
+				rds.getRemark() + "：已退款！", rds.getCreatetime());
 		logger.info("原纪录备注更改");
 		logger.info(sql);
 		h2.execute(sql);
@@ -279,7 +282,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == btn[BUTTON_INSERT]) {
+		if (e.getSource() == btn[BUTTON_INSERT]
+				|| rds == null && (e.getSource() == tx[TX_REMARK] || e.getSource() == tx[TX_AMOUNT])) {
 			// 插入
 			try {
 				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
@@ -321,7 +325,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据库访问失败");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (e.getSource() == btn[BUTTON_SAVE]) {
+		} else if (e.getSource() == btn[BUTTON_SAVE]
+				|| rds != null && (e.getSource() == tx[TX_REMARK] || e.getSource() == tx[TX_AMOUNT])) {
 			// 更新保存
 			try {
 				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

@@ -85,6 +85,8 @@ public class TransferDialog extends JDialog implements ActionListener {
 		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 		tx[TX_AMOUNT].setBounds(100, 110, 200, 25);
 		tx[TX_REMARK].setBounds(100, 145, 200, 25);
+		tx[TX_AMOUNT].addActionListener(this);
+		tx[TX_REMARK].addActionListener(this);
 
 		// 付款
 		from.setFont(font.getFont());
@@ -170,8 +172,8 @@ public class TransferDialog extends JDialog implements ActionListener {
 		// 数据库初始化
 		h2 = new H2_DB();
 		// 付款
-		String sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');", ft1.format(date),
-				from.getSelectedItem(), -1, amount, "转账", "转账付款：" + tx[TX_REMARK].getText());
+		String sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
+				ft1.format(date), from.getSelectedItem(), -1, amount, "转账", "转账付款：" + tx[TX_REMARK].getText());
 		logger.info("转账付款记录");
 		logger.info(sql);
 		h2.execute(sql);
@@ -204,7 +206,8 @@ public class TransferDialog extends JDialog implements ActionListener {
 			// 退出
 			flag = false;
 			dispose();
-		} else if (e.getSource() == btn[BUTTON_INSERT]) {
+		} else if (e.getSource() == btn[BUTTON_INSERT] || e.getSource() == tx[TX_REMARK]
+				|| e.getSource() == tx[TX_AMOUNT]) {
 			// 确认转账
 			logger.info("开始进行转账流程");
 			try {
