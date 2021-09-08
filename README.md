@@ -8,10 +8,14 @@
 
 ## 文件说明
 
-- `backup`文件夹用于保存数据库的备份，以便恢复数据库；
-- `database`文件夹用于放置数据库文件`Ledger.mv.db`，同时在该文件夹下有数据库的相关说明文件和SQL命令文件；
-- `font`文件夹用于存在自定义的免费商用字体`SourceHanSansCN-Regular.otf`，即思源黑体；
-- `icon`文件夹用于保存程序图标；
-- `logs`文件夹用于保存日志输出；
-- `src`文件夹放置程序源码；
-- `installer`文件夹用于导出可执行jar文件。
+- `backup` 用于保存数据库的备份文件，方便转存、转移数据；
+- `database` 用于放置数据库文件`Ledger.mv.db`，同时在该文件夹下有数据库的相关说明文档和SQL命令文件，可查看`database_info.md`文档查看详细的数据库信息说明；
+- `font` 用于存在自定义的免费商用字体`SourceHanSansCN-Regular.otf`，即思源黑体；
+- `icon` 用于保存程序图标；
+- `logs` 用于日志文件输出；
+- `src` 放置程序源码；
+- `installer` 用于导出可执行jar文件。
+
+## 源代码说明
+
+后续详细更新
