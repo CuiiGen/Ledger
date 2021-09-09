@@ -8,13 +8,37 @@
 
 ## 文件说明
 
-- `backup` 用于保存数据库的备份文件，方便转存、转移数据；
-- `database` 用于放置数据库文件`Ledger.mv.db`，同时在该文件夹下有数据库的相关说明文档和SQL命令文件，可查看`database_info.md`文档查看详细的数据库信息说明；
-- `font` 用于存在自定义的免费商用字体`SourceHanSansCN-Regular.otf`，即思源黑体；
-- `icon` 用于保存程序图标；
-- `logs` 用于日志文件输出；
-- `src` 放置程序源码；
-- `installer` 用于导出可执行jar文件。
+```
+Ledger
+│  .gitignore                           // gitignore文件
+│  README.md                            // 说明文档
+│
+├─backup                                // 输出数据库备份文件
+│      backup_20210711110853.sql        // 时间戳命名数据库备份文件
+│
+├─database                              // 数据库相关文件
+│      configuration.sql                // 建表SQL命令
+│      database_info.md                 // 关系表说明文档
+│      database_info.pdf                // 文档PDF
+│      Ledger.mv.db                     // h2数据库
+│
+├─font                                  // 存放自定义字体
+│      SourceHanSansCN-Regular.otf      // 思源黑体
+│
+├─icon                                  // 放置图标
+│      Ledger.png                       // 程序主图标
+│
+├─installer                             // 输出可执行jar路径
+├─libs                                  // 第三方库
+│  │  h2-1.4.200.jar                    // h2数据库JDBC
+│  │
+│  └─apache-log4j-2.13.0-bin            // log4j2相关库
+│          log4j-api-2.13.0.jar
+│          log4j-core-2.13.0.jar
+│
+├─logs                                  // 输出保存日志
+└─src                                   // 源码
+```
 
 ## 源代码说明
 
