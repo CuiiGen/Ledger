@@ -1,6 +1,7 @@
 package database;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,6 +19,10 @@ import org.h2.tools.Script;
 
 import dialogs.FileChooserDialog;
 import dialogs.MessageDialog;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.AesKeyStrength;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
 import tool.LogHelper;
 
 public class H2_DB {
@@ -79,11 +84,23 @@ public class H2_DB {
 	 * 备份
 	 * 
 	 * @throws SQLException
+	 * @throws IOException
 	 */
-	public static void backup() throws SQLException {
+	public static void backup() throws SQLException, IOException {
+		// 时间格式化
 		SimpleDateFormat ft = new SimpleDateFormat("yyyyMMddHHmmss");
-		String filename = String.format("./backup/backup_%s.sql", ft.format(Calendar.getInstance().getTime()));
-		Script.process(url, user, pw, filename, "", "");
+		// 文件名格式化
+		String filename = String.format("./backup/backup_%s", ft.format(Calendar.getInstance().getTime()));
+		// 导出文件
+		Script.process(url, user, pw, filename + ".sql", "", "");
+		// 加密压缩
+		ZipParameters zipParameters = new ZipParameters();
+		zipParameters.setEncryptFiles(true);
+		zipParameters.setEncryptionMethod(EncryptionMethod.AES);
+		zipParameters.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
+		ZipFile zipFile = new ZipFile(filename + ".zip", pw.toCharArray());
+		zipFile.addFile(filename, zipParameters);
+		zipFile.close();
 	}
 
 	/**
