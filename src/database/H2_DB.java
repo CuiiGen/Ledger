@@ -87,20 +87,26 @@ public class H2_DB {
 	 * @throws IOException
 	 */
 	public static void backup() throws SQLException, IOException {
+		// 日志管理
+		Logger logger = LogManager.getLogger();
 		// 时间格式化
 		SimpleDateFormat ft = new SimpleDateFormat("yyyyMMddHHmmss");
 		// 文件名格式化
 		String filename = String.format("./backup/backup_%s", ft.format(Calendar.getInstance().getTime()));
+		File sqlFile = new File(filename + ".sql");
 		// 导出文件
 		Script.process(url, user, pw, filename + ".sql", "", "");
+		logger.info("SQL文件导出成功");
 		// 加密压缩
 		ZipParameters zipParameters = new ZipParameters();
 		zipParameters.setEncryptFiles(true);
 		zipParameters.setEncryptionMethod(EncryptionMethod.AES);
 		zipParameters.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
 		ZipFile zipFile = new ZipFile(filename + ".zip", pw.toCharArray());
-		zipFile.addFile(filename, zipParameters);
+		zipFile.addFile(sqlFile, zipParameters);
 		zipFile.close();
+		sqlFile.delete();
+		logger.info("文件完成压缩");
 	}
 
 	/**

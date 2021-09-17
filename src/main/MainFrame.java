@@ -236,7 +236,10 @@ public class MainFrame extends JFrame implements ActionListener {
 				MessageDialog.showMessage(this, "备份成功！");
 				logger.info("备份成功");
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "备份失败！");
+				MessageDialog.showError(this, "数据库访问失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (IOException e1) {
+				MessageDialog.showError(this, "备份文件写入失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_RESTORE]) {
