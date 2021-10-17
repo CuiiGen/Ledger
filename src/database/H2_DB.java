@@ -105,7 +105,8 @@ public class H2_DB {
 		ZipFile zipFile = new ZipFile(filename + ".zip", pw.toCharArray());
 		zipFile.addFile(sqlFile, zipParameters);
 		zipFile.close();
-		sqlFile.delete();
+//		数据备份后暂时不删除原SQL文件
+//		sqlFile.delete();
 		logger.info("文件完成压缩");
 	}
 
