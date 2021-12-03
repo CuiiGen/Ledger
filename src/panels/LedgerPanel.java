@@ -215,7 +215,7 @@ public class LedgerPanel extends JPanel {
 	public void updateTable() throws SQLException {
 		// 根据筛选条件生成SQL并查询
 		String sql = QueryConditions.getSQL();
-		logger.info("刷新流水表格");
+		logger.info("开始刷新流水表格");
 		h2 = new H2_DB();
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
@@ -254,6 +254,7 @@ public class LedgerPanel extends JPanel {
 		cm.getColumn(4).setMinWidth(100);
 		cm.getColumn(5).setMaxWidth(150);
 		cm.getColumn(5).setMinWidth(130);
+		logger.info("刷新成功");
 	}
 
 	/**

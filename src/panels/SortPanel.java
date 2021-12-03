@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -180,12 +182,13 @@ public class SortPanel extends JPanel implements ActionListener {
 			// 筛选
 			QueryConditions.setIsFuzzy(false);
 			try {
-				if (tx[0].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2}") == false) {
-					throw new ParseException(tx[0].getText(), 0);
-				}
-				if (tx[1].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2}") == false) {
-					throw new ParseException(tx[1].getText(), 0);
-				}
+				SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
+				// 验证起始时间字符串格式是否正确
+				Date date = ft.parse(tx[0].getText());
+				tx[0].setText(ft.format(date));
+				// 验证结束时间字符串格式是否正确
+				date = ft.parse(tx[1].getText());
+				tx[1].setText(ft.format(date));
 				// 设置筛选条件
 				QueryConditions.setStartTime(tx[0].getText());
 				QueryConditions.setStopTime(tx[1].getText());
@@ -212,7 +215,7 @@ public class SortPanel extends JPanel implements ActionListener {
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == tx[2]) {
-			// 筛选结果更新
+			// 模糊搜索结果更新
 			QueryConditions.setFuzzyWord(tx[2].getText());
 			tx[2].setText(null);
 			try {
