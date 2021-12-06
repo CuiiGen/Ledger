@@ -15,6 +15,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.plaf.basic.BasicMenuItemUI;
 import javax.swing.plaf.basic.BasicMenuUI;
 
@@ -30,6 +31,7 @@ import dialogs.MessageDialog;
 import dialogs.TransferDialog;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
+import panels.PlotPanel;
 import panels.QueryConditions;
 import panels.SortPanel;
 import tool.LogHelper;
@@ -113,19 +115,26 @@ public class MainFrame extends JFrame implements ActionListener {
 		m[MENU_HELP].add(mit[ITEM_LOG]);
 		m[MENU_HELP].add(mit[ITEM_ABOUT]);
 
+		// 筛选
+		sortPanel = new SortPanel(this);
+		add(sortPanel, BorderLayout.WEST);
+
+		// 临时面板辅助布局使用
 		JPanel temtPanel = new JPanel(new BorderLayout());
 		add(temtPanel, BorderLayout.CENTER);
-		QueryConditions.init();
+		// 标签面板
+		JTabbedPane tabPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+		tabPane.setFont(font.getFont(12f));
+		temtPanel.add(tabPane, BorderLayout.CENTER);
 		// 账户
 		accounts = new AccountsPanel(this);
 		accounts.setPreferredSize(new Dimension(0, 350));
 		temtPanel.add(accounts, BorderLayout.SOUTH);
 		// 账本
 		ledgerPanel = new LedgerPanel(this);
-		temtPanel.add(ledgerPanel, BorderLayout.CENTER);
-		// 筛选
-		sortPanel = new SortPanel(this);
-		add(sortPanel, BorderLayout.WEST);
+		tabPane.addTab("流水表格", ledgerPanel);
+		PlotPanel aPanel = new PlotPanel();
+		tabPane.addTab("流水表格2", aPanel);
 
 		validate();
 		setVisible(true);
