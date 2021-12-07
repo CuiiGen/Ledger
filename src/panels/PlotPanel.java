@@ -51,7 +51,7 @@ public class PlotPanel extends JPanel {
 		chart = createChart(dataset);
 		// 面板设置
 		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+		chartPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 20));
 		// 布局设置
 		setLayout(new BorderLayout());
 		add(chartPanel, BorderLayout.CENTER);
@@ -96,9 +96,9 @@ public class PlotPanel extends JPanel {
 		// 支持中文
 		StandardChartTheme chartTheme = new StandardChartTheme("CN");
 		// 设置字体
-		chartTheme.setRegularFont(font.getFont(12f));
-		chartTheme.setLargeFont(font.getFont(12f));
-		chartTheme.setSmallFont(font.getFont(12f));
+		chartTheme.setRegularFont(font.getFont(13f));
+		chartTheme.setLargeFont(font.getFont(13f));
+		chartTheme.setSmallFont(font.getFont(13f));
 		// 应用
 		ChartFactory.setChartTheme(chartTheme);
 		// 创建时序图形
@@ -126,6 +126,8 @@ public class PlotPanel extends JPanel {
 		plot.setDomainGridlinePaint(Color.BLACK);
 		// 标题设置
 		chart.setTitle(new TextTitle(""));
+		// 移除legend
+		chart.removeLegend();
 		return chart;
 	}
 
