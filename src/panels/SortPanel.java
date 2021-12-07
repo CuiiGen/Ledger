@@ -170,9 +170,12 @@ public class SortPanel extends JPanel implements ActionListener {
 			tag.addItem(rs.getString("label"));
 		}
 		h2.close();
+		// 起始和结束时间
 		tx[0].setText(QueryConditions.getStartTime());
 		tx[1].setText(QueryConditions.getStopTime());
+		// 收入或支出
 		type.setSelectedIndex(QueryConditions.getType());
+		// 标签
 		tag.setSelectedItem(QueryConditions.getLabel());
 	}
 

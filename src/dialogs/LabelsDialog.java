@@ -86,9 +86,11 @@ public class LabelsDialog extends JDialog implements ActionListener {
 							table.getValueAt(r, c), pre);
 					logger.info("标签重复，已合并重复标签");
 				}
+				// 如果修改涉及到当前筛选条件则进行相应更改
 				if (QueryConditions.getLabel().equals(pre)) {
 					QueryConditions.setLabel(table.getValueAt(r, c).toString());
 				}
+				// 执行修改
 				logger.info(sql);
 				h2.execute(sql);
 				h2.close();
@@ -329,6 +331,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			logger.info(sql);
 			h2.execute(sql);
 			h2.close();
+			// 如果待删除标签涉及到当前筛选条件则将筛选条件修改为全部
 			if (QueryConditions.getLabel().equals(l)) {
 				QueryConditions.setLabel("全部");
 			}
@@ -347,20 +350,10 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private static boolean isTagUnique(String tag) throws SQLException {
-		String sql = String.format("SELECT * FROM `labels` WHERE `label`='%s'", tag);
-		// 静态类定义对象
 		H2_DB h2 = new H2_DB();
-		Logger logger = LogManager.getLogger();
-		// 日志输出
-		logger.info(sql);
-		// 执行
-		h2.execute(sql);
-		// 结果
-		ResultSet rs = h2.query(sql);
-		rs.last();
-		int row = rs.getRow();
-		h2.close();
-		return row == 0;
+		boolean result = h2.isUnique("labels", "label", tag);
+		h2.close(); 
+		return result;
 	}
 
 	@Override

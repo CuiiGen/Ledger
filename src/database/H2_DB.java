@@ -81,6 +81,28 @@ public class H2_DB {
 	}
 
 	/**
+	 * 判断表中某一字段是否存在与待检验字符串的重复值
+	 * 
+	 * @param table 表名
+	 * @param key   字段名
+	 * @param value 待检验字符串
+	 * @throws SQLException
+	 */
+	public boolean isUnique(String table, String key, String value) throws SQLException {
+		String sql = String.format("SELECT * FROM `%s` WHERE `%s`='%s'", table, key, value);
+		// 日志输出
+		logger.info(sql);
+		// 执行
+		execute(sql);
+		// 结果
+		ResultSet rs = query(sql);
+		rs.last();
+		// 获得所有行
+		int row = rs.getRow();
+		return row == 0;
+	}
+
+	/**
 	 * 备份
 	 * 
 	 * @throws SQLException

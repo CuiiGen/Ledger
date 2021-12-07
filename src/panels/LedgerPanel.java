@@ -105,7 +105,7 @@ public class LedgerPanel extends JPanel {
 					try {
 						if (showInfoDialog(array.get(table.getSelectedRow()))) {
 							logger.info("有信息修改，刷新页面");
-							f.updatePanel();
+							f.updateAllPanel();
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
@@ -125,7 +125,7 @@ public class LedgerPanel extends JPanel {
 						logger.info(sql);
 						h2.execute(sql);
 						h2.close();
-						updateTable();
+						f.updateLedger();
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						logger.info(LogHelper.exceptionToString(e1));
@@ -314,6 +314,8 @@ public class LedgerPanel extends JPanel {
 	}
 
 	/**
+	 * 打开流水记录编辑界面
+	 * 
 	 * @param rds
 	 * @return
 	 * @throws SQLException

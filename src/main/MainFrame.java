@@ -146,24 +146,27 @@ public class MainFrame extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * 更新两表的信息
+	 * 更新表格及折线图的信息
 	 * 
 	 * @throws SQLException
 	 */
-	public void updatePanel() throws SQLException {
-		logger.info("账户和流水表更新");
+	public void updateAllPanel() throws SQLException {
+		logger.info("账户和流水表更新，以及折线图更新");
+		// 账户
 		accounts.updateTable();
-		ledgerPanel.updateTable();
+		// 流水记录相关
+		updateLedger();
 	}
 
 	/**
-	 * 筛选流水及折线图
+	 * 更新流水记录表及折线图
 	 * 
 	 * @throws SQLException
 	 */
 	public void updateLedger() throws SQLException {
-		logger.info("流水表及折线图更新");
+		// 流水
 		ledgerPanel.updateTable();
+		// 折线图
 		outPanel.updatePlot();
 		inPanel.updatePlot();
 	}
@@ -179,7 +182,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			try {
 				new LabelsDialog(this, getLocation(), getSize());
 				sortPanel.updateContent();
-				ledgerPanel.updateTable();
+				// 更新表格及折线图
+				updateLedger();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -190,7 +194,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			try {
 				if (accounts.deleteAccount()) {
 					logger.info("已确认删除");
-					updatePanel();
+					updateLedger();
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，删除失败！");
@@ -202,7 +206,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			try {
 				if (ledgerPanel.deleteLedger()) {
 					logger.info("已确认删除");
-					updatePanel();
+					updateAllPanel();
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，删除失败！");
@@ -226,7 +230,8 @@ public class MainFrame extends JFrame implements ActionListener {
 				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null);
 				if (infoDialog.showDialog()) {
 					logger.info("记账成功");
-					this.updatePanel();
+					// 界面更新
+					updateAllPanel();
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，记录失败！");
@@ -239,7 +244,8 @@ public class MainFrame extends JFrame implements ActionListener {
 				TransferDialog transferDialog = new TransferDialog(this, getLocation(), getSize());
 				if (transferDialog.showDialog()) {
 					logger.info("转账成功");
-					this.updatePanel();
+					// 界面更新
+					updateAllPanel();
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，记录失败！");
@@ -272,12 +278,14 @@ public class MainFrame extends JFrame implements ActionListener {
 				if (file.exists()) {
 					// 删除临时数据库
 					logger.info("数据库已恢复");
-					MessageDialog.showMessage(this, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
 					distFile.delete();
 					temp.renameTo(distFile);
-					// 更新页面
+					MessageDialog.showMessage(this, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
+
+					// 筛选条件重置
 					QueryConditions.init();
-					updatePanel();
+					// 更新页面
+					updateAllPanel();
 					sortPanel.updateContent();
 					MessageDialog.showMessage(this, "页面刷新完成！");
 				} else {

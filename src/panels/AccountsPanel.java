@@ -62,26 +62,39 @@ public class AccountsPanel extends Panel {
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
 			try {
+				String newName = table.getValueAt(r, c).toString();
+				// 检验账户名是否重复
+				if (isNameUnique(newName) == false) {
+					MessageDialog.showError(f, "注意账户名不可重复！");
+					logger.debug("输入了重复账户名：" + newName);
+					// 重置表格
+					updateTable();
+					return;
+				}
 				if (r == array.size() - 1) {
 					// 新建
 					logger.info("准备新建账户");
 					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("点击新建账户")) {
-						logger.error("账户名不能空或点击新建账户");
+						logger.error("账户名不能空或为点击新建账户");
 					} else {
 						logger.info("账户名非禁止，可以新建");
-						insertAccount(table.getValueAt(r, c).toString());
+						insertAccount(newName);
+						updateTable();
 					}
 				} else {
 					// 更新
-					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'",
-							table.getValueAt(r, c), pre);
+					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'", newName, pre);
 					h2 = new H2_DB();
 					logger.info("更新账户名");
 					logger.info(sql);
 					h2.execute(sql);
 					h2.close();
+					// 如果账户名修改设计筛选条件中账户名则进行更新
+					if (QueryConditions.getName().equals(pre)) {
+						QueryConditions.setName(newName);
+					}
+					f.updateLedger();
 				}
-				f.updatePanel();
 			} catch (SQLException e1) {
 				MessageDialog.showError(f, "数据库访问错误，注意账户名不可重复！");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -256,6 +269,20 @@ public class AccountsPanel extends Panel {
 	}
 
 	/**
+	 * 检验当前账户名是否重复
+	 * 
+	 * @param name
+	 * @return
+	 * @throws SQLException
+	 */
+	private boolean isNameUnique(String name) throws SQLException {
+		H2_DB h2 = new H2_DB();
+		boolean result = h2.isUnique("accounts", "name", name);
+		h2.close();
+		return result;
+	}
+
+	/**
 	 * 删除账户
 	 * 
 	 * @return
@@ -269,17 +296,26 @@ public class AccountsPanel extends Panel {
 		if (r < 0) {
 			return false;
 		}
-		if (array.get(r).getAmount() != 0) {
-			MessageDialog.showError(f, "账户余额清零前禁止删除！");
+		// 判断是否存在关联记录决定是否可删除
+		h2 = new H2_DB();
+		boolean independent = h2.isUnique("ledger", "name", array.get(r).getName());
+		h2.close();
+		if (independent == false) {
+			MessageDialog.showError(f, "当前账户存在关联记录，禁止删除");
 			return false;
 		}
+		// 用户确认删除
 		if (MessageDialog.showConfirm(f, "确认删除当前账户？\r\n注意仅在账户无关联流水，且余额清零时可删除！") == JOptionPane.YES_OPTION) {
 			logger.info("确认删除流水记录");
 			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
-			h2 = new H2_DB();
 			logger.info(sql);
+			h2 = new H2_DB();
 			h2.execute(sql);
 			h2.close();
+			// 如果删除账户涉及当前筛选条件则改为全部
+			if (QueryConditions.getName().equals(array.get(r).getName())) {
+				QueryConditions.setName("%");
+			}
 			updateTable();
 			return true;
 		}
