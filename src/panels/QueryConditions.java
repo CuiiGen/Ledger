@@ -181,7 +181,7 @@ public class QueryConditions {
 		}
 		// SQL语句
 		sql = String.format(
-				"SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM-dd') as x, sum(`amount`) as y FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and `type`='%d' GROUP BY x ORDER BY x ASC;",
+				"SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM-dd') as x, sum(`amount`) as y FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and `type`='%d' and `isValid`='o' GROUP BY x ORDER BY x ASC;",
 				name, startTime, stopTime, sortLabel, aType);
 		return sql;
 	}

@@ -20,5 +20,4 @@ public class AppLauncher {
 			System.exit(0);
 		}
 	}
-
 }

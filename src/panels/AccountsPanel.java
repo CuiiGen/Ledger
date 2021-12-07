@@ -273,7 +273,7 @@ public class AccountsPanel extends Panel {
 			MessageDialog.showError(f, "账户余额清零前禁止删除！");
 			return false;
 		}
-		if (MessageDialog.showConfirm(f, "确认删除当前账户？\r\n注意仅在账户无关联流水，即余额清零时可删除！") == JOptionPane.YES_OPTION) {
+		if (MessageDialog.showConfirm(f, "确认删除当前账户？\r\n注意仅在账户无关联流水，且余额清零时可删除！") == JOptionPane.YES_OPTION) {
 			logger.info("确认删除流水记录");
 			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
 			h2 = new H2_DB();

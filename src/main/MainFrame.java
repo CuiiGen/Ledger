@@ -310,6 +310,7 @@ public class MainFrame extends JFrame implements ActionListener {
 class DefaultMemuItemUI extends BasicMenuItemUI {
 	public DefaultMemuItemUI(Color bgColor, Color fgColor) {
 		super.selectionBackground = bgColor;
+		super.selectionForeground = fgColor;
 	}
 }
 

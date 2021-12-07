@@ -56,6 +56,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		private static final long serialVersionUID = 8938369871665016790L;
 
 		public void editingStopped(ChangeEvent e) {
+			logger.info("进入标签修改模式");
 			int r = getEditingRow();
 			int c = getEditingColumn();
 			// 旧值
@@ -66,9 +67,6 @@ public class LabelsDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "默认标签，禁止修改！");
 				return;
 			}
-			if (QueryConditions.getLabel().equals(pre)) {
-				QueryConditions.setLabel(table.getValueAt(r, c).toString());
-			}
 			try {
 				h2 = new H2_DB();
 				String sql = "";
@@ -76,16 +74,20 @@ public class LabelsDialog extends JDialog implements ActionListener {
 					// 修改后标签无重复
 					sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'", table.getValueAt(r, c),
 							pre);
-					logger.info("标签不重复");
+					logger.info("标签不重复，已修改");
 				} else {
 					// 修改后标签重复
 					if (MessageDialog.showConfirm(this, "修改后标签重复，是否整合两重复标签？") == JOptionPane.NO_OPTION) {
+						logger.info("取消操作");
 						return;
 					}
 					sql = String.format(
 							"UPDATE `ledger` SET `label`='%1$s' WHERE `label`='%2$s';DELETE FROM `labels` WHERE `label`='%2$s'",
 							table.getValueAt(r, c), pre);
-					logger.info("标签重复");
+					logger.info("标签重复，已合并重复标签");
+				}
+				if (QueryConditions.getLabel().equals(pre)) {
+					QueryConditions.setLabel(table.getValueAt(r, c).toString());
 				}
 				logger.info(sql);
 				h2.execute(sql);
@@ -166,13 +168,10 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	private DefaultFont font = new DefaultFont();
 	// 日志
 	private Logger logger = LogManager.getLogger();
-	// 父窗口
-	private MainFrame f = null;
 
 	public LabelsDialog(final MainFrame frame, final Point p, final Dimension d) throws SQLException {
 		// 父类构造函数
 		super(frame, "标签管理", true);
-		f = frame;
 		// 布局管理
 		setLayout(null);
 		setResizable(false);
@@ -293,7 +292,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			h2.execute(sql);
 			h2.close();
 		} else {
-			MessageDialog.showError(this, "标签重复");
+			MessageDialog.showError(this, "标签已存在");
 		}
 	}
 
@@ -319,7 +318,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			return false;
 		}
 		if (array.get(r).getAmount() != 0) {
-			MessageDialog.showError(f, "标签存在对应记录，禁止删除！");
+			MessageDialog.showError(this, "标签存在对应记录，禁止删除！");
 			return false;
 		}
 		// 确认删除
