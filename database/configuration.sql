@@ -104,3 +104,16 @@ WHERE
 RETURN 1;
 
 END;
+
+-- 每日流水查询
+SELECT
+    FORMATDATETIME(`CREATETIME`, 'yyyy-MM-dd') as x,
+    sum(`amount`) as y
+FROM
+    `ledger`
+WHERE
+    `type` = 1
+GROUP BY
+    x
+ORDER BY
+    x;

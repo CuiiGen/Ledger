@@ -61,6 +61,8 @@ public class MainFrame extends JFrame implements ActionListener {
 	private AccountsPanel accounts = null;
 	private LedgerPanel ledgerPanel = null;
 	private SortPanel sortPanel = null;
+	// 折线图
+	private PlotPanel outPanel = null, inPanel = null;;
 
 	public MainFrame() throws SQLException {
 
@@ -133,8 +135,10 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 账本
 		ledgerPanel = new LedgerPanel(this);
 		tabPane.addTab("流水表格", ledgerPanel);
-		PlotPanel aPanel = new PlotPanel();
-		tabPane.addTab("流水表格2", aPanel);
+		outPanel = new PlotPanel(-1);
+		tabPane.addTab("消费曲线", outPanel);
+		inPanel = new PlotPanel(1);
+		tabPane.addTab("收入曲线", inPanel);
 
 		validate();
 		setVisible(true);
@@ -142,23 +146,26 @@ public class MainFrame extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * 更新面板信息
+	 * 更新两表的信息
 	 * 
 	 * @throws SQLException
 	 */
 	public void updatePanel() throws SQLException {
-		logger.info("主界面中更新面板内容");
+		logger.info("账户和流水表更新");
 		accounts.updateTable();
 		ledgerPanel.updateTable();
 	}
 
 	/**
-	 * 筛选流水
+	 * 筛选流水及折线图
 	 * 
 	 * @throws SQLException
 	 */
 	public void updateLedger() throws SQLException {
+		logger.info("流水表及折线图更新");
 		ledgerPanel.updateTable();
+		outPanel.updatePlot();
+		inPanel.updatePlot();
 	}
 
 	@Override
@@ -303,7 +310,6 @@ public class MainFrame extends JFrame implements ActionListener {
 class DefaultMemuItemUI extends BasicMenuItemUI {
 	public DefaultMemuItemUI(Color bgColor, Color fgColor) {
 		super.selectionBackground = bgColor;
-		super.selectionForeground = fgColor;
 	}
 }
 

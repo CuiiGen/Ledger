@@ -161,4 +161,28 @@ public class QueryConditions {
 		}
 		return sql;
 	}
+
+	/**
+	 * 返回每日总消费和收入流水
+	 * 
+	 * @param aType 1表示收入，-1表示支出
+	 * @return
+	 */
+	public static String getPlotSql(int aType) {
+		String sql = "";
+		String sortLabel = null;
+		// 标签
+		if (label.equals("  ")) {
+			sortLabel = "label IS NULL";
+		} else if (label.equals("全部")) {
+			sortLabel = "1 = 1";
+		} else {
+			sortLabel = String.format("label LIKE '%s'", label);
+		}
+		// SQL语句
+		sql = String.format(
+				"SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM-dd') as x, sum(`amount`) as y FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and `type`='%d' GROUP BY x ORDER BY x ASC;",
+				name, startTime, stopTime, sortLabel, aType);
+		return sql;
+	}
 }
