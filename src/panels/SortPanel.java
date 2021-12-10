@@ -51,6 +51,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	private MainFrame f = null;
 
 	public SortPanel(MainFrame frame) throws SQLException {
+		logger.info("查询面板初始化 - 开始");
 		// 父窗口指针
 		f = frame;
 		// 输入窗口
@@ -150,6 +151,7 @@ public class SortPanel extends JPanel implements ActionListener {
 
 		Border tb1 = BorderFactory.createMatteBorder(0, 0, 0, 3, ThemeColor.BACKGROUND);
 		setBorder(tb1);
+		logger.info("查询面板初始化 - 完成");
 	}
 
 	/**
@@ -183,6 +185,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btn[0]) {
 			// 筛选
+			logger.info("根据筛选条件刷新表格 - 开始");
 			QueryConditions.setIsFuzzy(false);
 			try {
 				SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
@@ -199,6 +202,7 @@ public class SortPanel extends JPanel implements ActionListener {
 				QueryConditions.setType(type.getSelectedIndex());
 				// 筛选结果更新
 				f.updateLedger();
+				logger.info("根据筛选条件刷新表格 - 完成\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(f, "数据库访问错误，查询失败！");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -208,21 +212,25 @@ public class SortPanel extends JPanel implements ActionListener {
 			}
 		} else if (e.getSource() == btn[1]) {
 			// 重置筛选
+			logger.info("重置筛选页面 - 开始");
 			QueryConditions.setIsFuzzy(false);
 			try {
 				QueryConditions.init();
 				updateContent();
 				f.updateLedger();
+				logger.info("重置筛选页面 - 完成\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，查询失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == tx[2]) {
 			// 模糊搜索结果更新
+			logger.info("模糊筛选 - 开始");
 			QueryConditions.setFuzzyWord(tx[2].getText());
 			tx[2].setText(null);
 			try {
 				f.updateLedger();
+				logger.info("模糊筛选 - 完成\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(f, "数据库访问错误，查询失败！");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -235,12 +243,12 @@ public class SortPanel extends JPanel implements ActionListener {
 			} else {
 				QueryConditions.nextMonth(1);
 				logger.info(String.format("下个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
-
 			}
 			tx[0].setText(QueryConditions.getStartTime());
 			tx[1].setText(QueryConditions.getStopTime());
 			try {
 				f.updateLedger();
+				logger.info("月份切换成功\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(f, "数据库访问错误，查询失败！");
 				logger.error(LogHelper.exceptionToString(e1));

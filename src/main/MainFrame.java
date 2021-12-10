@@ -67,6 +67,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public MainFrame() throws SQLException {
 
 		super("我的账本Ledger");
+		logger.info("主界面初始化 - 开始");
 
 		// 设置窗口显示在正中央占比0.7
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -140,9 +141,12 @@ public class MainFrame extends JFrame implements ActionListener {
 		inPanel = new PlotPanel(1);
 		tabPane.addTab("收入曲线", inPanel);
 
+		// 显示窗口
 		validate();
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+		logger.info("主界面初始化 - 完成\n");
 	}
 
 	/**
@@ -151,7 +155,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	 * @throws SQLException
 	 */
 	public void updateAllPanel() throws SQLException {
-		logger.info("账户和流水表更新，以及折线图更新");
+		logger.info("主界面中账户和流水表更新，以及折线图更新");
 		// 账户
 		accounts.updateTable();
 		// 流水记录相关
@@ -164,6 +168,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	 * @throws SQLException
 	 */
 	public void updateLedger() throws SQLException {
+		logger.info("主界面中流水表和折线图更新");
 		// 流水
 		ledgerPanel.updateTable();
 		// 折线图
@@ -175,7 +180,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.5.5，由iamroot开发\r\n时间：2021年12月3日\r\n邮箱：cuigen@buaa.edu.cn");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.4.1，由iamroot开发\r\n时间：2021年12月3日\r\n邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
@@ -184,17 +189,20 @@ public class MainFrame extends JFrame implements ActionListener {
 				sortPanel.updateContent();
 				// 更新表格及折线图
 				updateLedger();
+				logger.info("关闭对话框，刷新界面\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_ACCOUNT]) {
 			// 删除账户
-			logger.info("是否删除账户");
+			logger.info("点击删除账户的菜单项，询问是否删除账户？");
 			try {
 				if (accounts.deleteAccount()) {
-					logger.info("已确认删除");
 					updateLedger();
+					logger.info("已确认删除\n");
+				} else {
+					logger.info("已取消删除\n");
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，删除失败！");
@@ -202,11 +210,13 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == mit[ITEM_LEDGER]) {
 			// 删除流水
-			logger.info("是否删除流水");
+			logger.info("点击删除流水的菜单项，询问是否删除流水？");
 			try {
 				if (ledgerPanel.deleteLedger()) {
-					logger.info("已确认删除");
 					updateAllPanel();
+					logger.info("已确认删除\n");
+				} else {
+					logger.info("已取消删除\n");
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，删除失败！");
@@ -217,7 +227,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			logger.info("导出数据至CSV中");
 			try {
 				ledgerPanel.export();
-				logger.info("导出成功");
+				logger.info("导出成功\n");
 				MessageDialog.showMessage(this, "成功导出至桌面下“流水.csv”！");
 			} catch (IOException e1) {
 				MessageDialog.showError(this, "导出失败！");
@@ -225,13 +235,15 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == mit[ITEM_RECORD]) {
 			// 记一笔账
-			logger.info("打开记账对话框，未输出成功便为未记账");
+			logger.info("打开记账对话框");
 			try {
 				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null);
 				if (infoDialog.showDialog()) {
-					logger.info("记账成功");
 					// 界面更新
 					updateAllPanel();
+					logger.info("记账成功\n");
+				} else {
+					logger.info("记账取消\n");
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，记录失败！");
@@ -243,10 +255,11 @@ public class MainFrame extends JFrame implements ActionListener {
 			try {
 				TransferDialog transferDialog = new TransferDialog(this, getLocation(), getSize());
 				if (transferDialog.showDialog()) {
-					logger.info("转账成功");
 					// 界面更新
 					updateAllPanel();
+					logger.info("转账成功\n");
 				}
+				logger.info("取消转账\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，记录失败！");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -256,7 +269,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			try {
 				H2_DB.backup();
 				MessageDialog.showMessage(this, "备份成功！");
-				logger.info("备份成功");
+				logger.info("数据库备份成功\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问失败！");
 				logger.error(LogHelper.exceptionToString(e1));
@@ -270,27 +283,30 @@ public class MainFrame extends JFrame implements ActionListener {
 			File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db"),
 					temp = new File("./database/Ledger_temp.mv.db");
 			try {
+				logger.info("准备恢复数据库，首先保存原数据库为temp.mv.db");
 				temp.delete();
 				file.renameTo(temp);
 				// 恢复数据
+				logger.info("即将选择SQL文件进行恢复");
 				H2_DB.restore();
 				// 判断是否恢复
 				if (file.exists()) {
 					// 删除临时数据库
-					logger.info("数据库已恢复");
+					logger.info("Ledger.mv.db存在，待刷新页面");
 					distFile.delete();
 					temp.renameTo(distFile);
 					MessageDialog.showMessage(this, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
-
 					// 筛选条件重置
 					QueryConditions.init();
 					// 更新页面
 					updateAllPanel();
 					sortPanel.updateContent();
 					MessageDialog.showMessage(this, "页面刷新完成！");
+					logger.info("页面刷新成功\n");
 				} else {
 					temp.renameTo(file);
-					logger.info("数据库未恢复，复原旧数据库");
+					logger.info("Ledger.mv.db存在不存在，复原旧数据库\n");
+					MessageDialog.showMessage(this, "数据库未恢复，复原旧数据库");
 				}
 			} catch (SQLException e1) {
 				// 日志
@@ -298,11 +314,12 @@ public class MainFrame extends JFrame implements ActionListener {
 				// 删除文件
 				file.delete();
 				temp.renameTo(file);
-				MessageDialog.showError(this, "页面刷新失败，恢复旧数据库！");
+				logger.info("恢复过程出错，复原旧数据库\n");
+				MessageDialog.showError(this, "恢复过程出错，恢复旧数据库！");
 			}
 		} else if (e.getSource() == mit[ITEM_LOG]) {
 			try {
-				logger.info("查看日志");
+				logger.info("查看日志\n");
 				File file = new File("./database/Ledger.trace.db");
 				if (file.exists()) {
 					Runtime.getRuntime().exec("notepad ./database/Ledger.trace.db");

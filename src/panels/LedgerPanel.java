@@ -104,8 +104,8 @@ public class LedgerPanel extends JPanel {
 					logger.info("打开流水记录详情对话框");
 					try {
 						if (showInfoDialog(array.get(table.getSelectedRow()))) {
-							logger.info("有信息修改，刷新页面");
 							f.updateAllPanel();
+							logger.info("有信息修改，刷新页面\n");
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
@@ -126,6 +126,7 @@ public class LedgerPanel extends JPanel {
 						h2.execute(sql);
 						h2.close();
 						f.updateLedger();
+						logger.info("\n");
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						logger.info(LogHelper.exceptionToString(e1));
@@ -165,6 +166,7 @@ public class LedgerPanel extends JPanel {
 	private JLabel balence = new JLabel();
 
 	public LedgerPanel(MainFrame frame) throws SQLException {
+		logger.info("流水表格初始化 - 开始");
 		// 布局管理器
 		setLayout(new BorderLayout());
 		// 父窗口
@@ -205,6 +207,7 @@ public class LedgerPanel extends JPanel {
 		balence.setBackground(Color.WHITE);
 		balence.setHorizontalAlignment(JLabel.RIGHT);
 		add(balence, BorderLayout.NORTH);
+		logger.info("流水表格初始化 - 完成");
 	}
 
 	/**
@@ -215,7 +218,7 @@ public class LedgerPanel extends JPanel {
 	public void updateTable() throws SQLException {
 		// 根据筛选条件生成SQL并查询
 		String sql = QueryConditions.getSQL();
-		logger.info("开始刷新流水表格");
+		logger.info("流水表格更新");
 		h2 = new H2_DB();
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
@@ -254,7 +257,6 @@ public class LedgerPanel extends JPanel {
 		cm.getColumn(4).setMinWidth(100);
 		cm.getColumn(5).setMaxWidth(150);
 		cm.getColumn(5).setMinWidth(130);
-		logger.info("刷新成功");
 	}
 
 	/**

@@ -139,10 +139,13 @@ public class H2_DB {
 	 */
 	public static void restore() throws SQLException {
 		File file = FileChooserDialog.openFileChooser(null);
+		Logger logger = LogManager.getLogger();
 		if (file != null) {
-			LogManager.getLogger().info("待恢复文件路径：" + file.getAbsolutePath());
+			logger.info("待恢复文件路径：" + file.getAbsolutePath());
 			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
 			checkusers();
+		} else {
+			logger.info("未选中任何SQL文件，待恢复为原数据库");
 		}
 	}
 
@@ -154,6 +157,7 @@ public class H2_DB {
 	public static void checkusers() throws SQLException {
 		H2_DB h2 = new H2_DB();
 		String sql = "SELECT * FROM INFORMATION_SCHEMA.USERS";
+		LogManager.getLogger().info(sql);
 		ResultSet rs = h2.query(sql);
 		// 用户名列表
 		ArrayList<String> list = new ArrayList<>();

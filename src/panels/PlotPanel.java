@@ -44,6 +44,7 @@ public class PlotPanel extends JPanel {
 	private Logger logger = LogManager.getLogger();
 
 	public PlotPanel(int aType) throws SQLException {
+		logger.info("每日流水图初始化 - 完成");
 		type = aType;
 		// 获取数据
 		XYDataset dataset = createDataset();
@@ -55,7 +56,7 @@ public class PlotPanel extends JPanel {
 		// 布局设置
 		setLayout(new BorderLayout());
 		add(chartPanel, BorderLayout.CENTER);
-		logger.info("每日流水图初始化，type = " + aType);
+		logger.info("每日流水图初始化 - 完成，type = " + aType);
 	}
 
 	/**

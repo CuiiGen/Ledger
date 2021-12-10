@@ -66,26 +66,27 @@ public class AccountsPanel extends Panel {
 				// 检验账户名是否重复
 				if (isNameUnique(newName) == false) {
 					MessageDialog.showError(f, "注意账户名不可重复！");
-					logger.debug("输入了重复账户名：" + newName);
+					logger.error("输入了重复账户名：" + newName);
 					// 重置表格
 					updateTable();
 					return;
 				}
+				logger.info("经校验，输入的账户名当前数据库中不存在，可用");
 				if (r == array.size() - 1) {
 					// 新建
 					logger.info("准备新建账户");
 					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("点击新建账户")) {
-						logger.error("账户名不能空或为点击新建账户");
+						logger.error("账户名不能空或为点击新建账户\n");
 					} else {
-						logger.info("账户名非禁止，可以新建");
 						insertAccount(newName);
 						updateTable();
+						logger.info("账户名非禁止，新建成功\n");
 					}
 				} else {
 					// 更新
+					logger.info("更新账户名");
 					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'", newName, pre);
 					h2 = new H2_DB();
-					logger.info("更新账户名");
 					logger.info(sql);
 					h2.execute(sql);
 					h2.close();
@@ -94,6 +95,7 @@ public class AccountsPanel extends Panel {
 						QueryConditions.setName(newName);
 					}
 					f.updateLedger();
+					logger.info("账户名更新成功\n");
 				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(f, "数据库访问错误，注意账户名不可重复！");
@@ -183,6 +185,7 @@ public class AccountsPanel extends Panel {
 	private MainFrame f = null;
 
 	public AccountsPanel(MainFrame frame) throws SQLException {
+		logger.info("账户表格初始化 - 开始");
 		// 布局管理
 		setLayout(new BorderLayout());
 		// 父窗口
@@ -226,6 +229,7 @@ public class AccountsPanel extends Panel {
 		setBackground(Color.WHITE);
 		table.setBackground(Color.WHITE);
 		validate();
+		logger.info("账户表格初始化 - 完成");
 	}
 
 	/**
