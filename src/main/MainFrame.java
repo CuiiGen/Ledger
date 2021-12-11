@@ -258,8 +258,9 @@ public class MainFrame extends JFrame implements ActionListener {
 					// 界面更新
 					updateAllPanel();
 					logger.info("转账成功\n");
+				} else {
+					logger.info("取消转账\n");
 				}
-				logger.info("取消转账\n");
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问错误，记录失败！");
 				logger.error(LogHelper.exceptionToString(e1));
