@@ -66,7 +66,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		setLayout(null);
 		setResizable(false);
 		// 窗口显示位置
-		final int w = 440, h = 350;
+		final int w = 440, h = 370;
 		setBounds(p.x + (d.width - w) / 2, p.y + (d.height - h) / 2, w, h);
 		// 标签
 		JLabel[] l = new JLabel[6];
