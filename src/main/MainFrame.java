@@ -16,14 +16,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.plaf.basic.BasicMenuItemUI;
-import javax.swing.plaf.basic.BasicMenuUI;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
 import design.DefaultFont;
+import design.DefaultMemuItemUI;
+import design.DefaultMenuUI;
 import design.ThemeColor;
 import dialogs.InfoDialog;
 import dialogs.LabelsDialog;
@@ -211,17 +210,6 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_LEDGER]) {
 			// 删除流水
 			logger.info("点击删除流水的菜单项，询问是否删除流水？");
-			try {
-				if (ledgerPanel.deleteLedger()) {
-					updateAllPanel();
-					logger.info("已确认删除\n");
-				} else {
-					logger.info("已取消删除\n");
-				}
-			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库访问错误，删除失败！");
-				logger.error(LogHelper.exceptionToString(e1));
-			}
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
 			// 导出
 			logger.info("导出数据至CSV中");
@@ -237,7 +225,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			// 记一笔账
 			logger.info("打开记账对话框");
 			try {
-				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null);
+				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null, false);
 				if (infoDialog.showDialog()) {
 					// 界面更新
 					updateAllPanel();
@@ -330,19 +318,5 @@ public class MainFrame extends JFrame implements ActionListener {
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
-	}
-}
-
-class DefaultMemuItemUI extends BasicMenuItemUI {
-	public DefaultMemuItemUI(Color bgColor, Color fgColor) {
-		super.selectionBackground = bgColor;
-		super.selectionForeground = fgColor;
-	}
-}
-
-class DefaultMenuUI extends BasicMenuUI {
-	public DefaultMenuUI(Color bgColor, Color fgColor) {
-		super.selectionBackground = bgColor;
-		super.selectionForeground = fgColor;
 	}
 }

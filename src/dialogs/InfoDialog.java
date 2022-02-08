@@ -42,8 +42,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 	// 下拉列表
 	private JComboBox<String> account = new JComboBox<>(), type = new JComboBox<>(), label = new JComboBox<>();
 	// 按钮
-	private JButton[] btn = new JButton[5];
-	private static int BUTTON_INSERT = 0, BUTTON_SAVE = 1, BUTTON_REFUND = 2, BUTTON_DEL = 3, BUTTON_EXIT = 4;
+	private JButton[] btn = new JButton[2];
+	private static int BUTTON_OK = 0, BUTTON_EXIT = 1;
 	// 字体
 	private DefaultFont font = new DefaultFont();
 	// 数据库
@@ -54,9 +54,12 @@ public class InfoDialog extends JDialog implements ActionListener {
 	private boolean flag = false;
 
 	// 保存流水记录方便删除和修改
-	RecordStructure rds = null;
+	private RecordStructure rds = null;
+	// 判断是否为退款窗口，否则则是修改信息窗口
+	private boolean isRefund = false;
 
-	public InfoDialog(MainFrame frame, Point p, Dimension d, RecordStructure rds) throws SQLException {
+	public InfoDialog(MainFrame frame, Point p, Dimension d, RecordStructure rds, boolean isRefund)
+			throws SQLException {
 		// 父类构造函数
 		super(frame, "流水记录信息新建或设置", true);
 		// 布局设置
@@ -131,8 +134,21 @@ public class InfoDialog extends JDialog implements ActionListener {
 		label.setOpaque(true);
 		label.setBackground(ThemeColor.BLUE);
 		label.setForeground(Color.WHITE);
-		// 按钮设置
-		String[] bstr = { "插入", "保存", "退款", "删除", "退出" };
+		// 确认按钮显示文字及窗口标题设置
+		String btn_label = null;
+		if (rds == null) {
+			setTitle("新建流水");
+			btn_label = "插入";
+		} else if (isRefund) {
+			setTitle("退款信息修改及确认");
+			btn_label = "退款";
+
+		} else {
+			setTitle("流水信息修改");
+			btn_label = "保存";
+		}
+		// 按钮其他设置
+		String[] bstr = { btn_label, "退出" };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
 			btn[i].setFont(font.getFont(1));
@@ -142,18 +158,14 @@ public class InfoDialog extends JDialog implements ActionListener {
 			this.add(btn[i]);
 		}
 		btn[BUTTON_EXIT].setBackground(Color.DARK_GRAY);
-		btn[BUTTON_DEL].setBackground(ThemeColor.ORANGE);
-		if (rds == null) {
-			btn[BUTTON_INSERT].setBounds(130, 270, 80, 30);
-			btn[BUTTON_EXIT].setBounds(230, 270, 80, 30);
-		} else {
-			for (int i = 1; i < bstr.length; i++) {
-				btn[i].setBounds(-70 + 100 * i, 270, 80, 30);
-			}
-		}
-		// 内容设置
-		contentReset(rds);
+		btn[BUTTON_OK].setBounds(130, 270, 80, 30);
+		btn[BUTTON_EXIT].setBounds(230, 270, 80, 30);
 
+		// 内容设置
+		this.rds = rds;
+		this.isRefund = isRefund;
+		contentReset();
+		// 关闭设置
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
 
@@ -170,11 +182,9 @@ public class InfoDialog extends JDialog implements ActionListener {
 	/**
 	 * 根据选中的流水记录更新组件内容
 	 * 
-	 * @param rds 选中的流水记录
 	 * @throws SQLException
 	 */
-	public void contentReset(RecordStructure rds) throws SQLException {
-		this.rds = rds;
+	private void contentReset() throws SQLException {
 		// 时间
 		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 		tx[TX_AMOUNT].setText(null);
@@ -182,14 +192,20 @@ public class InfoDialog extends JDialog implements ActionListener {
 		tx[TX_TIME].setEditable(true);
 		// 若记录非空
 		if (rds != null) {
-			btn[BUTTON_INSERT].setEnabled(false);
-			tx[TX_TIME].setText(rds.getCreatetime());
+			if (isRefund) {
+				// 退款时收支类型及退款标签不可更改
+				tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
+				type.setEnabled(false);
+				label.setEnabled(false);
+			} else {
+				// 修改信息则显示之前时间
+				tx[TX_TIME].setText(rds.getCreatetime());
+			}
 			tx[TX_AMOUNT].setText(String.valueOf(rds.getAmount()));
 			tx[TX_REMARK].setText(rds.getRemark());
 			type.setSelectedIndex(rds.getType() == -1 ? 0 : 1);
 			account.setSelectedItem(rds.getName());
 			label.setSelectedItem(rds.getLabel());
-			tx[TX_TIME].setEditable(false);
 			tx[TX_TIME].setBackground(Color.WHITE);
 		}
 	}
@@ -255,25 +271,28 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * 
 	 * @throws SQLException
 	 */
-	private void refund() throws SQLException {
+	private void refund() throws SQLException, NumberFormatException {
 		logger.info("退款记录保存");
+		// 格式化金额
+		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
+
 		h2 = new H2_DB();
 		// 原纪录备注更改
 		String sql = String.format("UPDATE ledger SET isValid = 'i', remark = '%s' WHERE createtime = '%s'",
-				rds.getRemark() + "：已退款！", rds.getCreatetime());
+				rds.getRemark() + "，已退款！", rds.getCreatetime());
 		logger.info("原纪录备注更改");
 		logger.info(sql);
 		h2.execute(sql);
 		// 插入退款记录
 		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
-				String.format("%1$tF %1$tT", Calendar.getInstance()), rds.getName(), -rds.getType(), rds.getAmount(),
-				"退款", "退款，原流水时间：" + rds.getCreatetime());
+				tx[TX_TIME].getText(), account.getSelectedItem(), rds.getType(), amount, "退款",
+				tx[TX_REMARK].getText() + " 原流水时间：" + rds.getCreatetime());
 		logger.info("插入退款记录");
 		logger.info(sql);
 		h2.execute(sql);
 		// 恢复余额
-		sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
-				rds.getType() * rds.getAmount(), rds.getName());
+		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';",
+				rds.getType() * amount, account.getSelectedItem());
 		logger.info("恢复余额");
 		logger.info(sql);
 		h2.execute(sql);
@@ -282,20 +301,30 @@ public class InfoDialog extends JDialog implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == btn[BUTTON_INSERT]
-				|| rds == null && (e.getSource() == tx[TX_REMARK] || e.getSource() == tx[TX_AMOUNT])) {
+		// 是否确认
+		boolean confirmed = e.getSource() == btn[BUTTON_OK] || e.getSource() == tx[TX_REMARK]
+				|| e.getSource() == tx[TX_AMOUNT], isFormatted = true;
+		// 时间校验和格式化
+		Date date = null;
+		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+				ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
+		try {
+			if (tx[TX_TIME].getText().matches("\\d{14}")) {
+				date = ft2.parse(tx[TX_TIME].getText());
+			} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
+				date = ft1.parse(tx[TX_TIME].getText());
+			} else {
+				isFormatted = false;
+				throw new ParseException(tx[TX_TIME].getText(), 0);
+			}
+		} catch (ParseException e1) {
+			MessageDialog.showError(this, "交易时间输入错误！");
+			logger.error(LogHelper.exceptionToString(e1));
+		}
+		// 操作选择
+		if (isFormatted && rds == null && confirmed) {
 			// 插入
 			try {
-				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-						ft2 = new SimpleDateFormat("yyyyMMddHHmmss");
-				Date date = null;
-				if (tx[TX_TIME].getText().matches("\\d{14}")) {
-					date = ft2.parse(tx[TX_TIME].getText());
-				} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
-					date = ft1.parse(tx[TX_TIME].getText());
-				} else {
-					throw new ParseException(tx[TX_TIME].getText(), 0);
-				}
 				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
 					logger.info("确认插入");
 					insert(date);
@@ -308,33 +337,16 @@ public class InfoDialog extends JDialog implements ActionListener {
 			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
-			} catch (ParseException e1) {
-				MessageDialog.showError(this, "交易时间输入错误！");
-				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == btn[BUTTON_EXIT]) {
 			// 退出
 			flag = false;
 			dispose();
-		} else if (e.getSource() == btn[BUTTON_DEL]) {
-			// 删除
-			try {
-				if (MessageDialog.showConfirm(this, "确认删除？，删除后无法复原！") == JOptionPane.YES_OPTION) {
-					delete();
-					dispose();
-					flag = true;
-				}
-			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库访问失败");
-				logger.error(LogHelper.exceptionToString(e1));
-			}
-		} else if (e.getSource() == btn[BUTTON_SAVE]
-				|| rds != null && (e.getSource() == tx[TX_REMARK] || e.getSource() == tx[TX_AMOUNT])) {
+		} else if (isFormatted && rds != null && isRefund == false && confirmed) {
 			// 更新保存
 			try {
-				SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				delete();
-				insert(ft1.parse(tx[TX_TIME].getText()));
+				insert(date);
 				dispose();
 				flag = true;
 			} catch (SQLException e1) {
@@ -343,11 +355,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
-			} catch (ParseException e1) {
-				MessageDialog.showError(this, "交易时间输入错误！");
-				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (e.getSource() == btn[BUTTON_REFUND]) {
+		} else if (rds != null && isRefund && confirmed) {
 			// 退款
 			try {
 				if (MessageDialog.showConfirm(this, "确认该订单已退款？") == JOptionPane.YES_OPTION) {
@@ -356,7 +365,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 					dispose();
 				}
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				MessageDialog.showError(this, "数据库访问错误，插入失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			} catch (NumberFormatException e1) {
+				MessageDialog.showError(this, "数据格式错误！");
+				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}
 	}

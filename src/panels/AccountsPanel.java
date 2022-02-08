@@ -22,8 +22,6 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.plaf.basic.BasicMenuItemUI;
-import javax.swing.plaf.basic.BasicMenuUI;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -394,19 +392,5 @@ class AccountsModel extends AbstractTableModel {
 		if (columnIndex == 0) {
 			array.get(rowIndex).setName(aValue.toString());
 		}
-	}
-}
-
-class DefaultMemuItemUI extends BasicMenuItemUI {
-	public DefaultMemuItemUI(Color bgColor, Color fgColor) {
-		super.selectionBackground = bgColor;
-		super.selectionForeground = fgColor;
-	}
-}
-
-class DefaultMenuUI extends BasicMenuUI {
-	public DefaultMenuUI(Color bgColor, Color fgColor) {
-		super.selectionBackground = bgColor;
-		super.selectionForeground = fgColor;
 	}
 }

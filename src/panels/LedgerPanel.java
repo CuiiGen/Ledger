@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -15,8 +17,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -32,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
 import design.DefaultFont;
+import design.DefaultMemuItemUI;
 import design.ThemeColor;
 import dialogs.InfoDialog;
 import dialogs.MessageDialog;
@@ -39,7 +44,7 @@ import main.MainFrame;
 import models.RecordStructure;
 import tool.LogHelper;
 
-public class LedgerPanel extends JPanel {
+public class LedgerPanel extends JPanel implements ActionListener {
 
 	/**
 	 * 
@@ -49,6 +54,13 @@ public class LedgerPanel extends JPanel {
 	private ArrayList<RecordStructure> array = new ArrayList<>();
 	// 显示表格
 	private JTable table = new JTable(new RecordsModel(array));
+	// 弹出式菜单
+	private JPopupMenu pop = new JPopupMenu();
+	private JMenuItem[] items = new JMenuItem[2];
+	private static final int ITEM_REFUND = 0, ITEM_DEL = 1;
+
+	// 鼠标所在行
+	int at = -1;
 
 	// 内部类
 	private class CellRenderer extends DefaultTableCellRenderer implements MouseMotionListener, MouseListener {
@@ -56,9 +68,6 @@ public class LedgerPanel extends JPanel {
 		 * 
 		 */
 		private static final long serialVersionUID = -1108124244265230115L;
-
-		// 鼠标所在行
-		int at = -1;
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -98,12 +107,17 @@ public class LedgerPanel extends JPanel {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			at = table.rowAtPoint(e.getPoint());
+			if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON3) {
+				table.setRowSelectionInterval(at, at);
+				pop.show(e.getComponent(), e.getX(), e.getY());
+			}
 			if (e.getClickCount() == 2) {
 				if (table.getSelectedColumn() > 0) {
 					// 打开流水记录详情对话框
 					logger.info("打开流水记录详情对话框");
 					try {
-						if (showInfoDialog(array.get(table.getSelectedRow()))) {
+						if (showInfoDialog(array.get(table.getSelectedRow()), false)) {
 							f.updateAllPanel();
 							logger.info("有信息修改，刷新页面\n");
 						}
@@ -207,6 +221,16 @@ public class LedgerPanel extends JPanel {
 		balence.setBackground(Color.WHITE);
 		balence.setHorizontalAlignment(JLabel.RIGHT);
 		add(balence, BorderLayout.NORTH);
+		// 弹出式菜单
+		String[] istr = { " 退款 ", " 删除 " };
+		for (int i = 0; i < istr.length; i++) {
+			items[i] = new JMenuItem(istr[i]);
+			items[i].setFont(font.getFont(14f));
+			items[i].addActionListener(this);
+			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
+			items[i].setBackground(Color.WHITE);
+			pop.add(items[i]);
+		}
 		logger.info("流水表格初始化 - 完成");
 	}
 
@@ -260,12 +284,31 @@ public class LedgerPanel extends JPanel {
 	}
 
 	/**
+	 * 导出数据
+	 * 
+	 * @throws IOException
+	 */
+	public void export() throws IOException {
+		ArrayList<String> list = new ArrayList<>();
+		list.add("#,记账时间,相关账户,类型,金额,标签,备注");
+		for (RecordStructure rds : array) {
+			list.add(rds.toString());
+		}
+		FileSystemView fsv = FileSystemView.getFileSystemView();
+		File file = new File(fsv.getHomeDirectory().getAbsolutePath() + "\\流水.csv");
+		FileOutputStream fos = new FileOutputStream(file);
+		fos.write(String.join("\r\n", list).getBytes("GBK"));
+		fos.flush();
+		fos.close();
+	}
+
+	/**
 	 * 删除当前选中记录
 	 * 
 	 * @return
 	 * @throws SQLException
 	 */
-	public boolean deleteLedger() throws SQLException {
+	private boolean deleteLedger() throws SQLException {
 		// 当前选中行
 		int r = table.getSelectedRow();
 		logger.info("删除当前选中记录，当前选中行为：" + r);
@@ -297,34 +340,53 @@ public class LedgerPanel extends JPanel {
 	}
 
 	/**
-	 * 导出数据
-	 * 
-	 * @throws IOException
-	 */
-	public void export() throws IOException {
-		ArrayList<String> list = new ArrayList<>();
-		list.add("#,记账时间,相关账户,类型,金额,标签,备注");
-		for (RecordStructure rds : array) {
-			list.add(rds.toString());
-		}
-		FileSystemView fsv = FileSystemView.getFileSystemView();
-		File file = new File(fsv.getHomeDirectory().getAbsolutePath() + "\\流水.csv");
-		FileOutputStream fos = new FileOutputStream(file);
-		fos.write(String.join("\r\n", list).getBytes("GBK"));
-		fos.flush();
-		fos.close();
-	}
-
-	/**
 	 * 打开流水记录编辑界面
 	 * 
 	 * @param rds
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean showInfoDialog(RecordStructure rds) throws SQLException {
-		InfoDialog dialog = new InfoDialog(f, f.getLocation(), f.getSize(), rds);
+	private boolean showInfoDialog(RecordStructure rds, boolean isRefund) throws SQLException {
+		InfoDialog dialog = new InfoDialog(f, f.getLocation(), f.getSize(), rds, isRefund);
 		return dialog.showDialog();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == items[ITEM_DEL]) {
+			// 删除
+			try {
+				if (deleteLedger()) {
+					f.updateAllPanel();
+					logger.info("已确认删除\n");
+				} else {
+					logger.info("已取消删除\n");
+				}
+			} catch (SQLException e1) {
+				MessageDialog.showError(this, "数据库访问错误，删除失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else if (e.getSource() == items[ITEM_REFUND]) {
+			// 退款
+			try {
+				RecordStructure r = array.get(table.getSelectedRow()).clone();
+				r.reverseType();
+				r.setLabel("退款");
+				r.setRemark("退款");
+				if (showInfoDialog(r, true)) {
+					f.updateAllPanel();
+					logger.info("已完成退款\n");
+				} else {
+					logger.info("取消退款\n");
+				}
+			} catch (SQLException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
+				MessageDialog.showError(this, "数据库访问错误，退款失败！");
+			} catch (CloneNotSupportedException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
+				e1.printStackTrace();
+			}
+		}
 	}
 }
 
@@ -391,5 +453,4 @@ class RecordsModel extends AbstractTableModel {
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}
-
 }

@@ -1,6 +1,8 @@
 package models;
 
-public class RecordStructure {
+import java.util.Calendar;
+
+public class RecordStructure implements Cloneable {
 
 	private String createtime = null, name = null, label = null, remark = null;
 
@@ -21,6 +23,10 @@ public class RecordStructure {
 
 	}
 
+	public void resetCreatetime() {
+		createtime = String.format("%1$tF %1$tT", Calendar.getInstance());
+	}
+
 	public String getCreatetime() {
 		return createtime;
 	}
@@ -29,12 +35,24 @@ public class RecordStructure {
 		return name;
 	}
 
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
 	public String getLabel() {
 		return label;
 	}
 
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
 	public String getRemark() {
 		return remark;
+	}
+
+	public void reverseType() {
+		type *= -1;
 	}
 
 	public int getType() {
@@ -56,6 +74,11 @@ public class RecordStructure {
 
 	public void setIsValid(boolean isValid) {
 		this.isValid = isValid;
+	}
+
+	@Override
+	public RecordStructure clone() throws CloneNotSupportedException {
+		return (RecordStructure) super.clone();
 	}
 
 }
