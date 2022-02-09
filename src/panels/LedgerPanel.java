@@ -54,6 +54,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 	private ArrayList<RecordStructure> array = new ArrayList<>();
 	// 显示表格
 	private JTable table = new JTable(new RecordsModel(array));
+	private JScrollPane scrollPane = new JScrollPane(table);
+
 	// 弹出式菜单
 	private JPopupMenu pop = new JPopupMenu();
 	private JMenuItem[] items = new JMenuItem[2];
@@ -212,7 +214,6 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		table.addMouseMotionListener(tcr);
 		table.addMouseListener(tcr);
 		// 滑动面板
-		JScrollPane scrollPane = new JScrollPane(table);
 		add(scrollPane, BorderLayout.CENTER);
 		// 余额
 		balence.setFont(font.getFont(2, 13f));
@@ -286,6 +287,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		cm.getColumn(4).setMinWidth(100);
 		cm.getColumn(5).setMaxWidth(150);
 		cm.getColumn(5).setMinWidth(130);
+		
+		scrollPane.getVerticalScrollBar().setValue(0);
 	}
 
 	/**
