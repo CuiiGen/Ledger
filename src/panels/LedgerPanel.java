@@ -91,7 +91,6 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			} else {
 				setBackground(ThemeColor.LIGHT_GRAY);
 			}
-
 			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
 
@@ -112,7 +111,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				table.setRowSelectionInterval(at, at);
 				pop.show(e.getComponent(), e.getX(), e.getY());
 			}
-			if (e.getClickCount() == 2) {
+			if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
 				if (table.getSelectedColumn() > 0) {
 					// 打开流水记录详情对话框
 					logger.info("打开流水记录详情对话框");
@@ -227,10 +226,16 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			items[i] = new JMenuItem(istr[i]);
 			items[i].setFont(font.getFont(14f));
 			items[i].addActionListener(this);
-			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 			items[i].setBackground(Color.WHITE);
-			pop.add(items[i]);
 		}
+		// 退款
+		items[ITEM_REFUND].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
+		pop.add(items[ITEM_REFUND]);
+		pop.addSeparator();
+		// 删除
+		items[ITEM_DEL].setUI(new DefaultMemuItemUI(ThemeColor.RED, Color.WHITE));
+		pop.add(items[ITEM_DEL]);
+
 		logger.info("流水表格初始化 - 完成");
 	}
 
@@ -354,7 +359,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == items[ITEM_DEL]) {
-			// 删除
+			// 删除流水
+			logger.info("点击删除流水的菜单项，询问是否删除流水？");
 			try {
 				if (deleteLedger()) {
 					f.updateAllPanel();

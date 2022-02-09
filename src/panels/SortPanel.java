@@ -61,6 +61,7 @@ public class SortPanel extends JPanel implements ActionListener {
 			tx[i].setFont(font.getFont());
 			tx[i].setSelectedTextColor(Color.WHITE);
 			tx[i].setSelectionColor(ThemeColor.BLUE);
+			tx[i].addActionListener(this);
 		}
 		// 标签设置
 		JLabel[] labels = new JLabel[5];
@@ -145,7 +146,6 @@ public class SortPanel extends JPanel implements ActionListener {
 		// 搜索框
 		vbox.add(labels[4]);
 		vbox.add(tx[2]);
-		tx[2].addActionListener(this);
 
 		setBackground(Color.WHITE);
 
@@ -183,7 +183,7 @@ public class SortPanel extends JPanel implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == btn[0]) {
+		if (e.getSource() == btn[0] || e.getSource() == tx[0] || e.getSource() == tx[1]) {
 			// 筛选
 			logger.info("根据筛选条件刷新表格 - 开始");
 			QueryConditions.setIsFuzzy(false);

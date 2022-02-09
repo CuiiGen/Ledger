@@ -223,10 +223,6 @@ public class AccountsPanel extends Panel {
 		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);
 
-		scrollPane.setBackground(Color.WHITE);
-		setBackground(Color.WHITE);
-		table.setBackground(Color.WHITE);
-		validate();
 		logger.info("账户表格初始化 - 完成");
 	}
 

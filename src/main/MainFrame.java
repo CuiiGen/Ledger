@@ -48,8 +48,8 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	// 菜单及菜单项索引
 	private static final int MENU_RECORD = 0, MENU_MANAGE = 1, MENU_HELP = 2;
-	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_LEDGER = 2, ITEM_EXPORT = 3, ITEM_ABOUT = 4,
-			ITEM_RECORD = 5, ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8, ITEM_LOG = 9;
+	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_EXPORT = 3, ITEM_ABOUT = 4, ITEM_RECORD = 5,
+			ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8, ITEM_LOG = 9;
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
@@ -108,7 +108,6 @@ public class MainFrame extends JFrame implements ActionListener {
 		m[MENU_RECORD].add(mit[ITEM_TRANSFER]);
 		m[MENU_MANAGE].add(mit[ITEM_LABEL]);
 		m[MENU_MANAGE].add(mit[ITEM_ACCOUNT]);
-		m[MENU_MANAGE].add(mit[ITEM_LEDGER]);
 		m[MENU_MANAGE].addSeparator();
 		m[MENU_MANAGE].add(mit[ITEM_EXPORT]);
 		m[MENU_MANAGE].add(mit[ITEM_BACKUP]);
@@ -207,9 +206,6 @@ public class MainFrame extends JFrame implements ActionListener {
 				MessageDialog.showError(this, "数据库访问错误，删除失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (e.getSource() == mit[ITEM_LEDGER]) {
-			// 删除流水
-			logger.info("点击删除流水的菜单项，询问是否删除流水？");
 		} else if (e.getSource() == mit[ITEM_EXPORT]) {
 			// 导出
 			logger.info("导出数据至CSV中");
