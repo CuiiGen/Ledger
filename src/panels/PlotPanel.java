@@ -113,6 +113,9 @@ public class PlotPanel extends JPanel {
 		// x轴格式化
 		ValueAxis xAxis = plot.getDomainAxis();
 		xAxis.setTickLabelFont(font.getFont(13f));
+		// 不显示标签
+		xAxis.setLabel(null);
+		plot.getRangeAxis().setLabel(null);
 		((DateAxis) xAxis).setDateFormatOverride(new SimpleDateFormat("yyyy-MM-dd"));
 		// 渲染
 		XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
