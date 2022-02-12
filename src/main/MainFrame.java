@@ -3,9 +3,11 @@ package main;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Event;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -16,6 +18,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -104,6 +108,11 @@ public class MainFrame extends JFrame implements ActionListener {
 			mit[i].setBackground(Color.WHITE);
 		}
 
+		// Ctrl + N
+		mit[ITEM_RECORD].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Event.CTRL_MASK));
+		// Ctrl + T
+		mit[ITEM_TRANSFER].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, Event.CTRL_MASK));
+
 		m[MENU_RECORD].add(mit[ITEM_RECORD]);
 		m[MENU_RECORD].add(mit[ITEM_TRANSFER]);
 		m[MENU_MANAGE].add(mit[ITEM_LABEL]);
@@ -178,7 +187,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.5.3，由iamroot开发\r\n时间：2022年2月8日\r\n邮箱：cuigen@buaa.edu.cn");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.5.4，由iamroot开发\r\n时间：2022年2月8日\r\n邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");

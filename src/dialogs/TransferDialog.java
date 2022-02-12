@@ -131,8 +131,8 @@ public class TransferDialog extends JDialog implements ActionListener {
 			this.add(btn[i]);
 		}
 		btn[BUTTON_EXIT].setBackground(Color.DARK_GRAY);
-		btn[BUTTON_INSERT].setBounds(130, 200, 80, 30);
-		btn[BUTTON_EXIT].setBounds(230, 200, 80, 30);
+		btn[BUTTON_INSERT].setBounds(130, 190, 80, 30);
+		btn[BUTTON_EXIT].setBounds(230, 190, 80, 30);
 
 		setBackground(Color.WHITE);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);

@@ -31,6 +31,8 @@ Ledger
 ├─installer                             // 输出可执行jar路径
 ├─libs                                  // 第三方库
 │  │  h2-1.4.200.jar                    // h2数据库JDBC
+│  │  jfreechart-1.5.3.jar              // 绘图
+│  │  zip4j-2.9.0.jar                   // 压缩包操作
 │  │
 │  └─apache-log4j-2.13.0-bin            // log4j2相关库
 │          log4j-api-2.13.0.jar
