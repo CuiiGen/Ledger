@@ -22,6 +22,8 @@ public class QueryConditions {
 	private static boolean isFuzzy = false;
 	// 模糊搜索关键词
 	private static String fuzzyWord = "%";
+	// 是否只显示有效数据
+	private static boolean isValid = false;
 
 	/**
 	 * 初始化筛选默认条件
@@ -38,6 +40,7 @@ public class QueryConditions {
 		label = "全部";
 		type = 0;
 		name = "%";
+		isValid = false;
 	}
 
 	public static String getStartTime() {
@@ -127,6 +130,14 @@ public class QueryConditions {
 		fuzzyWord = String.format("%%%s%%", word);
 	}
 
+	public static void setIsValid(boolean is) {
+		isValid = is;
+	}
+
+	public static boolean getIsValid() {
+		return isValid;
+	}
+
 	/**
 	 * 根据筛选条件返回SQL语句
 	 * 
@@ -156,8 +167,8 @@ public class QueryConditions {
 			}
 			// SQL语句
 			sql = String.format(
-					"SELECT * FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and %s ORDER BY createtime DESC;",
-					name, startTime, stopTime, sortLabel, sortType);
+					"SELECT * FROM ledger WHERE isValid LIKE '%s' AND name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and %s ORDER BY createtime DESC;",
+					isValid ? "o" : "%", name, startTime, stopTime, sortLabel, sortType);
 		}
 		return sql;
 	}

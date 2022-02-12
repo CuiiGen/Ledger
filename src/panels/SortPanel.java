@@ -12,11 +12,14 @@ import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +44,8 @@ public class SortPanel extends JPanel implements ActionListener {
 	private JComboBox<String> type = new JComboBox<>(), tag = new JComboBox<>();
 	// 按钮
 	private JButton[] btn = new JButton[4];
+	// 复选框
+	private JCheckBox isValid = new JCheckBox("仅显示有效数据");
 	// 数据库
 	private H2_DB h2 = null;
 	// 字体
@@ -96,25 +101,42 @@ public class SortPanel extends JPanel implements ActionListener {
 			btn[i].setForeground(Color.WHITE);
 			btn[i].setBackground(ThemeColor.BLUE);
 			btn[i].addActionListener(this);
-			this.add(btn[i]);
 		}
+		isValid.setFont(font.getFont());
+		isValid.setBackground(Color.WHITE);
+		isValid.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					QueryConditions.setIsValid(isValid.isSelected());
+					f.updateLedger();
+					logger.info("勾选复选框，刷新表格 - 完成\n");
+				} catch (SQLException e1) {
+					MessageDialog.showError(f, "数据库访问错误，查询失败！");
+					logger.error(LogHelper.exceptionToString(e1));
+				}
+			}
+		});
 		// 最外层纵向box
 		Box vbox = Box.createVerticalBox();
 		add(Box.createHorizontalStrut(5));
 		add(vbox);
+		add(Box.createHorizontalStrut(5));
+
 		// 最上层空白
 		vbox.add(Box.createVerticalStrut(10));
-		// 时间
-		vbox.add(labels[0]);
+		// 时间框
+		vbox.add(getHorizontalBox(labels[0]));
 		vbox.add(tx[0]);
-		vbox.add(labels[1]);
+		vbox.add(getHorizontalBox(labels[1]));
 		vbox.add(tx[1]);
 		// 空白
 		vbox.add(Box.createVerticalStrut(7));
-		// 上下个月
+		// 上下个月切换按钮
 		Box hbox4 = Box.createHorizontalBox();
 		hbox4.add(btn[2]);
-		hbox4.add(Box.createHorizontalStrut(15));
+		hbox4.add(Box.createHorizontalStrut(20));
 		hbox4.add(btn[3]);
 		vbox.add(hbox4);
 		// 空白
@@ -134,17 +156,20 @@ public class SortPanel extends JPanel implements ActionListener {
 		vbox.add(hbox2);
 		// 空白
 		vbox.add(Box.createVerticalStrut(10));
-		// 按钮
-		add(Box.createHorizontalStrut(5));
+		// 确认和重置按钮
 		Box hbox3 = Box.createHorizontalBox();
 		hbox3.add(btn[0]);
 		hbox3.add(Box.createHorizontalStrut(20));
 		hbox3.add(btn[1]);
 		vbox.add(hbox3);
 		// 空白
-		vbox.add(Box.createVerticalStrut(50));
+		vbox.add(Box.createVerticalStrut(10));
+		// 是否仅显示有效数据
+		vbox.add(getHorizontalBox(isValid));
+		// 空白
+		vbox.add(Box.createVerticalStrut(30));
 		// 搜索框
-		vbox.add(labels[4]);
+		vbox.add(getHorizontalBox(labels[4]));
 		vbox.add(tx[2]);
 
 		setBackground(Color.WHITE);
@@ -152,6 +177,13 @@ public class SortPanel extends JPanel implements ActionListener {
 		Border tb1 = BorderFactory.createMatteBorder(0, 0, 0, 3, ThemeColor.BACKGROUND);
 		setBorder(tb1);
 		logger.info("查询面板初始化 - 完成");
+	}
+
+	private Box getHorizontalBox(JComponent component) {
+		Box h = Box.createHorizontalBox();
+		h.add(component);
+		h.add(Box.createHorizontalGlue());
+		return h;
 	}
 
 	/**
@@ -179,6 +211,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		type.setSelectedIndex(QueryConditions.getType());
 		// 标签
 		tag.setSelectedItem(QueryConditions.getLabel());
+		isValid.setSelected(QueryConditions.getIsValid());
 	}
 
 	@Override
