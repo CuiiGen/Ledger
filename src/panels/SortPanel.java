@@ -70,7 +70,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		}
 		// 标签设置
 		JLabel[] labels = new JLabel[5];
-		String[] lstr = { "起始时间", "结束时间", "类别：", "标签：", "全局模糊搜索" };
+		String[] lstr = { "起始时间：", "结束时间：", "类别：", "标签：", "全局模糊搜索：" };
 		for (int i = 0; i < lstr.length; i++) {
 			labels[i] = new JLabel(lstr[i]);
 			labels[i].setFont(font.getFont());
@@ -128,8 +128,11 @@ public class SortPanel extends JPanel implements ActionListener {
 		vbox.add(Box.createVerticalStrut(10));
 		// 时间框
 		vbox.add(getHorizontalBox(labels[0]));
+		vbox.add(Box.createVerticalStrut(5));
 		vbox.add(tx[0]);
+		vbox.add(Box.createVerticalStrut(5));
 		vbox.add(getHorizontalBox(labels[1]));
+		vbox.add(Box.createVerticalStrut(5));
 		vbox.add(tx[1]);
 		// 空白
 		vbox.add(Box.createVerticalStrut(7));
@@ -148,7 +151,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox1.add(type);
 		vbox.add(hbox1);
 		// 空白
-		vbox.add(Box.createVerticalStrut(7));
+		vbox.add(Box.createVerticalStrut(10));
 		// 标签
 		hbox2.add(labels[3]);
 		hbox2.add(Box.createHorizontalStrut(5));
@@ -167,9 +170,10 @@ public class SortPanel extends JPanel implements ActionListener {
 		// 是否仅显示有效数据
 		vbox.add(getHorizontalBox(isValid));
 		// 空白
-		vbox.add(Box.createVerticalStrut(30));
+		vbox.add(Box.createVerticalStrut(10));
 		// 搜索框
 		vbox.add(getHorizontalBox(labels[4]));
+		vbox.add(Box.createVerticalStrut(5));
 		vbox.add(tx[2]);
 
 		setBackground(Color.WHITE);
