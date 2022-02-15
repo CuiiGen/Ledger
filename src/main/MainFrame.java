@@ -112,6 +112,12 @@ public class MainFrame extends JFrame implements ActionListener {
 		mit[ITEM_RECORD].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Event.CTRL_MASK));
 		// Ctrl + T
 		mit[ITEM_TRANSFER].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, Event.CTRL_MASK));
+		// Ctrl + B
+		mit[ITEM_BACKUP].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, Event.CTRL_MASK));
+		// Ctrl + R
+		mit[ITEM_RESTORE].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Event.CTRL_MASK));
+		// Ctrl + E
+		mit[ITEM_EXPORT].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Event.CTRL_MASK));
 
 		m[MENU_RECORD].add(mit[ITEM_RECORD]);
 		m[MENU_RECORD].add(mit[ITEM_TRANSFER]);
