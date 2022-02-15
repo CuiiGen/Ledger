@@ -73,8 +73,8 @@ public class AccountsPanel extends Panel {
 				if (r == array.size() - 1) {
 					// 新建
 					logger.info("准备新建账户");
-					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("点击新建账户")) {
-						logger.error("账户名不能空或为点击新建账户\n");
+					if (table.getValueAt(r, c).equals("") || table.getValueAt(r, c).equals("双击输入账户名")) {
+						logger.error("账户名不能空或为双击输入账户名\n");
 					} else {
 						insertAccount(newName);
 						updateTable();
@@ -339,7 +339,7 @@ class AccountsModel extends AbstractTableModel {
 		for (AccountStructure a : array) {
 			amount += a.getAmount();
 		}
-		this.array.add(new AccountStructure("点击新建账户", "--", amount));
+		this.array.add(new AccountStructure("双击输入账户名", "--", amount));
 	}
 
 	@Override
