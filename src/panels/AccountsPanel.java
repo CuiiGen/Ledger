@@ -59,8 +59,12 @@ public class AccountsPanel extends Panel {
 			int c = getEditingColumn();
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
+			String newName = table.getValueAt(r, c).toString();
+			// 如果未更改则直接退出后续处理
+			if (pre.equals(newName)) {
+				return;
+			}
 			try {
-				String newName = table.getValueAt(r, c).toString();
 				// 检验账户名是否重复
 				if (isNameUnique(newName) == false) {
 					MessageDialog.showError(f, "注意账户名不可重复！");
