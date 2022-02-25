@@ -114,11 +114,13 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				pop.show(e.getComponent(), e.getX(), e.getY());
 			}
 			if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+				// 被选中的行
+				int selectedRow = table.getSelectedRow();
 				if (table.getSelectedColumn() > 0) {
 					// 打开流水记录详情对话框
 					logger.info("打开流水记录详情对话框");
 					try {
-						if (showInfoDialog(array.get(table.getSelectedRow()), false)) {
+						if (showInfoDialog(array.get(selectedRow), false)) {
 							f.updateAllPanel();
 							logger.info("有信息修改，刷新页面\n");
 						}
@@ -129,18 +131,24 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				} else {
 					// 修改isValid
 					try {
+						// 记录滚轴位置
+						int scrollValue = scrollPane.getVerticalScrollBar().getValue();
 						logger.info("修改有效性标记");
 						h2 = new H2_DB();
 						String t = "o";
-						if (array.get(table.getSelectedRow()).getIsValid()) {
+						if (array.get(selectedRow).getIsValid()) {
 							t = "i";
 						}
 						String sql = String.format("UPDATE ledger SET `isValid` = '%s' WHERE createtime = '%s'", t,
-								array.get(table.getSelectedRow()).getCreatetime());
+								array.get(selectedRow).getCreatetime());
 						logger.info(sql);
 						h2.execute(sql);
 						h2.close();
 						f.updateLedger();
+						// 页面刷新后保持原视图
+						scrollPane.getVerticalScrollBar().setValue(scrollValue);
+						table.setRowSelectionInterval(selectedRow, selectedRow);
+						// 日志
 						logger.info("\n");
 					} catch (SQLException e1) {
 						e1.printStackTrace();
@@ -287,7 +295,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		cm.getColumn(4).setMinWidth(100);
 		cm.getColumn(5).setMaxWidth(150);
 		cm.getColumn(5).setMinWidth(130);
-		
+
 		scrollPane.getVerticalScrollBar().setValue(0);
 	}
 
