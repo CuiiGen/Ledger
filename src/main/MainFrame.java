@@ -100,8 +100,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i].setFont(font.getFont(14f));
 		}
 		// 菜单项
-		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 校验账本 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 ",
-				" 查看日志 " };
+		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 对账 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 ", " 查看日志 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
 			mit[i].setFont(font.getFont(14f));
@@ -208,7 +207,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		ResultSet rs = h2.query(sql);
 		ArrayList<String> err = new ArrayList<>();
 		while (rs.next()) {
-			String e = String.format("%s\n%3.2f-%3.2f", rs.getString(1), rs.getDouble(3), rs.getDouble(4));
+			String e = String.format("%s：%3.2f，应为%3.2f", rs.getString(1), rs.getDouble(3), rs.getDouble(4));
 			logger.error(e);
 			err.add(e);
 		}
@@ -220,7 +219,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.5.7，由iamroot开发\r\n时间：2022年2月8日\r\n邮箱：cuigen@buaa.edu.cn");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.5.8，由iamroot开发\r\n时间：2022年3月18日\r\n邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
@@ -367,7 +366,11 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_CHECK]) {
 			try {
 				String msg = checkLedger();
-				MessageDialog.showError(this, msg);
+				if (msg.isEmpty()) {
+					MessageDialog.showMessage(this, "账本无问题！");
+				} else {
+					MessageDialog.showError(this, msg);
+				}
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库访问失败！");
 				logger.error(LogHelper.exceptionToString(e1));
