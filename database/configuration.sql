@@ -117,3 +117,33 @@ GROUP BY
     x
 ORDER BY
     x;
+
+-- 数据库数值校验
+SELECT
+    `accounts`.*,
+    `check`.`amount`
+FROM
+    `accounts`
+    LEFT JOIN (
+        SELECT
+            `name`,
+            SUM(`amount` * CAST(`type` AS CHAR)) AS `amount`
+        FROM
+            `ledger`
+        GROUP BY
+            `name`
+    ) AS `check` ON `check`.`name` = `accounts`.`name`
+WHERE
+    ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7
+    OR `check`.`amount` IS NULL;
+
+-- 事务相关指令
+SET
+    AUTOCOMMIT OFF;
+
+SET
+    AUTOCOMMIT ON;
+
+ROLLBACK;
+
+COMMENT;

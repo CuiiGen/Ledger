@@ -162,6 +162,7 @@ public class TransferDialog extends JDialog implements ActionListener {
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 		// 数据库初始化
 		h2 = new H2_DB();
+		h2.setAutoCommit(false);
 		// 付款
 		String sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
 				ft1.format(date), from.getSelectedItem(), -1, amount, "转账", "转账付款，" + tx[TX_REMARK].getText());
@@ -188,6 +189,7 @@ public class TransferDialog extends JDialog implements ActionListener {
 				to.getSelectedItem());
 		logger.info("转账收款账户修改金额");
 		h2.execute(sql);
+		h2.commit();
 		h2.close();
 	}
 

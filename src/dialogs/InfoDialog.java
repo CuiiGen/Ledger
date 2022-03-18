@@ -238,12 +238,14 @@ public class InfoDialog extends JDialog implements ActionListener {
 					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
 		}
 		h2 = new H2_DB();
+		h2.setAutoCommit(false);
 		logger.info(sql);
 		h2.execute(sql);
 		// 根据流水计算账户余额
 		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", type * amount,
 				account.getSelectedItem().toString());
 		h2.execute(sql);
+		h2.commit();
 		h2.close();
 	}
 
@@ -254,6 +256,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 */
 	private void delete() throws SQLException {
 		h2 = new H2_DB();
+		h2.setAutoCommit(false);
 		logger.info("删除流水记录");
 		// 恢复余额
 		String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
@@ -263,6 +266,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
 		logger.info(sql);
 		h2.execute(sql);
+		h2.commit();
 		h2.close();
 	}
 
@@ -277,6 +281,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 
 		h2 = new H2_DB();
+		h2.setAutoCommit(false);
 		// 原纪录备注更改
 		String sql = String.format("UPDATE ledger SET isValid = 'i', remark = '%s' WHERE createtime = '%s'",
 				rds.getRemark() + "，已退款！", rds.getCreatetime());
@@ -296,6 +301,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		logger.info("恢复余额");
 		logger.info(sql);
 		h2.execute(sql);
+		h2.commit();
 		h2.close();
 	}
 

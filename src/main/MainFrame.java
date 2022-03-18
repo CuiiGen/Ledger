@@ -10,7 +10,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -52,8 +54,8 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	// 菜单及菜单项索引
 	private static final int MENU_RECORD = 0, MENU_MANAGE = 1, MENU_HELP = 2;
-	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_EXPORT = 3, ITEM_ABOUT = 4, ITEM_RECORD = 5,
-			ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8, ITEM_LOG = 9;
+	private static final int ITEM_LABEL = 0, ITEM_ACCOUNT = 1, ITEM_CHECK = 2, ITEM_EXPORT = 3, ITEM_ABOUT = 4,
+			ITEM_RECORD = 5, ITEM_TRANSFER = 6, ITEM_BACKUP = 7, ITEM_RESTORE = 8, ITEM_LOG = 9;
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
@@ -98,7 +100,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i].setFont(font.getFont(14f));
 		}
 		// 菜单项
-		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 删除选中记录 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 ",
+		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 校验账本 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 ",
 				" 查看日志 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
@@ -127,6 +129,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		m[MENU_MANAGE].add(mit[ITEM_EXPORT]);
 		m[MENU_MANAGE].add(mit[ITEM_BACKUP]);
 		m[MENU_MANAGE].add(mit[ITEM_RESTORE]);
+		m[MENU_MANAGE].addSeparator();
+		m[MENU_MANAGE].add(mit[ITEM_CHECK]);
 
 		m[MENU_HELP].add(mit[ITEM_LOG]);
 		m[MENU_HELP].add(mit[ITEM_ABOUT]);
@@ -187,6 +191,29 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 折线图
 		outPanel.updatePlot();
 		inPanel.updatePlot();
+	}
+
+	/**
+	 * 校验账本是否平账
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
+	public String checkLedger() throws SQLException {
+		H2_DB h2 = new H2_DB();
+		String sql = "SELECT `accounts`.*, `check`.`amount` FROM `accounts` LEFT JOIN "
+				+ "( SELECT `name`, SUM(`amount` * CAST(`type` AS CHAR)) AS `amount` FROM `ledger` GROUP BY `name` ) AS `check` "
+				+ "ON `check`.`name` = `accounts`.`name`"
+				+ "WHERE ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7 OR `check`.`amount` IS NULL;";
+		ResultSet rs = h2.query(sql);
+		ArrayList<String> err = new ArrayList<>();
+		while (rs.next()) {
+			String e = String.format("%s\n%3.2f-%3.2f", rs.getString(1), rs.getDouble(3), rs.getDouble(4));
+			logger.error(e);
+			err.add(e);
+		}
+		h2.close();
+		return String.join("\n", err);
 	}
 
 	@Override
@@ -284,8 +311,13 @@ public class MainFrame extends JFrame implements ActionListener {
 					temp = new File("./database/Ledger_temp.mv.db");
 			try {
 				logger.info("准备恢复数据库，首先保存原数据库为temp.mv.db");
-				temp.delete();
-				file.renameTo(temp);
+				if (temp.exists() == false || temp.delete()) {
+					file.renameTo(temp);
+				} else {
+					logger.error("文件读写失败，恢复过程取消，数据库未变动！");
+					MessageDialog.showError(this, "文件读写失败，恢复过程取消，数据库未变动！");
+					return;
+				}
 				// 恢复数据
 				logger.info("即将选择SQL文件进行恢复");
 				H2_DB.restore();
@@ -312,10 +344,14 @@ public class MainFrame extends JFrame implements ActionListener {
 				// 日志
 				logger.error(LogHelper.exceptionToString(e1));
 				// 删除文件
-				file.delete();
-				temp.renameTo(file);
-				logger.info("恢复过程出错，复原旧数据库\n");
-				MessageDialog.showError(this, "恢复过程出错，恢复旧数据库！");
+				if (file.exists() == false || file.delete()) {
+					temp.renameTo(file);
+					logger.info("恢复过程出错，复原旧数据库\n");
+					MessageDialog.showError(this, "恢复过程出错，恢复旧数据库！");
+				} else {
+					logger.info("恢复过程出错，复原旧数据库出错\n");
+					MessageDialog.showError(this, "恢复过程出错，恢复旧数据库出错，需手动恢复！");
+				}
 			}
 		} else if (e.getSource() == mit[ITEM_LOG]) {
 			try {
@@ -326,6 +362,14 @@ public class MainFrame extends JFrame implements ActionListener {
 				}
 				Runtime.getRuntime().exec("notepad ./logs/info.log");
 			} catch (IOException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else if (e.getSource() == mit[ITEM_CHECK]) {
+			try {
+				String msg = checkLedger();
+				MessageDialog.showError(this, msg);
+			} catch (SQLException e1) {
+				MessageDialog.showError(this, "数据库访问失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		}

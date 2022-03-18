@@ -335,6 +335,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		if (MessageDialog.showConfirm(f, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
 			logger.info("确认删除流水记录");
 			h2 = new H2_DB();
+			h2.setAutoCommit(false);
 			// 恢复余额
 			RecordStructure rds = array.get(r);
 			String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
@@ -347,6 +348,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			logger.info("删除流水记录");
 			logger.info(sql);
 			h2.execute(sql);
+			h2.commit();
 			h2.close();
 			return true;
 		} else {

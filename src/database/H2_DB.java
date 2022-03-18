@@ -49,6 +49,36 @@ public class H2_DB {
 	}
 
 	/**
+	 * 设置事务是否自动提交
+	 * 
+	 * 对于多表操作应关闭自动提交
+	 * 
+	 * @param isAutoCommit
+	 * @throws SQLException
+	 */
+	public void setAutoCommit(boolean isAutoCommit) throws SQLException {
+		connection.setAutoCommit(isAutoCommit);
+	}
+
+	/**
+	 * 提交操作
+	 * 
+	 * @throws SQLException
+	 */
+	public void commit() throws SQLException {
+		connection.commit();
+	}
+
+	/**
+	 * 操作回滚，实际使用过程中关闭连接自动回滚取消提交
+	 * 
+	 * @throws SQLException
+	 */
+	public void rollback() throws SQLException {
+		connection.rollback();
+	}
+
+	/**
 	 * 关闭数据库连接
 	 * 
 	 * @throws SQLException
@@ -143,7 +173,7 @@ public class H2_DB {
 		if (file != null) {
 			logger.info("待恢复文件路径：" + file.getAbsolutePath());
 			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
-			checkusers();
+			checkUsers();
 		} else {
 			logger.info("未选中任何SQL文件，待恢复为原数据库");
 		}
@@ -154,7 +184,7 @@ public class H2_DB {
 	 * 
 	 * @throws SQLException
 	 */
-	public static void checkusers() throws SQLException {
+	private static void checkUsers() throws SQLException {
 		H2_DB h2 = new H2_DB();
 		String sql = "SELECT * FROM INFORMATION_SCHEMA.USERS";
 		LogManager.getLogger().info(sql);
