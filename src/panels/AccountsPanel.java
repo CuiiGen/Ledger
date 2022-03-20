@@ -221,8 +221,10 @@ public class AccountsPanel extends Panel {
 		table.addMouseListener(tcr);
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.getViewport().setOpaque(true);
+		scrollPane.getViewport().setBackground(Color.WHITE);
 
-		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.BLACK), "账户信息显示", TitledBorder.LEFT,
+		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.LIGHT_GRAY), "账户信息显示", TitledBorder.LEFT,
 				TitledBorder.DEFAULT_POSITION, font.getFont(0, 13f));
 		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);

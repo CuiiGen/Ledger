@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -223,6 +224,12 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		table.addMouseListener(tcr);
 		// 滑动面板
 		add(scrollPane, BorderLayout.CENTER);
+		scrollPane.setBackground(Color.WHITE);
+		// 白色背景
+		scrollPane.getViewport().setOpaque(true);
+		scrollPane.getViewport().setBackground(Color.WHITE);
+		scrollPane.setBorder(new EmptyBorder(1, 1, 1, 1));
+
 		// 余额
 		balence.setFont(font.getFont(2, 13f));
 		balence.setOpaque(true);

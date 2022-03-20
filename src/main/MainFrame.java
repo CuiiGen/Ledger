@@ -3,10 +3,10 @@ package main;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Event;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,15 +111,15 @@ public class MainFrame extends JFrame implements ActionListener {
 		}
 
 		// Ctrl + N
-		mit[ITEM_RECORD].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Event.CTRL_MASK));
+		mit[ITEM_RECORD].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
 		// Ctrl + T
-		mit[ITEM_TRANSFER].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, Event.CTRL_MASK));
+		mit[ITEM_TRANSFER].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_DOWN_MASK));
 		// Ctrl + B
-		mit[ITEM_BACKUP].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, Event.CTRL_MASK));
+		mit[ITEM_BACKUP].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK));
 		// Ctrl + R
-		mit[ITEM_RESTORE].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Event.CTRL_MASK));
+		mit[ITEM_RESTORE].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 		// Ctrl + E
-		mit[ITEM_EXPORT].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Event.CTRL_MASK));
+		mit[ITEM_EXPORT].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
 
 		m[MENU_RECORD].add(mit[ITEM_RECORD]);
 		m[MENU_RECORD].add(mit[ITEM_TRANSFER]);
@@ -144,6 +145,11 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 标签面板
 		JTabbedPane tabPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabPane.setFont(font.getFont(12f));
+		tabPane.setOpaque(true);
+		tabPane.setBackground(Color.WHITE);
+		UIManager.put("TabbedPane.borderHightlightColor", Color.WHITE);
+		UIManager.put("TabbedPane.contentAreaColor", Color.WHITE);
+		UIManager.put("TabbedPane.contentOpaque", Boolean.FALSE);
 		temtPanel.add(tabPane, BorderLayout.CENTER);
 		// 账户
 		accounts = new AccountsPanel(this);
