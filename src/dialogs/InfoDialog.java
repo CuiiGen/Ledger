@@ -165,6 +165,9 @@ public class InfoDialog extends JDialog implements ActionListener {
 		this.rds = rds;
 		this.isRefund = isRefund;
 		contentReset();
+
+		getContentPane().setBackground(ThemeColor.APPLE);
+
 		// 关闭设置
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}

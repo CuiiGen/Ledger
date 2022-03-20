@@ -9,4 +9,5 @@ public class ThemeColor {
 	public static final Color BACKGROUND = new Color(238, 238, 238);
 	public static final Color LIGHT_GRAY = new Color(220, 230, 239);
 	public static final Color RED = new Color(195, 17, 5);
+	public static final Color APPLE = new Color(251, 251, 253);
 }

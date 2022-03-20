@@ -243,6 +243,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 
 		// 窗口显示
 		validate();
+		getContentPane().setBackground(ThemeColor.APPLE);
 
 		setVisible(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);

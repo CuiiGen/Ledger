@@ -134,7 +134,7 @@ public class TransferDialog extends JDialog implements ActionListener {
 		btn[BUTTON_INSERT].setBounds(130, 190, 80, 30);
 		btn[BUTTON_EXIT].setBounds(230, 190, 80, 30);
 
-		setBackground(Color.WHITE);
+		getContentPane().setBackground(ThemeColor.APPLE);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
 
