@@ -136,7 +136,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		add(Box.createHorizontalStrut(5));
 
 		// 最上层空白
-		vbox.add(Box.createVerticalStrut(10));
+		vbox.add(Box.createVerticalStrut(20));
 		// 时间框
 		vbox.add(getHorizontalBox(labels[0]));
 		vbox.add(Box.createVerticalStrut(5));
@@ -146,7 +146,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		vbox.add(Box.createVerticalStrut(5));
 		vbox.add(tx[1]);
 		// 空白
-		vbox.add(Box.createVerticalStrut(7));
+		vbox.add(Box.createVerticalStrut(18));
 		// 上下个月切换按钮
 		Box hbox4 = Box.createHorizontalBox();
 		hbox4.add(btn[2]);
@@ -154,7 +154,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox4.add(btn[3]);
 		vbox.add(hbox4);
 		// 空白
-		vbox.add(Box.createVerticalStrut(10));
+		vbox.add(Box.createVerticalStrut(18));
 		// 类别
 		Box hbox1 = Box.createHorizontalBox(), hbox2 = Box.createHorizontalBox();
 		hbox1.add(labels[2]);
@@ -162,14 +162,14 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox1.add(type);
 		vbox.add(hbox1);
 		// 空白
-		vbox.add(Box.createVerticalStrut(10));
+		vbox.add(Box.createVerticalStrut(18));
 		// 标签
 		hbox2.add(labels[3]);
 		hbox2.add(Box.createHorizontalStrut(5));
 		hbox2.add(tag);
 		vbox.add(hbox2);
 		// 空白
-		vbox.add(Box.createVerticalStrut(10));
+		vbox.add(Box.createVerticalStrut(18));
 		// 确认和重置按钮
 		Box hbox3 = Box.createHorizontalBox();
 		hbox3.add(btn[0]);
@@ -177,11 +177,11 @@ public class SortPanel extends JPanel implements ActionListener {
 		hbox3.add(btn[1]);
 		vbox.add(hbox3);
 		// 空白
-		vbox.add(Box.createVerticalStrut(10));
+		vbox.add(Box.createVerticalStrut(18));
 		// 是否仅显示有效数据
 		vbox.add(getHorizontalBox(isValid));
 		// 空白
-		vbox.add(Box.createVerticalStrut(10));
+		vbox.add(Box.createVerticalStrut(18));
 		// 搜索框
 		vbox.add(getHorizontalBox(labels[4]));
 		vbox.add(Box.createVerticalStrut(5));
