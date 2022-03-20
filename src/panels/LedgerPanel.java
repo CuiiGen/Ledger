@@ -231,7 +231,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		scrollPane.setBorder(new EmptyBorder(1, 1, 1, 1));
 
 		// 余额
-		balence.setFont(font.getFont(2, 13f));
+		balence.setFont(font.getFont(3, 13f));
 		balence.setOpaque(true);
 		balence.setBackground(Color.WHITE);
 		balence.setHorizontalAlignment(JLabel.RIGHT);
