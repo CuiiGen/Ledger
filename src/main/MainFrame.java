@@ -161,7 +161,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		ledgerPanel = new LedgerPanel(this);
 		tabPane.addTab("流水表格", ledgerPanel);
 		piePanel = new PiePanel();
-		tabPane.add("支出情况统计",piePanel);
+		tabPane.add("支出情况统计", piePanel);
 		monthlyCost = new PlotPanel();
 		tabPane.addTab("每月支出情况", monthlyCost);
 
@@ -227,7 +227,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.6.0，由iamroot开发\r\n时间：2022年3月18日\r\n邮箱：cuigen@buaa.edu.cn");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.7.0，由iamroot开发\r\n时间：2022年3月18日\r\n邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
