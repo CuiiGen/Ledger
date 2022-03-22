@@ -153,17 +153,17 @@ public class QueryConditions {
 			String sortLabel = null, sortType = null;
 			// 标签
 			if (label.equals("  ")) {
-				sortLabel = "label IS NULL";
+				sortLabel = "`label` IS NULL";
 			} else if (label.equals("全部")) {
-				sortLabel = "1 = 1";
+				sortLabel = "true";
 			} else {
-				sortLabel = String.format("label LIKE '%s'", label);
+				sortLabel = String.format("`label` LIKE '%s'", label);
 			}
 			// 类别
 			if (type == 0) {
-				sortType = "1 = 1";
+				sortType = "true";
 			} else {
-				sortType = String.format("type = '%d'", 2 * type - 3);
+				sortType = String.format("`type` = '%d'", 2 * type - 3);
 			}
 			// SQL语句
 			sql = String.format(
@@ -191,7 +191,7 @@ public class QueryConditions {
 		}
 		// SQL语句
 		sql = String.format("SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x, SUM(`amount`) AS y FROM `ledger`"
-				+ "WHERE `type` = 1 AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", sortLabel);
+				+ "WHERE `type` = '-1' AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", sortLabel);
 		return sql;
 	}
 

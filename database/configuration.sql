@@ -112,7 +112,7 @@ SELECT
 FROM
     `ledger`
 WHERE
-    `type` = 1
+    `type` = '-1'
     AND `isvalid` = 'o'
 GROUP BY
     x
