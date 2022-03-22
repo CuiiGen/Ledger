@@ -174,26 +174,37 @@ public class QueryConditions {
 	}
 
 	/**
-	 * 返回每日总消费和收入流水
+	 * 返回每月消费流水
 	 * 
-	 * @param aType 1表示收入，-1表示支出
 	 * @return
 	 */
-	public static String getPlotSql(int aType) {
+	public static String getPlotSql() {
 		String sql = "";
 		String sortLabel = null;
 		// 标签
 		if (label.equals("  ")) {
 			sortLabel = "label IS NULL";
 		} else if (label.equals("全部")) {
-			sortLabel = "1 = 1";
+			sortLabel = "true";
 		} else {
 			sortLabel = String.format("label LIKE '%s'", label);
 		}
 		// SQL语句
-		sql = String.format(
-				"SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM-dd') as x, sum(`amount`) as y FROM ledger WHERE name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and `type`='%d' and `isValid`='o' GROUP BY x ORDER BY x ASC;",
-				name, startTime, stopTime, sortLabel, aType);
+		sql = String.format("SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x, SUM(`amount`) AS y FROM `ledger`"
+				+ "WHERE `type` = 1 AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", sortLabel);
+		return sql;
+	}
+
+	/**
+	 * 绘制饼图所需要的的SQL语句
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static String getPieSql(String key) {
+		String sql = String.format("SELECT `%1$s`, SUM(`amount`) AS `total` FROM `ledger` "
+				+ "WHERE `isvalid` = 'o' AND createtime >= '%2$s 00:00:00' AND createtime <= '%3$s 23:59:59' GROUP BY `%1$s`;",
+				key, startTime, stopTime);
 		return sql;
 	}
 }

@@ -5,9 +5,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,18 +16,20 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
-import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.DatasetRenderingOrder;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.TextTitle;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 import database.H2_DB;
 import design.DefaultFont;
+import design.ThemeColor;
 
 public class PlotPanel extends JPanel {
 	/**
@@ -36,27 +37,24 @@ public class PlotPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = -8734246980656734214L;
 
-	private JFreeChart chart = null;
-	private XYPlot plot = null;
-	// 消费类型
-	private int type = -1;
+	// 绘图区域
+	private CategoryPlot plot = null;
 	// 日志
 	private Logger logger = LogManager.getLogger();
 
-	public PlotPanel(int aType) throws SQLException {
-		logger.info("每日流水图初始化 - 完成");
-		type = aType;
+	public PlotPanel() throws SQLException {
+		logger.info("每月流水图初始化 - 完成");
 		// 获取数据
-		XYDataset dataset = createDataset();
+		DefaultCategoryDataset dataset = createDataset();
 		// 创建图形
-		chart = createChart(dataset);
+		JFreeChart chart = createChart(dataset);
 		// 面板设置
 		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 20));
 		// 布局设置
 		setLayout(new BorderLayout());
 		add(chartPanel, BorderLayout.CENTER);
-		logger.info("每日流水图初始化 - 完成，type = " + aType);
+		// 日志
+		logger.info("每月流水图初始化 - 完成");
 	}
 
 	/**
@@ -65,33 +63,30 @@ public class PlotPanel extends JPanel {
 	 * @return
 	 * @throws SQLException
 	 */
-	private XYDataset createDataset() throws SQLException {
+	private DefaultCategoryDataset createDataset() throws SQLException {
 		// 获取数据
 		H2_DB h2 = new H2_DB();
-		String sql = QueryConditions.getPlotSql(type);
+		String sql = QueryConditions.getPlotSql();
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
 		// 数据整理
-		TimeSeries series = new TimeSeries("消费流水");
 		// 遍历resultSet
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		while (rs.next()) {
-			series.add(new Day(rs.getDate("x")), rs.getDouble("y"));
+			dataset.addValue(rs.getDouble("y"), "每月消费流水", rs.getString("x"));
 		}
 		h2.close();
-		// 创建TimeSeriesCollection
-		TimeSeriesCollection dataset = new TimeSeriesCollection();
-		dataset.addSeries(series);
 		// 返回
 		return dataset;
 	}
 
 	/**
-	 * 根据dataset创建TimeSeriesChart
+	 * 根据dataset创建Chart
 	 * 
 	 * @param dataset
 	 * @return
 	 */
-	private JFreeChart createChart(XYDataset dataset) {
+	private JFreeChart createChart(DefaultCategoryDataset dataset) {
 		// 字体
 		DefaultFont font = new DefaultFont();
 		// 支持中文
@@ -102,36 +97,57 @@ public class PlotPanel extends JPanel {
 		chartTheme.setSmallFont(font.getFont(13f));
 		// 应用
 		ChartFactory.setChartTheme(chartTheme);
-		// 创建时序图形
-		JFreeChart chart = ChartFactory.createTimeSeriesChart("每日消费流水折线图", "日期", "金额 ", dataset, true, true, false);
+		// 创建柱状图图形
+		JFreeChart chart = ChartFactory.createBarChart("每月消费流水折线图", "日期", "金额 ", dataset, PlotOrientation.VERTICAL,
+				false, true, true);
 		// 使当前主题马上生效
 		ChartUtils.applyCurrentTheme(chart);
+
 		// Plot
-		plot = chart.getXYPlot();
+		plot = chart.getCategoryPlot();
 		// y轴字体
 		plot.getRangeAxis().setTickLabelFont(font.getFont(13f));
 		// x轴格式化
-		ValueAxis xAxis = plot.getDomainAxis();
+		CategoryAxis xAxis = plot.getDomainAxis();
 		xAxis.setTickLabelFont(font.getFont(13f));
 		// 不显示标签
 		xAxis.setLabel(null);
 		plot.getRangeAxis().setLabel(null);
-		((DateAxis) xAxis).setDateFormatOverride(new SimpleDateFormat("yyyy-MM-dd"));
-		// 渲染
-		XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-		renderer.setSeriesPaint(0, Color.RED);
-		renderer.setSeriesStroke(0, new BasicStroke(2.0f));
-		plot.setRenderer(renderer);
 		// 颜色设置
-		plot.setBackgroundPaint(Color.white);
+		plot.setBackgroundPaint(Color.WHITE);
 		plot.setRangeGridlinesVisible(true);
-		plot.setRangeGridlinePaint(Color.BLACK);
+		plot.setRangeGridlinePaint(Color.DARK_GRAY);
 		plot.setDomainGridlinesVisible(true);
-		plot.setDomainGridlinePaint(Color.BLACK);
+		plot.setDomainGridlinePaint(Color.DARK_GRAY);
+
+		// 柱状图渲染器
+		BarRenderer barRenderer = new BarRenderer();
+		// 取消渐变效果
+		barRenderer.setBarPainter(new StandardBarPainter());
+		// 可用宽度的最宽比例
+		barRenderer.setMaximumBarWidth(0.03);
+		// 不显示引用
+		barRenderer.setShadowVisible(false);
+		// 颜色
+		barRenderer.setSeriesPaint(0, ThemeColor.LIGHT_BLUE);
+		// 标签
+		barRenderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+		barRenderer.setDefaultItemLabelsVisible(true);
+		barRenderer.setDefaultItemLabelFont(font.getFont(1));
+		// 应用渲染
+		plot.setRenderer(0, barRenderer);
+		// 渲染
+		LineAndShapeRenderer renderer = new LineAndShapeRenderer();
+		renderer.setSeriesPaint(0, ThemeColor.BLUE);
+		renderer.setSeriesStroke(0, new BasicStroke(3.0f));
+		// 显示折线图
+		plot.setDataset(1, dataset);
+		plot.setRenderer(1, renderer);
+		// 设置两个图的前后顺序
+		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+
 		// 标题设置
 		chart.setTitle(new TextTitle(""));
-		// 移除legend
-		chart.removeLegend();
 		return chart;
 	}
 
@@ -139,10 +155,12 @@ public class PlotPanel extends JPanel {
 	 * 更新数据重回折现
 	 * 
 	 * @throws SQLException
+	 * @throws ParseException
 	 */
 	public void updatePlot() throws SQLException {
 		logger.info("折线重绘");
-		XYDataset dataset = createDataset();
+		DefaultCategoryDataset dataset = createDataset();
 		plot.setDataset(dataset);
+		plot.setDataset(1, dataset);
 	}
 }

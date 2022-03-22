@@ -68,7 +68,8 @@ public class MainFrame extends JFrame implements ActionListener {
 	private LedgerPanel ledgerPanel = null;
 	private SortPanel sortPanel = null;
 	// 折线图
-	private PlotPanel outPanel = null, inPanel = null;;
+	private PlotPanel monthlyCost = null;
+//	private PiePanel piePanel = null;
 
 	public MainFrame() throws SQLException {
 
@@ -158,10 +159,12 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 账本
 		ledgerPanel = new LedgerPanel(this);
 		tabPane.addTab("流水表格", ledgerPanel);
-		outPanel = new PlotPanel(-1);
-		tabPane.addTab("消费曲线", outPanel);
-		inPanel = new PlotPanel(1);
-		tabPane.addTab("收入曲线", inPanel);
+		monthlyCost = new PlotPanel();
+		tabPane.addTab("消费曲线", monthlyCost);
+//		inPanel = new PlotPanel(1);
+//		tabPane.addTab("收入曲线", inPanel);
+//		piePanel = new PiePanel();
+//		tabPane.add("分类显示",piePanel);
 
 		// 显示窗口
 		validate();
@@ -194,8 +197,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 流水
 		ledgerPanel.updateTable();
 		// 折线图
-		outPanel.updatePlot();
-		inPanel.updatePlot();
+//		outPanel.updatePlot();
+		monthlyCost.updatePlot();
 	}
 
 	/**
@@ -370,14 +373,18 @@ public class MainFrame extends JFrame implements ActionListener {
 				logger.error(LogHelper.exceptionToString(e1));
 			}
 		} else if (e.getSource() == mit[ITEM_CHECK]) {
+			logger.info("开始进行对账……");
 			try {
 				String msg = checkLedger();
 				if (msg.isEmpty()) {
+					logger.info("账本无问题\n");
 					MessageDialog.showMessage(this, "账本无问题！");
 				} else {
+					logger.error(msg);
 					MessageDialog.showError(this, msg);
 				}
 			} catch (SQLException e1) {
+				logger.error("数据库访问失败！\n");
 				MessageDialog.showError(this, "数据库访问失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}

@@ -105,14 +105,15 @@ RETURN 1;
 
 END;
 
--- 每日流水查询
+-- 每月流水查询
 SELECT
-    FORMATDATETIME(`CREATETIME`, 'yyyy-MM-dd') as x,
-    sum(`amount`) as y
+    FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x,
+    SUM(`amount`) AS y
 FROM
     `ledger`
 WHERE
     `type` = 1
+    AND `isvalid` = 'o'
 GROUP BY
     x
 ORDER BY
@@ -147,3 +148,26 @@ SET
 ROLLBACK;
 
 COMMENT;
+
+-- 饼图相关
+-- 总收支计算
+SELECT
+    `type`,
+    SUM(`amount`) AS `total`
+FROM
+    `ledger`
+WHERE
+    `isvalid` = 'o'
+GROUP BY
+    `type`;
+
+-- 各类别计算
+SELECT
+    `label`,
+    SUM(`amount`) AS `total`
+FROM
+    `ledger`
+WHERE
+    `isvalid` = 'o'
+GROUP BY
+    `label`;
