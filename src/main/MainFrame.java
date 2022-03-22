@@ -37,6 +37,7 @@ import dialogs.MessageDialog;
 import dialogs.TransferDialog;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
+import panels.PiePanel;
 import panels.PlotPanel;
 import panels.QueryConditions;
 import panels.SortPanel;
@@ -69,7 +70,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	private SortPanel sortPanel = null;
 	// 折线图
 	private PlotPanel monthlyCost = null;
-//	private PiePanel piePanel = null;
+	private PiePanel piePanel = null;
 
 	public MainFrame() throws SQLException {
 
@@ -159,12 +160,10 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 账本
 		ledgerPanel = new LedgerPanel(this);
 		tabPane.addTab("流水表格", ledgerPanel);
+		piePanel = new PiePanel();
+		tabPane.add("支出情况统计",piePanel);
 		monthlyCost = new PlotPanel();
-		tabPane.addTab("消费曲线", monthlyCost);
-//		inPanel = new PlotPanel(1);
-//		tabPane.addTab("收入曲线", inPanel);
-//		piePanel = new PiePanel();
-//		tabPane.add("分类显示",piePanel);
+		tabPane.addTab("每月支出情况", monthlyCost);
 
 		// 显示窗口
 		validate();
@@ -197,7 +196,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 流水
 		ledgerPanel.updateTable();
 		// 折线图
-//		outPanel.updatePlot();
+		piePanel.updatePlot();
 		monthlyCost.updatePlot();
 	}
 

@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
 
 import javax.swing.JPanel;
 
@@ -43,7 +42,7 @@ public class PlotPanel extends JPanel {
 	private Logger logger = LogManager.getLogger();
 
 	public PlotPanel() throws SQLException {
-		logger.info("每月流水图初始化 - 完成");
+		logger.info("每月流水图初始化 - 开始");
 		// 获取数据
 		DefaultCategoryDataset dataset = createDataset();
 		// 创建图形
@@ -136,7 +135,7 @@ public class PlotPanel extends JPanel {
 		barRenderer.setDefaultItemLabelFont(font.getFont(1));
 		// 应用渲染
 		plot.setRenderer(0, barRenderer);
-		// 渲染
+		// 折线图渲染
 		LineAndShapeRenderer renderer = new LineAndShapeRenderer();
 		renderer.setSeriesPaint(0, ThemeColor.BLUE);
 		renderer.setSeriesStroke(0, new BasicStroke(3.0f));
@@ -155,7 +154,6 @@ public class PlotPanel extends JPanel {
 	 * 更新数据重回折现
 	 * 
 	 * @throws SQLException
-	 * @throws ParseException
 	 */
 	public void updatePlot() throws SQLException {
 		logger.info("折线重绘");

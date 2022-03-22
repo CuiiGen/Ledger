@@ -150,17 +150,6 @@ ROLLBACK;
 COMMENT;
 
 -- 饼图相关
--- 总收支计算
-SELECT
-    `type`,
-    SUM(`amount`) AS `total`
-FROM
-    `ledger`
-WHERE
-    `isvalid` = 'o'
-GROUP BY
-    `type`;
-
 -- 各类别计算
 SELECT
     `label`,
@@ -169,5 +158,8 @@ FROM
     `ledger`
 WHERE
     `isvalid` = 'o'
+    AND `type` = '-1'
 GROUP BY
-    `label`;
+    `label`
+ORDER BY
+    `total` DESC;
