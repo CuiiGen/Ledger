@@ -313,28 +313,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == mit[ITEM_RESTORE]) {
 			// 恢复
-			// 数据库文件重命名备份
-			File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db"),
-					temp = new File("./database/Ledger_temp.mv.db");
 			try {
-				logger.info("准备恢复数据库，首先保存原数据库为temp.mv.db");
-				if (temp.exists() == false || temp.delete()) {
-					file.renameTo(temp);
-				} else {
-					logger.error("文件读写失败，恢复过程取消，数据库未变动！");
-					MessageDialog.showError(this, "文件读写失败，恢复过程取消，数据库未变动！");
-					return;
-				}
-				// 恢复数据
-				logger.info("即将选择SQL文件进行恢复");
-				H2_DB.restore();
-				// 判断是否恢复
-				if (file.exists()) {
-					// 删除临时数据库
-					logger.info("Ledger.mv.db存在，待刷新页面");
-					distFile.delete();
-					temp.renameTo(distFile);
-					MessageDialog.showMessage(this, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
+				if (H2_DB.restore()) {
 					// 筛选条件重置
 					QueryConditions.init();
 					// 更新页面
@@ -342,25 +322,13 @@ public class MainFrame extends JFrame implements ActionListener {
 					sortPanel.updateContent();
 					MessageDialog.showMessage(this, "页面刷新完成！");
 					logger.info("页面刷新成功\n");
-				} else {
-					temp.renameTo(file);
-					logger.info("Ledger.mv.db存在不存在，复原旧数据库\n");
-					MessageDialog.showMessage(this, "数据库未恢复，复原旧数据库");
 				}
 			} catch (SQLException e1) {
-				// 日志
+				MessageDialog.showError(this, "数据库访问失败！");
 				logger.error(LogHelper.exceptionToString(e1));
-				// 删除文件
-				if (file.exists() == false || file.delete()) {
-					temp.renameTo(file);
-					logger.info("恢复过程出错，复原旧数据库\n");
-					MessageDialog.showError(this, "恢复过程出错，恢复旧数据库！");
-				} else {
-					logger.info("恢复过程出错，复原旧数据库出错\n");
-					MessageDialog.showError(this, "恢复过程出错，恢复旧数据库出错，需手动恢复！");
-				}
 			}
 		} else if (e.getSource() == mit[ITEM_LOG]) {
+			// 打开日志
 			try {
 				logger.info("查看日志\n");
 				File file = new File("./database/Ledger.trace.db");
@@ -379,7 +347,6 @@ public class MainFrame extends JFrame implements ActionListener {
 					logger.info("账本无问题\n");
 					MessageDialog.showMessage(this, "账本无问题！");
 				} else {
-					logger.error(msg);
 					MessageDialog.showError(this, msg);
 				}
 			} catch (SQLException e1) {

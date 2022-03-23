@@ -167,15 +167,52 @@ public class H2_DB {
 	 * 
 	 * @throws SQLException
 	 */
-	public static void restore() throws SQLException {
-		File file = FileChooserDialog.openFileChooser(null);
+	public static boolean restore() {
+		// 数据库文件重命名备份
+		File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db"),
+				temp = new File("./database/Ledger_temp.mv.db");
 		Logger logger = LogManager.getLogger();
-		if (file != null) {
-			logger.info("待恢复文件路径：" + file.getAbsolutePath());
-			RunScript.execute(url, user, pw, file.getAbsolutePath(), Charset.forName("GBK"), false);
-			checkUsers();
-		} else {
-			logger.info("未选中任何SQL文件，待恢复为原数据库");
+		try {
+			// 恢复前准备
+			logger.info("准备恢复数据库，首先保存原数据库为temp.mv.db");
+			if (temp.exists() == false || temp.delete()) {
+				file.renameTo(temp);
+			} else {
+				logger.error("文件读写失败，恢复过程取消，数据库未变动！");
+				MessageDialog.showError(null, "文件读写失败，恢复过程取消，数据库未变动！");
+				return false;
+			}
+			// 恢复数据
+			logger.info("即将选择SQL文件进行恢复");
+			File sqlFile = FileChooserDialog.openFileChooser(null);
+			if (sqlFile != null) {
+				logger.info("待恢复文件路径：" + sqlFile.getAbsolutePath());
+				RunScript.execute(url, user, pw, sqlFile.getAbsolutePath(), Charset.forName("GBK"), false);
+				checkUsers();
+				logger.info("Ledger.mv.db存在，待后续刷新页面");
+				distFile.delete();
+				temp.renameTo(distFile);
+				MessageDialog.showMessage(null, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
+				return true;
+			} else {
+				logger.info("未选中任何SQL文件，待恢复为原数据库");
+				temp.renameTo(file);
+				MessageDialog.showMessage(null, "数据库未恢复，复原旧数据库");
+				return false;
+			}
+		} catch (SQLException e1) {
+			// 日志
+			logger.error(LogHelper.exceptionToString(e1));
+			// 删除文件
+			if (file.exists() == false || file.delete()) {
+				logger.debug(temp.renameTo(file));
+				logger.info("恢复过程出错，复原旧数据库\n");
+				MessageDialog.showError(null, "恢复过程出错，恢复旧数据库！");
+			} else {
+				logger.info("恢复过程出错，复原旧数据库出错\n");
+				MessageDialog.showError(null, "恢复过程出错，恢复旧数据库出错，需手动恢复！");
+			}
+			return false;
 		}
 	}
 
