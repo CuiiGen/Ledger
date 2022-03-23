@@ -211,7 +211,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		String sql = "SELECT `accounts`.*, `check`.`amount` FROM `accounts` LEFT JOIN "
 				+ "( SELECT `name`, SUM(`amount` * CAST(`type` AS CHAR)) AS `amount` FROM `ledger` GROUP BY `name` ) AS `check` "
 				+ "ON `check`.`name` = `accounts`.`name`"
-				+ "WHERE ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7 OR `check`.`amount` IS NULL;";
+				+ "WHERE ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7 AND `check`.`amount` IS NOT NULL;";
 		ResultSet rs = h2.query(sql);
 		ArrayList<String> err = new ArrayList<>();
 		while (rs.next()) {

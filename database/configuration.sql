@@ -136,7 +136,7 @@ FROM
     ) AS `check` ON `check`.`name` = `accounts`.`name`
 WHERE
     ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7
-    OR `check`.`amount` IS NULL;
+    AND `check`.`amount` IS NOT NULL;
 
 -- 事务相关指令
 SET
