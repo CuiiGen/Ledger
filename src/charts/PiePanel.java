@@ -1,4 +1,4 @@
-package panels;
+package charts;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -26,6 +26,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import database.H2_DB;
 import design.DefaultFont;
 import design.ThemeColor;
+import panels.QueryConditions;
 
 public class PiePanel extends JPanel {
 
