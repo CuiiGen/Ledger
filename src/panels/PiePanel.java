@@ -83,7 +83,9 @@ public class PiePanel extends JPanel {
 		while (rs.next()) {
 			// 防止空键值出现
 			String key = rs.getString(1);
-			key = key == null ? "null" : key;
+			if (key == null) {
+				key = "null";
+			}
 			// 加入数据
 			dataset.addValue(rs.getDouble("total"), key, types[rs.getInt("type")]);
 			list.add(key);
