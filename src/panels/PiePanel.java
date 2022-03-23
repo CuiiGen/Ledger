@@ -17,12 +17,15 @@ import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.MultiplePiePlot;
 import org.jfree.chart.plot.PieLabelLinkStyle;
 import org.jfree.chart.plot.PiePlot;
-import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.chart.util.TableOrder;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 import database.H2_DB;
 import design.DefaultFont;
+import design.ThemeColor;
 
 public class PiePanel extends JPanel {
 
@@ -32,43 +35,71 @@ public class PiePanel extends JPanel {
 	private static final long serialVersionUID = 7341489230357523930L;
 
 	// 绘图区域
-	private PiePlot<String> plot = null;
+	private MultiplePiePlot mplot = null;
+	PiePlot<String> plot = null;
+	// 用于记录标签名
 	private ArrayList<String> list = new ArrayList<>();
 	// 日志
 	private Logger logger = LogManager.getLogger();
 
+	/**
+	 * 构造函数
+	 * 
+	 * @throws SQLException
+	 */
 	public PiePanel() throws SQLException {
+		// 日志记录
 		logger.info("支出情况饼图初始化 - 开始");
 		// 创建饼图数据集
-		DefaultPieDataset<String> dataset = createDataset();
+		DefaultCategoryDataset dataset = createcaCategoryDataset();
 		// 创建图形
 		ChartPanel chartPanel = new ChartPanel(createChart(dataset));
 		// 面板设置
 		setLayout(new BorderLayout());
 		add(chartPanel, BorderLayout.CENTER);
+		// 日志记录
 		logger.info("支出情况饼图初始化 - 开始");
 	}
 
-	private DefaultPieDataset<String> createDataset() throws SQLException {
-		DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+	/**
+	 * 获取收支-标签二维表格数据
+	 * 
+	 * @return 收支标签表数据
+	 * @throws SQLException
+	 */
+	private DefaultCategoryDataset createcaCategoryDataset() throws SQLException {
+		// dataset
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		// SQL
 		String sql = QueryConditions.getPieSql();
 		H2_DB h2 = new H2_DB();
 		logger.info(sql);
-		ResultSet rs = h2.query(sql);
+		// 重置
 		list.clear();
+		// 索引表
+		String[] types = { "  收 入 - 类 别 情 况  ", "  支 出 - 类 别 情 况  " };
+		// 数据整合
+		ResultSet rs = h2.query(sql);
 		while (rs.next()) {
 			// 防止空键值出现
 			String key = rs.getString(1);
 			key = key == null ? "null" : key;
-			dataset.setValue(key, rs.getDouble(2));
+			// 加入数据
+			dataset.addValue(rs.getDouble("total"), key, types[rs.getInt("type")]);
 			list.add(key);
 		}
 		h2.close();
 		return dataset;
 	}
 
+	/**
+	 * 绘制图形返回chart
+	 * 
+	 * @param dataset
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
-	private JFreeChart createChart(DefaultPieDataset<String> dataset) {
+	private JFreeChart createChart(DefaultCategoryDataset dataset) {
 		// 设置字体
 		DefaultFont font = new DefaultFont();
 		StandardChartTheme chartTheme = new StandardChartTheme("CN");
@@ -78,13 +109,22 @@ public class PiePanel extends JPanel {
 		// 应用
 		ChartFactory.setChartTheme(chartTheme);
 		// 创建chart
-		JFreeChart freeChart = ChartFactory.createPieChart("", dataset, false, true, true);
+		JFreeChart freeChart = ChartFactory.createMultiplePieChart("", dataset, TableOrder.BY_COLUMN, false, true,
+				true);
 		ChartUtils.applyCurrentTheme(freeChart);
 		// 设置背景为白色
 		freeChart.setBackgroundPaint(Color.WHITE);
 
 		// 绘图主要区域
-		plot = (PiePlot<String>) freeChart.getPlot();
+		mplot = (MultiplePiePlot) freeChart.getPlot();
+		plot = (PiePlot<String>) mplot.getPieChart().getPlot();
+		// 无数据提示信息
+		mplot.setNoDataMessage("No Data is Available to Show\n无数据");
+		mplot.setNoDataMessageFont(font.getFont(1, 30));
+		mplot.setNoDataMessagePaint(Color.LIGHT_GRAY);
+		// 标题设置
+		plot.getChart().getTitle().setFont(font.getFont(18f));
+		plot.getChart().getTitle().setBackgroundPaint(ThemeColor.LIGHT_GRAY);
 		// 绘图区域设置
 		plot.setBackgroundPaint(Color.WHITE);
 		plot.setOutlineVisible(false);
@@ -92,7 +132,7 @@ public class PiePanel extends JPanel {
 		plot.setShadowPaint(null);
 		// 标签
 		plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}￥{1}({2})"));
-		plot.setLabelFont(font.getFont(1, 16));
+		plot.setLabelFont(font.getFont(1));
 		plot.setLabelOutlinePaint(null);
 		plot.setLabelOutlineStroke(null);
 		plot.setLabelShadowPaint(null);
@@ -115,8 +155,8 @@ public class PiePanel extends JPanel {
 	 */
 	public void updatePlot() throws SQLException {
 		logger.info("折线重绘");
-		DefaultPieDataset<String> dataset = createDataset();
-		plot.setDataset(dataset);
+		DefaultCategoryDataset dataset = createcaCategoryDataset();
+		mplot.setDataset(dataset);
 		setExplodePercent();
 
 	}
@@ -128,6 +168,5 @@ public class PiePanel extends JPanel {
 		for (int i = 0; i < list.size(); i++) {
 			plot.setExplodePercent(list.get(i), 0.25 * Math.exp(-0.3 * i));
 		}
-
 	}
 }

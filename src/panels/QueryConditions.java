@@ -201,8 +201,9 @@ public class QueryConditions {
 	 * @return
 	 */
 	public static String getPieSql() {
-		String sql = String.format("SELECT `label`, SUM(`amount`) AS `total` FROM `ledger` "
-				+ "WHERE `isvalid` = 'o' AND `type` = '-1' AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59' GROUP BY `label` ORDER BY `total` DESC;",
+		String sql = String.format("SELECT `label`, `type`, SUM(`amount`) AS `total` FROM `ledger` "
+				+ "WHERE `isvalid` = 'o' AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59'"
+				+ "GROUP BY `label`, `type` ORDER BY `type`, `total` DESC;",
 				startTime, stopTime);
 		return sql;
 	}
