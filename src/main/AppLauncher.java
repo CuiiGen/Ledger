@@ -2,6 +2,8 @@ package main;
 
 import java.sql.SQLException;
 
+import javax.swing.JOptionPane;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,11 +20,9 @@ public class AppLauncher {
 			MessageDialog.showError(null, e.toString());
 			Logger logger = LogManager.getLogger();
 			logger.error(LogHelper.exceptionToString(e));
-			if (e.toString().contentEquals("already in use")) {
+			if (e.toString().contains("already in use")) {
 				// 数据库使用中
-			} else {
-				// 未使用中
-				MessageDialog.showError(null, "启动过程中数据库访问异常，需选择备份文件进行恢复！");
+			} else if (MessageDialog.showConfirm(null, "启动过程中数据库访问异常，需选择备份文件进行恢复！") == JOptionPane.YES_OPTION) {
 				if (H2_DB.restore()) {
 					MessageDialog.showMessage(null, "恢复成功，请重新启动软件！");
 				}
