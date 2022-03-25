@@ -141,21 +141,18 @@ public class MainFrame extends JFrame implements ActionListener {
 		sortPanel = new SortPanel(this);
 		add(sortPanel, BorderLayout.WEST);
 
-		// 临时面板辅助布局使用
-		JPanel temtPanel = new JPanel(new BorderLayout());
-		add(temtPanel, BorderLayout.CENTER);
 		// 标签面板
 		JTabbedPane tabPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabPane.setFont(font.getFont(1, 12f));
-		tabPane.setOpaque(true);
-		tabPane.setBackground(Color.WHITE);
-		UIManager.put("TabbedPane.borderHightlightColor", Color.WHITE);
 		UIManager.put("TabbedPane.contentAreaColor", Color.WHITE);
-		UIManager.put("TabbedPane.contentOpaque", Boolean.FALSE);
+
+		// 临时面板辅助布局使用
+		JPanel temtPanel = new JPanel(new BorderLayout());
+		add(temtPanel, BorderLayout.CENTER);
 		temtPanel.add(tabPane, BorderLayout.CENTER);
 		// 账户
 		accounts = new AccountsPanel(this);
-		accounts.setPreferredSize(new Dimension(0, 350));
+		accounts.setPreferredSize(new Dimension(0, height / 4));
 		temtPanel.add(accounts, BorderLayout.SOUTH);
 		// 账本
 		ledgerPanel = new LedgerPanel(this);

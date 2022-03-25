@@ -290,16 +290,22 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		table.setModel(new RecordsModel(array));
 		// 列宽设置
 		TableColumnModel cm = table.getColumnModel();
+		// #
 		cm.getColumn(0).setMaxWidth(50);
 		cm.getColumn(0).setMinWidth(40);
+		// 记账时间
 		cm.getColumn(1).setMaxWidth(240);
 		cm.getColumn(1).setMinWidth(220);
+		// 相关账户
 		cm.getColumn(2).setMaxWidth(200);
 		cm.getColumn(2).setMinWidth(180);
+		// 类型
 		cm.getColumn(3).setMaxWidth(120);
 		cm.getColumn(3).setMinWidth(100);
+		// 金额
 		cm.getColumn(4).setMaxWidth(150);
 		cm.getColumn(4).setMinWidth(130);
+		// 标签
 		cm.getColumn(5).setMaxWidth(160);
 		cm.getColumn(5).setMinWidth(140);
 
