@@ -84,7 +84,10 @@ public class MainFrame extends JFrame implements ActionListener {
 		int x = (int) (width * 0.15);
 		int y = (int) (height * 0.15);
 		setBounds(x, y, (int) (width * 0.7), (int) (height * 0.7));
-
+		// 分辨率小于1080P则进行最大化显示
+		if (width <= 1920 || height <= 1080) {
+			setExtendedState(JFrame.MAXIMIZED_BOTH);
+		}
 		setLayout(new BorderLayout());
 
 		// 程序小图标
