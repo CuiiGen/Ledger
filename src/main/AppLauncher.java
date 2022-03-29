@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
@@ -9,16 +10,25 @@ import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
 import dialogs.MessageDialog;
+import tool.DefaultProperties;
 import tool.LogHelper;
 
 public class AppLauncher {
 
 	public static void main(String[] args) {
+		Logger logger = LogManager.getLogger();
+		// 配置文件读取
+		try {
+			DefaultProperties.load();
+		} catch (IOException e) {
+			MessageDialog.showError(null, "配置文件读取失败，将使用默认配置");
+			logger.error(LogHelper.exceptionToString(e));
+		}
+		// 软件启动
 		try {
 			new MainFrame();
 		} catch (SQLException e) {
 			MessageDialog.showError(null, e.toString());
-			Logger logger = LogManager.getLogger();
 			logger.error(LogHelper.exceptionToString(e));
 			if (e.toString().contains("already in use")) {
 				// 数据库使用中

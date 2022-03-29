@@ -7,6 +7,8 @@ import java.util.Calendar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tool.DefaultProperties;
+
 public class QueryConditions {
 
 	// 起始结束时间
@@ -40,7 +42,14 @@ public class QueryConditions {
 		label = "全部";
 		type = 0;
 		name = "%";
-		isValid = false;
+		// 设置默认选项
+		String bool = DefaultProperties.p.getProperty("ledger.isValidShown");
+		if (bool != null) {
+			isValid = Boolean.parseBoolean(bool);
+		} else {
+			isValid = false;
+		}
+		DefaultProperties.p.setProperty("ledger.isValidShown", String.valueOf(isValid));
 	}
 
 	public static String getStartTime() {
@@ -203,8 +212,7 @@ public class QueryConditions {
 	public static String getPieSql() {
 		String sql = String.format("SELECT `label`, `type`, SUM(`amount`) AS `total` FROM `ledger` "
 				+ "WHERE `isvalid` = 'o' AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59'"
-				+ "GROUP BY `label`, `type` ORDER BY `type`, `total` DESC;",
-				startTime, stopTime);
+				+ "GROUP BY `label`, `type` ORDER BY `type`, `total` DESC;", startTime, stopTime);
 		return sql;
 	}
 }

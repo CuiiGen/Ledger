@@ -31,6 +31,7 @@ import design.ThemeColor;
 import dialogs.MessageDialog;
 import main.MainFrame;
 import models.CustomListCellRenderer;
+import tool.DefaultProperties;
 import tool.LogHelper;
 
 public class SortPanel extends JPanel implements ActionListener {
@@ -113,6 +114,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		btn[1].registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
+		isValid.setSelected(QueryConditions.getIsValid());
 		isValid.setFont(font.getFont());
 		isValid.setBackground(Color.WHITE);
 		isValid.addActionListener(new ActionListener() {
@@ -121,6 +123,7 @@ public class SortPanel extends JPanel implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					QueryConditions.setIsValid(isValid.isSelected());
+					DefaultProperties.p.setProperty("ledger.isValidShown", String.valueOf(isValid.isSelected()));
 					f.updateLedger();
 					logger.info("勾选复选框，刷新表格 - 完成\n");
 				} catch (SQLException e1) {
@@ -226,7 +229,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		type.setSelectedIndex(QueryConditions.getType());
 		// 标签
 		tag.setSelectedItem(QueryConditions.getLabel());
-		isValid.setSelected(QueryConditions.getIsValid());
+//		isValid.setSelected(QueryConditions.getIsValid());
 	}
 
 	@Override
