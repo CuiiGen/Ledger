@@ -59,8 +59,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 
 	// 弹出式菜单
 	private JPopupMenu pop = new JPopupMenu();
-	private JMenuItem[] items = new JMenuItem[2];
-	private static final int ITEM_REFUND = 0, ITEM_DEL = 1;
+	private JMenuItem[] items = new JMenuItem[3];
+	private static final int ITEM_SORT_TAG = 0, ITEM_REFUND = 1, ITEM_DEL = 2;
 
 	// 鼠标所在行
 	int at = -1;
@@ -237,15 +237,16 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		balence.setHorizontalAlignment(JLabel.RIGHT);
 		add(balence, BorderLayout.NORTH);
 		// 弹出式菜单
-		String[] istr = { " 退款 ", " 删除 " };
+		String[] istr = { "筛选同标签记录", " 退款 ", " 删除 " };
 		for (int i = 0; i < istr.length; i++) {
 			items[i] = new JMenuItem(istr[i]);
 			items[i].setFont(font.getFont(14f));
 			items[i].addActionListener(this);
 			items[i].setBackground(Color.WHITE);
+			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 		}
+		pop.add(items[ITEM_SORT_TAG]);
 		// 退款
-		items[ITEM_REFUND].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 		pop.add(items[ITEM_REFUND]);
 		pop.addSeparator();
 		// 删除
@@ -417,6 +418,20 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			} catch (CloneNotSupportedException e1) {
 				logger.error(LogHelper.exceptionToString(e1));
 				e1.printStackTrace();
+			}
+		} else if (e.getSource() == items[ITEM_SORT_TAG]) {
+			String label = array.get(table.getSelectedRow()).getLabel();
+			// 针对空标签，表示为两个空格
+			if (label == null) {
+				label = "  ";
+			}
+			QueryConditions.setLabel(label);
+			try {
+				f.updateSortPanel();
+				f.updateAllPanel();
+			} catch (SQLException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
+				MessageDialog.showError(this, "数据库访问错误，退款失败！");
 			}
 		}
 	}

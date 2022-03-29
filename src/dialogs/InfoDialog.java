@@ -310,9 +310,15 @@ public class InfoDialog extends JDialog implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		// 退出界面，不在进行操作
+		if (e.getSource() == btn[BUTTON_EXIT]) {
+			flag = false;
+			dispose();
+			return;
+		}
 		// 是否确认
 		boolean confirmed = e.getSource() == btn[BUTTON_OK] || e.getSource() == tx[TX_REMARK]
-				|| e.getSource() == tx[TX_AMOUNT], isFormatted = true;
+				|| e.getSource() == tx[TX_AMOUNT];
 		// 时间校验和格式化
 		Date date = null;
 		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
@@ -323,15 +329,15 @@ public class InfoDialog extends JDialog implements ActionListener {
 			} else if (tx[TX_TIME].getText().matches("\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}")) {
 				date = ft1.parse(tx[TX_TIME].getText());
 			} else {
-				isFormatted = false;
 				throw new ParseException(tx[TX_TIME].getText(), 0);
 			}
 		} catch (ParseException e1) {
 			MessageDialog.showError(this, "交易时间输入错误！");
 			logger.error(LogHelper.exceptionToString(e1));
+			return;
 		}
 		// 操作选择
-		if (isFormatted && rds == null && confirmed) {
+		if (rds == null && confirmed) {
 			// 插入
 			try {
 				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
@@ -347,11 +353,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (e.getSource() == btn[BUTTON_EXIT]) {
-			// 退出
-			flag = false;
-			dispose();
-		} else if (isFormatted && rds != null && isRefund == false && confirmed) {
+		} else if (rds != null && isRefund == false && confirmed) {
 			// 更新保存
 			try {
 				delete();
