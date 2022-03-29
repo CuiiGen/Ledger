@@ -69,6 +69,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			}
 			try {
 				h2 = new H2_DB();
+				h2.setAutoCommit(false);
 				String sql = "";
 				if (isTagUnique(table.getValueAt(r, c).toString())) {
 					// 修改后标签无重复
@@ -93,6 +94,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 				// 执行修改
 				logger.info(sql);
 				h2.execute(sql);
+				h2.commit();
 				h2.close();
 				updateTable();
 			} catch (SQLException e1) {
@@ -210,6 +212,10 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		table.addMouseListener(tcr);
 		// 滑动面板
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBackground(Color.WHITE);
+		// 白色背景
+		scrollPane.getViewport().setOpaque(true);
+		scrollPane.getViewport().setBackground(Color.WHITE);
 		add(scrollPane);
 		scrollPane.setBounds(50, 25, 600, 250);
 

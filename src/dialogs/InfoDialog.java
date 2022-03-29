@@ -75,7 +75,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			l[i] = new JLabel(lstr[i]);
 			l[i].setFont(font.getFont());
 			add(l[i]);
-			l[i].setBounds(80, 35 * i + 40, 50, 25);
+			l[i].setBounds(50, 35 * i + 40, 50, 25);
 		}
 		// 输入框
 		for (int i = 0; i < tx.length; i++) {
@@ -86,9 +86,9 @@ public class InfoDialog extends JDialog implements ActionListener {
 			tx[i].setSelectionColor(ThemeColor.BLUE);
 			add(tx[i]);
 		}
-		tx[TX_TIME].setBounds(140, 40, 200, 25);
-		tx[TX_AMOUNT].setBounds(140, 145, 200, 25);
-		tx[TX_REMARK].setBounds(140, 215, 200, 25);
+		tx[TX_TIME].setBounds(120, 40, 200, 25);
+		tx[TX_AMOUNT].setBounds(120, 145, 200, 25);
+		tx[TX_REMARK].setBounds(120, 215, 200, 25);
 		tx[TX_AMOUNT].addActionListener(this);
 		tx[TX_REMARK].addActionListener(this);
 
@@ -100,7 +100,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		type.setOpaque(true);
 		type.setBackground(ThemeColor.BLUE);
 		type.setForeground(Color.WHITE);
-		type.setBounds(140, 110, 80, 25);
+		type.setBounds(120, 110, 80, 25);
 		add(type);
 
 		account.setFont(font.getFont());
@@ -108,7 +108,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		account.setOpaque(true);
 		account.setBackground(ThemeColor.BLUE);
 		account.setForeground(Color.WHITE);
-		account.setBounds(140, 75, 120, 25);
+		account.setBounds(120, 75, 120, 25);
 		add(account);
 
 		h2 = new H2_DB();
@@ -128,7 +128,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		h2.close();
 
 		label.setFont(font.getFont());
-		label.setBounds(140, 180, 100, 25);
+		label.setBounds(120, 180, 100, 25);
 		add(label);
 		label.setRenderer(new CustomListCellRenderer());
 		label.setOpaque(true);
