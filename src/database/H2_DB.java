@@ -23,6 +23,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
+import tool.DefaultProperties;
 import tool.LogHelper;
 
 public class H2_DB {
@@ -184,8 +185,13 @@ public class H2_DB {
 			}
 			// 恢复数据
 			logger.info("即将选择SQL文件进行恢复");
-			File sqlFile = FileChooserDialog.openFileChooser(null);
+			String filePath = DefaultProperties.p.getProperty("backup.path");
+			if (filePath == null) {
+				filePath = "./backup/";
+			}
+			File sqlFile = FileChooserDialog.openFileChooser(null, filePath);
 			if (sqlFile != null) {
+				DefaultProperties.p.setProperty("backup.path", sqlFile.getParent());
 				logger.info("待恢复文件路径：" + sqlFile.getAbsolutePath());
 				RunScript.execute(url, user, pw, sqlFile.getAbsolutePath(), Charset.forName("GBK"), false);
 				checkUsers();
@@ -195,6 +201,7 @@ public class H2_DB {
 				MessageDialog.showMessage(null, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
 				return true;
 			} else {
+				DefaultProperties.p.setProperty("backup.path", filePath);
 				logger.info("未选中任何SQL文件，待恢复为原数据库");
 				temp.renameTo(file);
 				MessageDialog.showMessage(null, "数据库未恢复，复原旧数据库");

@@ -23,7 +23,7 @@ public class FileChooserDialog {
 	 * @param parent
 	 * @return
 	 */
-	public static File openFileChooser(Component parent) {
+	public static File openFileChooser(Component parent, String filePath) {
 		try {
 			UIManager.setLookAndFeel(system);
 		} catch (ClassNotFoundException e) {
@@ -36,7 +36,7 @@ public class FileChooserDialog {
 			e.printStackTrace();
 		}
 		// 桌面
-		JFileChooser fileChooser = new JFileChooser("./backup/");
+		JFileChooser fileChooser = new JFileChooser(filePath);
 		// 打开
 		fileChooser.setApproveButtonText("确定");
 		// 文件过滤器
