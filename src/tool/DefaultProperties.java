@@ -52,7 +52,6 @@ public class DefaultProperties {
 		String property = p.getProperty(key);
 		// 判断
 		if (property != null) {
-			store(p);
 			return property;
 		} else {
 			logger.warn("键值对不存在");
