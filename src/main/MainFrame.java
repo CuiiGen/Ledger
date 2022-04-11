@@ -236,7 +236,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.7.4，由iamroot开发\r\n时间：2022年3月18日\r\n邮箱：cuigen@buaa.edu.cn");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.7.5，由iamroot开发\r\n时间：2022年4月11日\r\n邮箱：cuigen@buaa.edu.cn");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
