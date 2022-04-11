@@ -43,13 +43,7 @@ public class QueryConditions {
 		type = 0;
 		name = "%";
 		// 设置默认选项
-		String bool = DefaultProperties.p.getProperty("ledger.isValidShown");
-		if (bool != null) {
-			isValid = Boolean.parseBoolean(bool);
-		} else {
-			isValid = false;
-		}
-		DefaultProperties.p.setProperty("ledger.isValidShown", String.valueOf(isValid));
+		isValid = DefaultProperties.getProperty("ledger.onlyValid", false);
 	}
 
 	public static String getStartTime() {

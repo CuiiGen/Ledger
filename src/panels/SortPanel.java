@@ -123,7 +123,7 @@ public class SortPanel extends JPanel implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					QueryConditions.setIsValid(isValid.isSelected());
-					DefaultProperties.p.setProperty("ledger.isValidShown", String.valueOf(isValid.isSelected()));
+					DefaultProperties.setProperty("ledger.onlyValid", String.valueOf(isValid.isSelected()));
 					f.updateLedger();
 					logger.info("勾选复选框，刷新表格 - 完成\n");
 				} catch (SQLException e1) {
