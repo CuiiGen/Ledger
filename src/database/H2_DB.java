@@ -1,8 +1,13 @@
 package database;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -150,6 +155,27 @@ public class H2_DB {
 		// 导出文件
 		Script.process(url, user, pw, filename + ".sql", "", "");
 		logger.info("SQL文件导出成功");
+
+		// 计算校验文件
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			FileInputStream fis = new FileInputStream(sqlFile);
+			byte[] buffer = new byte[8192];
+			int len = 0;
+			while ((len = fis.read(buffer)) != -1) {
+				md.update(buffer, 0, len);
+			}
+			fis.close();
+			String sha = String.format("%032x %s", new BigInteger(1, md.digest()), sqlFile.getName());
+			FileOutputStream fos = new FileOutputStream(filename + ".sql.sha512");
+			fos.write(sha.getBytes());
+			fos.flush();
+			fos.close();
+			logger.info(sha);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
 		// 加密压缩
 		ZipParameters zipParameters = new ZipParameters();
 		zipParameters.setEncryptFiles(true);
