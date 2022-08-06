@@ -28,22 +28,41 @@ public class QueryConditions {
 	private static boolean isValid = false;
 
 	/**
-	 * 初始化筛选默认条件
+	 * 初始化时间
 	 */
-	public static void init() {
+	public static void initTimeInternal() {
 		Logger logger = LogManager.getLogger();
-		logger.info("查询条件初始化");
+		logger.info("查询时间区间初始化");
 		Calendar c = Calendar.getInstance();
 		c.set(Calendar.DAY_OF_MONTH, 1);
 		startTime = String.format("%tF", c);
 		c.add(Calendar.MONDAY, 1);
 		c.add(Calendar.DAY_OF_MONTH, -1);
 		stopTime = String.format("%tF", c);
+	}
+
+	/**
+	 * 其他查询选项初始化
+	 */
+	public static void initQueryItems() {
+		Logger logger = LogManager.getLogger();
+		logger.info("其他查询条件初始化");
 		label = "全部";
 		type = 0;
 		name = "%";
 		// 设置默认选项
 		isValid = DefaultProperties.getProperty("ledger.onlyValid", false);
+
+	}
+
+	/**
+	 * 初始化筛选默认条件
+	 */
+	public static void init() {
+		Logger logger = LogManager.getLogger();
+		logger.info("查询条件初始化");
+		QueryConditions.initTimeInternal();
+		QueryConditions.initQueryItems();
 	}
 
 	public static String getStartTime() {

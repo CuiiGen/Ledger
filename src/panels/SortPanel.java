@@ -46,7 +46,7 @@ public class SortPanel extends JPanel implements ActionListener {
 	// 类型和标签
 	private JComboBox<String> type = new JComboBox<>(), tag = new JComboBox<>();
 	// 按钮
-	private JButton[] btn = new JButton[4];
+	private JButton[] btn = new JButton[5];
 	// 复选框
 	private JCheckBox isValid = new JCheckBox("仅显示有效数据");
 	// 数据库
@@ -97,7 +97,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		QueryConditions.init();
 		updateContent();
 		// 按钮
-		String[] bstr = { "筛选", "重置", "<<", ">>" };
+		String[] bstr = { "筛选", "重置", "<<", ">>", "..." };
 		for (int i = 0; i < bstr.length; i++) {
 			btn[i] = new JButton(bstr[i]);
 			btn[i].setFont(font.getFont());
@@ -153,7 +153,9 @@ public class SortPanel extends JPanel implements ActionListener {
 		// 上下个月切换按钮
 		Box hbox4 = Box.createHorizontalBox();
 		hbox4.add(btn[2]);
-		hbox4.add(Box.createHorizontalStrut(20));
+		hbox4.add(Box.createHorizontalStrut(10));
+		hbox4.add(btn[4]);
+		hbox4.add(Box.createHorizontalStrut(10));
 		hbox4.add(btn[3]);
 		vbox.add(hbox4);
 		// 空白
@@ -265,8 +267,8 @@ public class SortPanel extends JPanel implements ActionListener {
 			// 重置筛选
 			logger.info("重置筛选页面 - 开始");
 			QueryConditions.setIsFuzzy(false);
+			QueryConditions.initQueryItems();
 			try {
-				QueryConditions.init();
 				updateContent();
 				f.updateLedger();
 				logger.info("重置筛选页面 - 完成\n");
@@ -291,9 +293,11 @@ public class SortPanel extends JPanel implements ActionListener {
 			if (e.getSource() == btn[2]) {
 				QueryConditions.nextMonth(-1);
 				logger.info(String.format("上个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
-			} else {
+			} else if (e.getSource() == btn[3]) {
 				QueryConditions.nextMonth(1);
 				logger.info(String.format("下个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
+			} else {
+				QueryConditions.initTimeInternal();
 			}
 			tx[0].setText(QueryConditions.getStartTime());
 			tx[1].setText(QueryConditions.getStopTime());
