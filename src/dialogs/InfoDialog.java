@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -44,6 +45,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 	// 按钮
 	private JButton[] btn = new JButton[2];
 	private static int BUTTON_OK = 0, BUTTON_EXIT = 1;
+	// 是否有效记录
+	private JCheckBox isValid = new JCheckBox("有效记录");
 	// 字体
 	private DefaultFont font = new DefaultFont();
 	// 数据库
@@ -102,7 +105,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		type.setForeground(Color.WHITE);
 		type.setBounds(120, 110, 80, 25);
 		add(type);
-
+		// 账户名
 		account.setFont(font.getFont());
 		account.setRenderer(new CustomListCellRenderer());
 		account.setOpaque(true);
@@ -110,6 +113,12 @@ public class InfoDialog extends JDialog implements ActionListener {
 		account.setForeground(Color.WHITE);
 		account.setBounds(120, 75, 120, 25);
 		add(account);
+		// 是否有效记录
+		isValid.setFont(font.getFont());
+		add(isValid);
+		isValid.setBounds(220, 110, 120, 25);
+		isValid.setBackground(null);
+		isValid.setSelected(true);
 
 		h2 = new H2_DB();
 		// 账户名下拉列表
@@ -142,7 +151,6 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else if (isRefund) {
 			setTitle("退款信息修改及确认");
 			btn_label = "退款";
-
 		} else {
 			setTitle("流水信息修改");
 			btn_label = "保存";
@@ -204,12 +212,14 @@ public class InfoDialog extends JDialog implements ActionListener {
 				// 修改信息则显示之前时间
 				tx[TX_TIME].setText(rds.getCreatetime());
 			}
+
 			tx[TX_AMOUNT].setText(String.valueOf(rds.getAmount()));
 			tx[TX_REMARK].setText(rds.getRemark());
 			type.setSelectedIndex(rds.getType() == -1 ? 0 : 1);
 			account.setSelectedItem(rds.getName());
 			label.setSelectedItem(rds.getLabel());
 			tx[TX_TIME].setBackground(Color.WHITE);
+			isValid.setSelected(rds.getIsValid());
 		}
 	}
 
@@ -233,13 +243,18 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else {
 			type = 1;
 		}
-		String sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, '%s', '%s');",
-				ft1.format(date), account.getSelectedItem(), type, amount, label.getSelectedItem(),
-				tx[TX_REMARK].getText());
+		// label
+		String sql = null;
+		String i = isValid.isSelected() ? "o" : "i";
 		if (label.getSelectedItem() == null) {
-			sql = String.format("INSERT INTO ledger VALUES (DEFAULT, '%s', '%s', '%d', %.2f, null, '%s');",
+			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, null, '%s');", i,
 					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
+		} else {
+			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, '%s', '%s');", i,
+					ft1.format(date), account.getSelectedItem(), type, amount, label.getSelectedItem(),
+					tx[TX_REMARK].getText());
 		}
+		// 执行SQL
 		h2 = new H2_DB();
 		h2.setAutoCommit(false);
 		logger.info(sql);
