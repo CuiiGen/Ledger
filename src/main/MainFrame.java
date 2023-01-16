@@ -236,7 +236,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.7.7，由iamroot开发\r\n时间：2022年10月27日\r\n邮箱：cuigen@buaa.edu.cn");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.7.8，由iamroot开发\r\n时间：2023-01-16\r\n邮箱：kevin.cuigen@qq.com");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
@@ -279,7 +279,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			// 记一笔账
 			logger.info("打开记账对话框");
 			try {
-				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null, false);
+				// 第4个参数为null表示为新建流水
+				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null, 0);
 				if (infoDialog.showDialog()) {
 					// 界面更新
 					updateAllPanel();

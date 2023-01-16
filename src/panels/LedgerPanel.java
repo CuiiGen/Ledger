@@ -59,8 +59,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 
 	// 弹出式菜单
 	private JPopupMenu pop = new JPopupMenu();
-	private JMenuItem[] items = new JMenuItem[3];
-	private static final int ITEM_SORT_TAG = 0, ITEM_REFUND = 1, ITEM_DEL = 2;
+	private JMenuItem[] items = new JMenuItem[4];
+	private static final int ITEM_ONE_MORE = 0, ITEM_SORT_TAG = 1, ITEM_REFUND = 2, ITEM_DEL = 3;
 
 	// 鼠标所在行
 	int at = -1;
@@ -121,7 +121,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 					// 打开流水记录详情对话框
 					logger.info("打开流水记录详情对话框");
 					try {
-						if (showInfoDialog(array.get(selectedRow), false)) {
+						if (showInfoDialog(array.get(selectedRow), InfoDialog.PUR_UPDATE)) {
 							f.updateAllPanel();
 							logger.info("有信息修改，刷新页面\n");
 						}
@@ -237,7 +237,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		balence.setHorizontalAlignment(JLabel.RIGHT);
 		add(balence, BorderLayout.NORTH);
 		// 弹出式菜单
-		String[] istr = { "筛选同标签记录", " 退款 ", " 删除 " };
+		String[] istr = { " 再来一笔", " 筛选同标签记录", " 退款 ", " 删除 " };
 		for (int i = 0; i < istr.length; i++) {
 			items[i] = new JMenuItem(istr[i]);
 			items[i].setFont(font.getFont(14f));
@@ -245,6 +245,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			items[i].setBackground(Color.WHITE);
 			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 		}
+		pop.add(items[ITEM_ONE_MORE]);
 		pop.add(items[ITEM_SORT_TAG]);
 		// 退款
 		pop.add(items[ITEM_REFUND]);
@@ -378,8 +379,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean showInfoDialog(RecordStructure rds, boolean isRefund) throws SQLException {
-		InfoDialog dialog = new InfoDialog(f, f.getLocation(), f.getSize(), rds, isRefund);
+	private boolean showInfoDialog(RecordStructure rds, int purpose) throws SQLException {
+		InfoDialog dialog = new InfoDialog(f, f.getLocation(), f.getSize(), rds, purpose);
 		return dialog.showDialog();
 	}
 
@@ -406,7 +407,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				r.reverseType();
 				r.setLabel("退款");
 				r.setRemark("退款");
-				if (showInfoDialog(r, true)) {
+				if (showInfoDialog(r, InfoDialog.PUR_REFUND)) {
 					f.updateAllPanel();
 					logger.info("已完成退款\n");
 				} else {
@@ -433,6 +434,25 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				logger.error(LogHelper.exceptionToString(e1));
 				MessageDialog.showError(this, "数据库访问错误，退款失败！");
 			}
+		} else if (e.getSource() == items[ITEM_ONE_MORE]) {
+			// 再来一笔
+			try {
+				RecordStructure r = array.get(table.getSelectedRow()).clone();
+				r.resetCreatetime();
+				if (showInfoDialog(r, InfoDialog.PUR_ONE_MORE)) {
+					f.updateAllPanel();
+					logger.info("再来一笔订单完成\n");
+				} else {
+					logger.info("取消再来一笔\n");
+				}
+			} catch (SQLException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
+				MessageDialog.showError(this, "数据库访问错误，退款失败！");
+			} catch (CloneNotSupportedException e1) {
+				logger.error(LogHelper.exceptionToString(e1));
+				e1.printStackTrace();
+			}
+
 		}
 	}
 }

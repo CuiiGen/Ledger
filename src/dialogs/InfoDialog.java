@@ -59,10 +59,13 @@ public class InfoDialog extends JDialog implements ActionListener {
 	// 保存流水记录方便删除和修改
 	private RecordStructure rds = null;
 	// 判断是否为退款窗口，否则则是修改信息窗口
-	private boolean isRefund = false;
+	// `rds == null`表示新建流水，优先级最高
+	private int purpose = 0;
 
-	public InfoDialog(MainFrame frame, Point p, Dimension d, RecordStructure rds, boolean isRefund)
-			throws SQLException {
+	// 调用该函数的目的：更新、退款或再来一笔
+	public static int PUR_UPDATE = 0, PUR_REFUND = 1, PUR_ONE_MORE = 2;
+
+	public InfoDialog(MainFrame frame, Point p, Dimension d, RecordStructure rds, int purpose) throws SQLException {
 		// 父类构造函数
 		super(frame, "流水记录信息新建或设置", true);
 		// 布局设置
@@ -87,13 +90,12 @@ public class InfoDialog extends JDialog implements ActionListener {
 			tx[i].setHorizontalAlignment(JTextField.CENTER);
 			tx[i].setSelectedTextColor(Color.WHITE);
 			tx[i].setSelectionColor(ThemeColor.BLUE);
+			tx[i].addActionListener(this);
 			add(tx[i]);
 		}
 		tx[TX_TIME].setBounds(120, 40, 200, 25);
 		tx[TX_AMOUNT].setBounds(120, 145, 200, 25);
 		tx[TX_REMARK].setBounds(120, 215, 200, 25);
-		tx[TX_AMOUNT].addActionListener(this);
-		tx[TX_REMARK].addActionListener(this);
 
 		// 下拉列表
 		type.addItem("支出");
@@ -148,11 +150,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 		if (rds == null) {
 			setTitle("新建流水");
 			btn_label = "插入";
-		} else if (isRefund) {
+		} else if (this.purpose == PUR_REFUND) {
 			setTitle("退款信息修改及确认");
 			btn_label = "退款";
 		} else {
-			setTitle("流水信息修改");
+			setTitle("流水信息确认");
 			btn_label = "保存";
 		}
 		// 按钮其他设置
@@ -171,7 +173,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 
 		// 内容设置
 		this.rds = rds;
-		this.isRefund = isRefund;
+		this.purpose = purpose;
 		contentReset();
 
 		getContentPane().setBackground(ThemeColor.APPLE);
@@ -203,7 +205,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		tx[TX_TIME].setEditable(true);
 		// 若记录非空
 		if (rds != null) {
-			if (isRefund) {
+			if (purpose == PUR_REFUND) {
 				// 退款时收支类型及退款标签不可更改
 				tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 				type.setEnabled(false);
@@ -333,7 +335,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		}
 		// 是否确认
 		boolean confirmed = e.getSource() == btn[BUTTON_OK] || e.getSource() == tx[TX_REMARK]
-				|| e.getSource() == tx[TX_AMOUNT];
+				|| e.getSource() == tx[TX_AMOUNT] || e.getSource() == tx[TX_TIME];
 		// 时间校验和格式化
 		Date date = null;
 		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
@@ -352,7 +354,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			return;
 		}
 		// 操作选择
-		if (rds == null && confirmed) {
+		if ((rds == null || purpose == PUR_ONE_MORE) && confirmed) {
 			// 插入
 			try {
 				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
@@ -368,7 +370,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (rds != null && isRefund == false && confirmed) {
+		} else if (rds != null && purpose == PUR_UPDATE && confirmed) {
 			// 更新保存
 			try {
 				delete();
@@ -382,7 +384,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (rds != null && isRefund && confirmed) {
+		} else if (rds != null && purpose == PUR_REFUND && confirmed) {
 			// 退款
 			try {
 				if (MessageDialog.showConfirm(this, "确认该订单已退款？") == JOptionPane.YES_OPTION) {
