@@ -3,8 +3,11 @@ package charts;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -31,7 +34,7 @@ import design.DefaultFont;
 import design.ThemeColor;
 import panels.QueryConditions;
 
-public class PlotPanel extends JPanel {
+public class PlotPanel extends JPanel implements MouseWheelListener {
 	/**
 	 * 
 	 */
@@ -41,10 +44,17 @@ public class PlotPanel extends JPanel {
 	private CategoryPlot plot = null;
 	// 日志
 	private Logger logger = LogManager.getLogger();
+	// 默认显示月份数量
+	private int limit = 10;
+	private static int MIN_LIMIT = 6;
+
+	private ArrayList<String> date = new ArrayList<>();
+	private ArrayList<Double> amount = new ArrayList<>();
 
 	public PlotPanel() throws SQLException {
 		logger.info("每月流水图初始化 - 开始");
 		// 获取数据
+		fetchData();
 		DefaultCategoryDataset dataset = createDataset();
 		// 创建图形
 		JFreeChart chart = createChart(dataset);
@@ -53,29 +63,48 @@ public class PlotPanel extends JPanel {
 		// 布局设置
 		setLayout(new BorderLayout());
 		add(chartPanel, BorderLayout.CENTER);
+		// 鼠标滑轮事件监听
+		addMouseWheelListener(this);
 		// 日志
 		logger.info("每月流水图初始化 - 完成");
+	}
+
+	/**
+	 * 从数据库中获取折线图所用数据
+	 * 
+	 * @throws SQLException
+	 */
+	private void fetchData() throws SQLException {
+		// 获取数据
+		H2_DB h2 = new H2_DB();
+		String sql = QueryConditions.getPlotSql();
+		logger.info(sql);
+		ResultSet rs = h2.query(sql);
+		// 遍历
+		while (rs.next()) {
+			// 金额
+			amount.add(rs.getDouble("y"));
+			// 月份
+			date.add(rs.getString("x"));
+		}
+
 	}
 
 	/**
 	 * 创建dataset
 	 * 
 	 * @return
-	 * @throws SQLException
 	 */
-	private DefaultCategoryDataset createDataset() throws SQLException {
-		// 获取数据
-		H2_DB h2 = new H2_DB();
-		String sql = QueryConditions.getPlotSql();
-		logger.info(sql);
-		ResultSet rs = h2.query(sql);
-		// 数据整理
-		// 遍历resultSet
+	private DefaultCategoryDataset createDataset() {
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		while (rs.next()) {
-			dataset.addValue(rs.getDouble("y"), "每月消费流水", rs.getString("x"));
+		int i = date.size() - limit;
+		if (i < 0) {
+			i = 0;
 		}
-		h2.close();
+		for (; i < date.size(); i++) {
+			dataset.addValue(amount.get(i), "每月消费流水", date.get(i));
+		}
+
 		// 返回
 		return dataset;
 	}
@@ -158,6 +187,26 @@ public class PlotPanel extends JPanel {
 	 */
 	public void updatePlot() throws SQLException {
 		logger.info("折线重绘");
+		fetchData();
+		DefaultCategoryDataset dataset = createDataset();
+		plot.setDataset(dataset);
+		plot.setDataset(1, dataset);
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		// 计算新的限制数量
+		// Windows平台下向上转动滑轮返回值为负，但此时表示放大
+		int new_limit = limit - e.getUnitsToScroll();
+		if (new_limit < MIN_LIMIT) {
+			new_limit = MIN_LIMIT;
+		}
+		// 判断是否需要重绘
+		if (new_limit == limit) {
+			return;
+		}
+		limit = new_limit;
+		// 绘图
 		DefaultCategoryDataset dataset = createDataset();
 		plot.setDataset(dataset);
 		plot.setDataset(1, dataset);
