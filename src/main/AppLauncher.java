@@ -23,6 +23,8 @@ public class AppLauncher {
 			logger.error(LogHelper.exceptionToString(e));
 			if (e.toString().contains("already in use")) {
 				// 数据库使用中
+			} else if (e.toString().contains("Wrong user name or password")) {
+				// 账号密码错误
 			} else if (MessageDialog.showConfirm(null, "启动过程中数据库访问异常，需选择备份文件进行恢复！") == JOptionPane.YES_OPTION) {
 				if (H2_DB.restore()) {
 					MessageDialog.showMessage(null, "恢复成功，请重新启动软件！");

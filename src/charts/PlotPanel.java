@@ -87,6 +87,8 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 			// 月份
 			date.add(rs.getString("x"));
 		}
+		// 关闭连接
+		h2.close();
 
 	}
 
