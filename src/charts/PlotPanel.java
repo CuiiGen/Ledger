@@ -199,7 +199,7 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		// 计算新的限制数量
 		// Windows平台下向上转动滑轮返回值为负，但此时表示放大
-		int new_limit = limit - e.getUnitsToScroll();
+		int new_limit = limit - e.getWheelRotation();
 		if (new_limit < MIN_LIMIT) {
 			new_limit = MIN_LIMIT;
 		}
