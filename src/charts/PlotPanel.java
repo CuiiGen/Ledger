@@ -46,7 +46,7 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 	private Logger logger = LogManager.getLogger();
 	// 默认显示月份数量
 	private int limit = 10;
-	private static int MIN_LIMIT = 6;
+	private static final int MIN_LIMIT = 6;
 
 	private ArrayList<String> date = new ArrayList<>();
 	private ArrayList<Double> amount = new ArrayList<>();
@@ -80,6 +80,9 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 		String sql = QueryConditions.getPlotSql();
 		logger.info(sql);
 		ResultSet rs = h2.query(sql);
+		// 清空当前内容
+		amount.clear();
+		date.clear();
 		// 遍历
 		while (rs.next()) {
 			// 金额
@@ -102,6 +105,8 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 		int i = date.size() - limit;
 		if (i < 0) {
 			i = 0;
+			// 重置`limit`
+			limit = date.size();
 		}
 		for (; i < date.size(); i++) {
 			dataset.addValue(amount.get(i), "每月消费流水", date.get(i));
