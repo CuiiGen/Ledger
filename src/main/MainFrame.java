@@ -236,7 +236,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.7.12，由iamroot开发\r\n时间：2023-05-23\r\n邮箱：kevin.cuigen@qq.com");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.7.13，由iamroot开发\r\n时间：2024-01-02\r\n邮箱：kevin.cuigen@qq.com");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");
@@ -340,12 +340,14 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_LOG]) {
 			// 打开日志
 			try {
+				String[] trace = {"notepad", "./database/Ledger.trace.db"};
+				String[] info = {"notepad", "./logs/info.log"};
 				logger.info("查看日志\n");
 				File file = new File("./database/Ledger.trace.db");
 				if (file.exists()) {
-					Runtime.getRuntime().exec("notepad ./database/Ledger.trace.db");
+					Runtime.getRuntime().exec(trace);
 				}
-				Runtime.getRuntime().exec("notepad ./logs/info.log");
+				Runtime.getRuntime().exec(info);
 			} catch (IOException e1) {
 				logger.error(LogHelper.exceptionToString(e1));
 			}

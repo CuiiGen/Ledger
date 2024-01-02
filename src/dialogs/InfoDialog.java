@@ -11,6 +11,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Deque;
+import java.util.LinkedList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -325,6 +327,59 @@ public class InfoDialog extends JDialog implements ActionListener {
 		h2.close();
 	}
 
+	private float arithmetic(String formula) throws NumberFormatException {
+		// numbers and operators
+		Deque<Float> nums = new LinkedList<Float>();
+		Deque<Character> operators = new LinkedList<Character>();
+		// cast to array of char
+		char[] chr = formula.toCharArray();
+		// operator of the first number
+		if (chr[0] >= '0' && chr[0] <= '9' || chr[0] == '.') {
+			operators.push('+');
+		} else if (chr[0] == '+' || chr[0] == '-') {
+		} else {
+			throw new NumberFormatException("算式有误，第一个字符错误！");
+		}
+
+		int i = 0, j = 1;
+		for (; i < formula.length(); i = j, j++) {
+			if (chr[i] >= '0' && chr[i] <= '9' || chr[i] == '.') {
+				for (; j < formula.length() && (chr[j] >= '0' && chr[j] <= '9' || chr[j] == '.'); j++)
+					;
+				// from i to j-1
+				float num = Float.parseFloat(formula.substring(i, j));
+				if (!operators.isEmpty()) {
+					char opr = operators.peek();
+					if (opr == '*') {
+						operators.pop();
+						num = nums.pop() * num;
+					} else if (opr == '/') {
+						operators.pop();
+						num = nums.pop() / num;
+					}
+					nums.push(num);
+				}
+			} else if (chr[i] == '+' || chr[i] == '-' || chr[i] == '*' || chr[i] == '/') {
+				operators.push(chr[i]);
+			} else {
+				throw new NumberFormatException("算式有误，无效字符！");
+			}
+		}
+		float result = 0;
+		if (operators.size() != nums.size()) {
+			throw new NumberFormatException("算式有误，数值和计算符数量不匹配");
+		}
+		while (!nums.isEmpty()) {
+			if (operators.pop() == '+') {
+				result += nums.pop();
+			} else {
+				result -= nums.pop();
+
+			}
+		}
+		return result;
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// 退出界面，不在进行操作
@@ -335,7 +390,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		}
 		// 是否确认
 		boolean confirmed = e.getSource() == btn[BUTTON_OK] || e.getSource() == tx[TX_REMARK]
-				|| e.getSource() == tx[TX_AMOUNT] || e.getSource() == tx[TX_TIME];
+				|| e.getSource() == tx[TX_TIME];
 		// 时间校验和格式化
 		Date date = null;
 		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
@@ -398,6 +453,15 @@ public class InfoDialog extends JDialog implements ActionListener {
 			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
+			}
+		} else if (e.getSource() == tx[TX_AMOUNT]) {
+			String formula = tx[TX_AMOUNT].getText();
+			try {
+				if (!formula.isEmpty()) {
+					tx[TX_AMOUNT].setText(String.format("%.2f", arithmetic(formula)));
+				}
+			} catch (NumberFormatException e2) {
+				MessageDialog.showError(this, e2.getMessage());
 			}
 		}
 	}
