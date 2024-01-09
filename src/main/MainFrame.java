@@ -280,7 +280,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			logger.info("打开记账对话框");
 			try {
 				// 第4个参数为null表示为新建流水
-				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null, 0);
+				InfoDialog infoDialog = new InfoDialog(this, getLocation(), getSize(), null, InfoDialog.PUR_NEW);
 				if (infoDialog.showDialog()) {
 					// 界面更新
 					updateAllPanel();

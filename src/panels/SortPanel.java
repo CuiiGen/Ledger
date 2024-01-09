@@ -216,7 +216,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		tag.removeAllItems();
 		tag.addItem("全部");
 		// 两个空格
-		tag.addItem("  ");
+		tag.addItem(QueryConditions.nullPopItem);
 		h2 = new H2_DB();
 		String sql = "SELECT label FROM labels";
 		ResultSet rs = h2.query(sql);

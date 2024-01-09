@@ -26,6 +26,8 @@ public class QueryConditions {
 	private static String fuzzyWord = "%";
 	// 是否只显示有效数据
 	private static boolean isValid = false;
+	
+	public static String nullPopItem = "  ";
 
 	/**
 	 * 初始化时间

@@ -404,9 +404,6 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			// 退款
 			try {
 				RecordStructure r = array.get(table.getSelectedRow()).clone();
-				r.reverseType();
-				r.setLabel("退款");
-				r.setRemark("退款");
 				if (showInfoDialog(r, InfoDialog.PUR_REFUND)) {
 					f.updateAllPanel();
 					logger.info("已完成退款\n");

@@ -30,6 +30,7 @@ import design.ThemeColor;
 import main.MainFrame;
 import models.CustomListCellRenderer;
 import models.RecordStructure;
+import panels.QueryConditions;
 import tool.LogHelper;
 
 public class InfoDialog extends JDialog implements ActionListener {
@@ -64,8 +65,8 @@ public class InfoDialog extends JDialog implements ActionListener {
 	// `rds == null`表示新建流水，优先级最高
 	private int purpose = 0;
 
-	// 调用该函数的目的：更新、退款或再来一笔
-	public static int PUR_UPDATE = 0, PUR_REFUND = 1, PUR_ONE_MORE = 2;
+	// 调用该函数的目的：新建、更新、退款或再来一笔
+	public static int PUR_NEW = 0, PUR_UPDATE = 1, PUR_REFUND = 2, PUR_ONE_MORE = 3;
 
 	public InfoDialog(MainFrame frame, Point p, Dimension d, RecordStructure rds, int purpose) throws SQLException {
 		// 父类构造函数
@@ -132,7 +133,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			account.addItem(rs.getString("name"));
 		}
 		// 标签下拉列表
-		label.addItem(null);
+		label.addItem(QueryConditions.nullPopItem);
 		sql = "SELECT label FROM labels ORDER BY createtime DESC";
 		rs = h2.query(sql);
 		while (rs.next()) {
@@ -147,9 +148,14 @@ public class InfoDialog extends JDialog implements ActionListener {
 		label.setOpaque(true);
 		label.setBackground(ThemeColor.BLUE);
 		label.setForeground(Color.WHITE);
+
+		// 设置成员变量
+		this.rds = rds;
+		this.purpose = purpose;
+
 		// 确认按钮显示文字及窗口标题设置
 		String btn_label = null;
-		if (rds == null) {
+		if (this.purpose == PUR_NEW || this.purpose == PUR_ONE_MORE) {
 			setTitle("新建流水");
 			btn_label = "插入";
 		} else if (this.purpose == PUR_REFUND) {
@@ -174,8 +180,6 @@ public class InfoDialog extends JDialog implements ActionListener {
 		btn[BUTTON_EXIT].setBounds(230, 270, 80, 30);
 
 		// 内容设置
-		this.rds = rds;
-		this.purpose = purpose;
 		contentReset();
 
 		getContentPane().setBackground(ThemeColor.APPLE);
@@ -202,28 +206,24 @@ public class InfoDialog extends JDialog implements ActionListener {
 	private void contentReset() throws SQLException {
 		// 时间
 		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
-		tx[TX_AMOUNT].setText(null);
-		tx[TX_REMARK].setText(null);
-		tx[TX_TIME].setEditable(true);
 		// 若记录非空
 		if (rds != null) {
-			if (purpose == PUR_REFUND) {
-				// 退款时收支类型及退款标签不可更改
-				tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
-				type.setEnabled(false);
-				label.setEnabled(false);
-			} else {
-				// 修改信息则显示之前时间
-				tx[TX_TIME].setText(rds.getCreatetime());
-			}
-
 			tx[TX_AMOUNT].setText(String.valueOf(rds.getAmount()));
 			tx[TX_REMARK].setText(rds.getRemark());
 			type.setSelectedIndex(rds.getType() == -1 ? 0 : 1);
 			account.setSelectedItem(rds.getName());
 			label.setSelectedItem(rds.getLabel());
-			tx[TX_TIME].setBackground(Color.WHITE);
 			isValid.setSelected(rds.getIsValid());
+			if (purpose == PUR_REFUND) {
+				// 退款时收支类型及退款标签不可更改
+				tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
+				type.setEnabled(false);
+				label.setEnabled(false);
+				isValid.setEnabled(false);
+			} else {
+				// 修改信息则显示之前时间
+				tx[TX_TIME].setText(rds.getCreatetime());
+			}
 		}
 	}
 
@@ -250,7 +250,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		// label
 		String sql = null;
 		String i = isValid.isSelected() ? "o" : "i";
-		if (label.getSelectedItem() == null) {
+		if (label.getSelectedItem() == QueryConditions.nullPopItem) {
 			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, null, '%s');", i,
 					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
 		} else {
@@ -311,14 +311,14 @@ public class InfoDialog extends JDialog implements ActionListener {
 		logger.info(sql);
 		h2.execute(sql);
 		// 插入退款记录
-		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
-				tx[TX_TIME].getText(), account.getSelectedItem(), rds.getType(), amount, "退款",
+		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '退款', '%s');",
+				tx[TX_TIME].getText(), account.getSelectedItem(), -1 * rds.getType(), amount,
 				tx[TX_REMARK].getText() + " 原流水时间：" + rds.getCreatetime());
 		logger.info("插入退款记录");
 		logger.info(sql);
 		h2.execute(sql);
 		// 恢复余额
-		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';",
+		sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
 				rds.getType() * amount, account.getSelectedItem());
 		logger.info("恢复余额");
 		logger.info(sql);
@@ -409,7 +409,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			return;
 		}
 		// 操作选择
-		if ((rds == null || purpose == PUR_ONE_MORE) && confirmed) {
+		if ((purpose == PUR_NEW || purpose == PUR_ONE_MORE) && confirmed) {
 			// 插入
 			try {
 				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
@@ -425,7 +425,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (rds != null && purpose == PUR_UPDATE && confirmed) {
+		} else if (purpose == PUR_UPDATE && confirmed) {
 			// 更新保存
 			try {
 				delete();
@@ -439,7 +439,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				MessageDialog.showError(this, "数据格式错误！");
 				logger.error(LogHelper.exceptionToString(e1));
 			}
-		} else if (rds != null && purpose == PUR_REFUND && confirmed) {
+		} else if (purpose == PUR_REFUND && confirmed) {
 			// 退款
 			try {
 				if (MessageDialog.showConfirm(this, "确认该订单已退款？") == JOptionPane.YES_OPTION) {
