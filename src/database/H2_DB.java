@@ -158,7 +158,7 @@ public class H2_DB {
 
 		// 计算校验文件
 		MessageDigest md = null;
-		String alg = DefaultProperties.getProperty("cryptography.algorithm", "SHA-512");
+		String alg = DefaultProperties.getString("cryptography.algorithm");
 		try {
 			md = MessageDigest.getInstance(alg);
 		} catch (NoSuchAlgorithmException e) {
@@ -222,7 +222,7 @@ public class H2_DB {
 			}
 			// 恢复数据
 			logger.info("即将选择SQL文件进行恢复");
-			String filePath = DefaultProperties.getProperty("backup.path", "./backup/");
+			String filePath = DefaultProperties.getString("backup.path");
 			File sqlFile = FileChooserDialog.openFileChooser(null, filePath);
 			if (sqlFile != null) {
 				DefaultProperties.setProperty("backup.path", sqlFile.getParent());

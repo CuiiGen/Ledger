@@ -53,7 +53,7 @@ public class QueryConditions {
 		type = 0;
 		name = "%";
 		// 设置默认选项
-		isValid = DefaultProperties.getProperty("ledger.onlyValid", false);
+		isValid = DefaultProperties.getBoolean("ledger.onlyValid");
 
 	}
 
@@ -176,7 +176,7 @@ public class QueryConditions {
 		} else {
 			String sortLabel = null, sortType = null;
 			// 标签
-			if (label.equals("  ")) {
+			if (label.equals(QueryConditions.nullPopItem)) {
 				sortLabel = "`label` IS NULL";
 			} else if (label.equals("全部")) {
 				sortLabel = "true";

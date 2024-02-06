@@ -231,7 +231,6 @@ public class SortPanel extends JPanel implements ActionListener {
 		type.setSelectedIndex(QueryConditions.getType());
 		// 标签
 		tag.setSelectedItem(QueryConditions.getLabel());
-//		isValid.setSelected(QueryConditions.getIsValid());
 	}
 
 	@Override
