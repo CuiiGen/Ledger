@@ -23,7 +23,7 @@ public class DefaultProperties {
 	// ledger.onlyValid
 	// backup.path
 	// cryptography.algorithm
-	public DefaultProperties() {
+	public static void init() {
 		try {
 			SystemProperties.load(new FileInputStream(PROPERTIES_FILE_PATH));
 			logger.info("已读取配置文件到软件中");
@@ -103,6 +103,8 @@ public class DefaultProperties {
 	}
 
 	/**
+	 * Store the System properties to local file
+	 * 
 	 * @param p
 	 * @throws IOException
 	 */

@@ -17,7 +17,7 @@ public class AppLauncher {
 	public static void main(String[] args) {
 		Logger logger = LogManager.getLogger();
 		// initialize the system properties
-		new DefaultProperties();
+		DefaultProperties.init();
 		// 软件启动
 		try {
 			new MainFrame();

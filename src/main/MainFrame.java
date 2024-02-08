@@ -218,7 +218,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public String checkLedger() throws SQLException {
 		H2_DB h2 = new H2_DB();
 		String sql = "SELECT `accounts`.*, `check`.`amount` FROM `accounts` LEFT JOIN "
-				+ "( SELECT `name`, SUM(`amount` * CAST(`type` AS CHAR)) AS `amount` FROM `ledger` GROUP BY `name` ) AS `check` "
+				+ "( SELECT `name`, SUM(`amount` * (3 - 2 * CAST(`type` AS INT))) AS `amount` FROM `ledger` GROUP BY `name` ) AS `check` "
 				+ "ON `check`.`name` = `accounts`.`name`"
 				+ "WHERE ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7 AND `check`.`amount` IS NOT NULL;";
 		ResultSet rs = h2.query(sql);

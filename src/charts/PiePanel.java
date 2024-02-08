@@ -77,8 +77,6 @@ public class PiePanel extends JPanel {
 		logger.info(sql);
 		// 重置
 		list.clear();
-		// 索引表
-		String[] types = { "  收 入 - 类 别 情 况  ", "  支 出 - 类 别 情 况  " };
 		// 数据整合
 		ResultSet rs = h2.query(sql);
 		while (rs.next()) {
@@ -88,7 +86,11 @@ public class PiePanel extends JPanel {
 				key = "null";
 			}
 			// 加入数据
-			dataset.addValue(rs.getDouble("total"), key, types[rs.getInt("type")]);
+			if (rs.getString("type").equals("1")) {
+				dataset.addValue(rs.getDouble("total"), key, "  收 入 - 类 别 情 况  ");
+			} else {
+				dataset.addValue(rs.getDouble("total"), key, "  支 出 - 类 别 情 况  ");
+			}
 			list.add(key);
 		}
 		h2.close();
