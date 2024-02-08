@@ -106,7 +106,7 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 		if (i < 0) {
 			i = 0;
 			// 重置`limit`
-			limit = date.size();
+			limit = date.size() < MIN_LIMIT ? MIN_LIMIT : date.size();
 		}
 		for (; i < date.size(); i++) {
 			dataset.addValue(amount.get(i), "每月消费流水", date.get(i));
