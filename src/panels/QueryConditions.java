@@ -7,37 +7,40 @@ import java.util.Calendar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tool.DefaultProperties;
+import tool.SystemProperties;
 
 public class QueryConditions {
 
 	// 起始结束时间
-	private static String startTime = null;
-	private static String stopTime = null;
+	private String startTime = null;
+	private String stopTime = null;
 	// 标签
-	private static String label = "全部";
+	private String label = "全部";
 	// 类别
-	private static int type = 0;
+	private int type = 0;
 	// 账户名
-	private static String name = "%";
+	private String name = "%";
 	// 模糊搜索
-	private static boolean isFuzzy = false;
+	private boolean isFuzzy = false;
 	// 模糊搜索关键词
-	private static String fuzzyWord = "%";
+	private String fuzzyWord = "%";
 	// 是否只显示有效数据
-	private static boolean isValid = false;
-	
-	public static String nullPopItem = "  ";
+	private boolean isValid = false;
+
+	public final static String nullPopItem = "  ";
 
 	/**
 	 * 初始化时间
 	 */
-	public static void initTimeInternal() {
+	public void initTimeInternal() {
 		Logger logger = LogManager.getLogger();
 		logger.info("查询时间区间初始化");
+		// TimeNow
 		Calendar c = Calendar.getInstance();
+		// StartTime
 		c.set(Calendar.DAY_OF_MONTH, 1);
 		startTime = String.format("%tF", c);
+		// StopTime
 		c.add(Calendar.MONDAY, 1);
 		c.add(Calendar.DAY_OF_MONTH, -1);
 		stopTime = String.format("%tF", c);
@@ -46,65 +49,69 @@ public class QueryConditions {
 	/**
 	 * 其他查询选项初始化
 	 */
-	public static void initQueryItems() {
+	public void initQueryItems() {
 		Logger logger = LogManager.getLogger();
 		logger.info("其他查询条件初始化");
 		label = "全部";
 		type = 0;
 		name = "%";
 		// 设置默认选项
-		isValid = DefaultProperties.getBoolean("ledger.onlyValid");
+		isValid = SystemProperties.getInstance().getBoolean("ledger.onlyValid");
 
 	}
 
 	/**
 	 * 初始化筛选默认条件
 	 */
-	public static void init() {
+	public void reset() {
 		Logger logger = LogManager.getLogger();
 		logger.info("查询条件初始化");
-		QueryConditions.initTimeInternal();
-		QueryConditions.initQueryItems();
+		initTimeInternal();
+		initQueryItems();
 	}
 
-	public static String getStartTime() {
+	private QueryConditions() {
+		reset();
+	}
+
+	public String getStartTime() {
 		return startTime;
 	}
 
-	public static void setStartTime(String startTime) {
-		QueryConditions.startTime = startTime;
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
 	}
 
-	public static String getStopTime() {
+	public String getStopTime() {
 		return stopTime;
 	}
 
-	public static void setStopTime(String stopTime) {
-		QueryConditions.stopTime = stopTime;
+	public void setStopTime(String stopTime) {
+		this.stopTime = stopTime;
 	}
 
-	public static String getLabel() {
+	public String getLabel() {
 		return label;
 	}
 
-	public static void setLabel(String label) {
-		QueryConditions.label = label;
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
-	public static int getType() {
+	public int getType() {
 		return type;
 	}
 
-	public static void setType(int type) {
-		QueryConditions.type = type;
+	public void setType(int type) {
+		this.type = type;
 	}
 
-	public static String getName() {
+	public String getName() {
 		return name;
 	}
 
-	public static void setName(String name) {
-		QueryConditions.name = name;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**
@@ -112,7 +119,7 @@ public class QueryConditions {
 	 * 
 	 * @param delta
 	 */
-	public static void nextMonth(int delta) {
+	public void nextMonth(int delta) {
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
 			Calendar calendar = Calendar.getInstance();
@@ -140,7 +147,7 @@ public class QueryConditions {
 	 * 
 	 * @param is
 	 */
-	public static void setIsFuzzy(boolean is) {
+	public void setIsFuzzy(boolean is) {
 		isFuzzy = is;
 	}
 
@@ -149,16 +156,16 @@ public class QueryConditions {
 	 * 
 	 * @param word
 	 */
-	public static void setFuzzyWord(String word) {
+	public void setFuzzyWord(String word) {
 		isFuzzy = true;
 		fuzzyWord = String.format("%%%s%%", word);
 	}
 
-	public static void setIsValid(boolean is) {
+	public void setIsValid(boolean is) {
 		isValid = is;
 	}
 
-	public static boolean getIsValid() {
+	public boolean getIsValid() {
 		return isValid;
 	}
 
@@ -167,7 +174,7 @@ public class QueryConditions {
 	 * 
 	 * @return
 	 */
-	public static String getSQL() {
+	public String getSQL() {
 		String sql = "";
 		if (isFuzzy) {
 			sql = String.format(
@@ -202,7 +209,7 @@ public class QueryConditions {
 	 * 
 	 * @return
 	 */
-	public static String getPlotSql() {
+	public String getPlotSql() {
 		String sql = "";
 		String sortLabel = null;
 		// 标签
@@ -224,10 +231,24 @@ public class QueryConditions {
 	 * 
 	 * @return
 	 */
-	public static String getPieSql() {
+	public String getPieSql() {
 		String sql = String.format("SELECT `label`, `type`, SUM(`amount`) AS `total` FROM `ledger` "
 				+ "WHERE `isvalid` = 'o' AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59'"
 				+ "GROUP BY `label`, `type` ORDER BY `type`, `total` DESC;", startTime, stopTime);
 		return sql;
 	}
+
+	private static volatile QueryConditions instance;
+
+	public static QueryConditions getInstance() {
+		if (instance == null) {
+			synchronized (QueryConditions.class) {
+				if (instance == null) {
+					instance = new QueryConditions();
+				}
+			}
+		}
+		return instance;
+	}
+
 }

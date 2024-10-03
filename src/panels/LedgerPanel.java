@@ -264,7 +264,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 	 */
 	public void updateTable() throws SQLException {
 		// 根据筛选条件生成SQL并查询
-		String sql = QueryConditions.getSQL();
+		String sql = QueryConditions.getInstance().getSQL();
 		logger.info("流水表格更新");
 		h2 = new H2_DB();
 		logger.info(sql);
@@ -423,7 +423,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			if (label == null) {
 				label = "  ";
 			}
-			QueryConditions.setLabel(label);
+			QueryConditions.getInstance().setLabel(label);
 			try {
 				f.updateSortPanel();
 				f.updateAllPanel();

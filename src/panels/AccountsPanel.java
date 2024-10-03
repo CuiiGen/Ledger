@@ -93,8 +93,8 @@ public class AccountsPanel extends Panel {
 					h2.execute(sql);
 					h2.close();
 					// 如果账户名修改设计筛选条件中账户名则进行更新
-					if (QueryConditions.getName().equals(pre)) {
-						QueryConditions.setName(newName);
+					if (QueryConditions.getInstance().getName().equals(pre)) {
+						QueryConditions.getInstance().setName(newName);
 					}
 					f.updateLedger();
 					logger.info("账户名更新成功\n");
@@ -149,7 +149,7 @@ public class AccountsPanel extends Panel {
 					return;
 				}
 				try {
-					QueryConditions.setName(table.getValueAt(r, 0).toString());
+					QueryConditions.getInstance().setName(table.getValueAt(r, 0).toString());
 					f.updateLedger();
 				} catch (SQLException e1) {
 					MessageDialog.showError(this, "数据库访问错误");
@@ -317,8 +317,8 @@ public class AccountsPanel extends Panel {
 			h2.execute(sql);
 			h2.close();
 			// 如果删除账户涉及当前筛选条件则改为全部
-			if (QueryConditions.getName().equals(array.get(r).getName())) {
-				QueryConditions.setName("%");
+			if (QueryConditions.getInstance().getName().equals(array.get(r).getName())) {
+				QueryConditions.getInstance().setName("%");
 			}
 			updateTable();
 			return true;

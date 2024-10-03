@@ -88,8 +88,8 @@ public class LabelsDialog extends JDialog implements ActionListener {
 					logger.info("标签重复，已合并重复标签");
 				}
 				// 如果修改涉及到当前筛选条件则进行相应更改
-				if (QueryConditions.getLabel().equals(pre)) {
-					QueryConditions.setLabel(table.getValueAt(r, c).toString());
+				if (QueryConditions.getInstance().getLabel().equals(pre)) {
+					QueryConditions.getInstance().setLabel(table.getValueAt(r, c).toString());
 				}
 				// 执行修改
 				logger.info(sql);
@@ -339,8 +339,8 @@ public class LabelsDialog extends JDialog implements ActionListener {
 			h2.execute(sql);
 			h2.close();
 			// 如果待删除标签涉及到当前筛选条件则将筛选条件修改为全部
-			if (QueryConditions.getLabel().equals(l)) {
-				QueryConditions.setLabel("全部");
+			if (QueryConditions.getInstance().getLabel().equals(l)) {
+				QueryConditions.getInstance().setLabel("全部");
 			}
 			return true;
 		} else {

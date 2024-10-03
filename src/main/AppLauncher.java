@@ -9,15 +9,12 @@ import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
 import dialogs.MessageDialog;
-import tool.DefaultProperties;
 import tool.LogHelper;
 
 public class AppLauncher {
 
 	public static void main(String[] args) {
 		Logger logger = LogManager.getLogger();
-		// initialize the system properties
-		DefaultProperties.init();
 		// 软件启动
 		try {
 			new MainFrame();

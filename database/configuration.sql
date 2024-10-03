@@ -29,6 +29,16 @@ INSERT INTO
 VALUES
     ('退款', DEFAULT);
 
+-- 报销
+DROP TABLE `reimbursements` IF EXISTS;
+
+CREATE TABLE `reimbursements` (
+    `no` INT NOT NULL AUTO_INCREMENT COMMENT '报销单ID',
+    `name` VARCHAR(32) NOT NULL COMMENT '备注',
+    `complete` BOOLEAN DEFAULT FALSE NOT NULL COMMENT '已经完成',
+    PRIMARY KEY (`no`)
+);
+
 -- 账本
 DROP TABLE `ledger` IF EXISTS;
 
@@ -40,9 +50,11 @@ CREATE TABLE `ledger` (
     `amount` DOUBLE DEFAULT 0 NOT NULL COMMENT '金额',
     `label` VARCHAR(32) DEFAULT NULL COMMENT '标签',
     `remark` TEXT DEFAULT NULL COMMENT '备注',
+    `reimbursement` INT DEFAULT NULL COMMENT '报销',
     PRIMARY KEY (`createtime`),
     CONSTRAINT `ledger_ibfk_1` FOREIGN KEY (`name`) REFERENCES `accounts` (`name`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `ledger_ibfk_2` FOREIGN KEY (`label`) REFERENCES `labels` (`label`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `ledger_ibfk_2` FOREIGN KEY (`label`) REFERENCES `labels` (`label`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `ledger_ibfk_3` FOREIGN KEY (`reimbursement`) REFERENCES `reimbursements` (`no`) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- 查询标签
@@ -59,6 +71,20 @@ GROUP BY
     `labels`.`label`
 ORDER BY
     `labels`.`createtime` DESC;
+
+-- 查询报销
+CREATE
+OR REPLACE VIEW `view_reimbursement` AS
+SELECT
+    `reimbursements`.*,
+    sum(`ledger`.`amount` * CAST(CAST(`ledger`.`type` AS VARCHAR) AS INT)) AS `interest`
+FROM
+    `reimbursements`
+    LEFT JOIN `ledger` ON `reimbursements`.`no` = `ledger`.`reimbursement`
+GROUP BY
+    `reimbursements`.`no`
+ORDER BY
+    `reimbursements`.`no` DESC;
 
 -- 自定义函数 H2数据库中不支持
 CREATE DEFINER = CURRENT_USER FUNCTION `record`(

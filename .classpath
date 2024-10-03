@@ -22,6 +22,6 @@
 			<attribute name="javadoc_location" value="https://logging.apache.org/log4j/2.x/log4j-core/apidocs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/h2-2.2.224.jar"/>
+	<classpathentry kind="lib" path="libs/h2-2.3.232.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

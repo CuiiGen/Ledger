@@ -326,7 +326,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			try {
 				if (H2_DB.restore()) {
 					// 筛选条件重置
-					QueryConditions.init();
+					QueryConditions.getInstance().reset();
 					// 更新页面
 					updateAllPanel();
 					sortPanel.updateContent();

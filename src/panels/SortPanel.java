@@ -31,7 +31,7 @@ import design.ThemeColor;
 import dialogs.MessageDialog;
 import main.MainFrame;
 import models.CustomListCellRenderer;
-import tool.DefaultProperties;
+import tool.SystemProperties;
 import tool.LogHelper;
 
 public class SortPanel extends JPanel implements ActionListener {
@@ -94,7 +94,6 @@ public class SortPanel extends JPanel implements ActionListener {
 		tag.setBackground(ThemeColor.BLUE);
 		tag.setForeground(Color.WHITE);
 		// 更新内容
-		QueryConditions.init();
 		updateContent();
 		// 按钮
 		String[] bstr = { "筛选", "重置", "<<", ">>", "..." };
@@ -114,7 +113,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		btn[1].registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-		isValid.setSelected(QueryConditions.getIsValid());
+		isValid.setSelected(QueryConditions.getInstance().getIsValid());
 		isValid.setFont(font.getFont());
 		isValid.setBackground(Color.WHITE);
 		isValid.addActionListener(new ActionListener() {
@@ -122,8 +121,8 @@ public class SortPanel extends JPanel implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					QueryConditions.setIsValid(isValid.isSelected());
-					DefaultProperties.setProperty("ledger.onlyValid", String.valueOf(isValid.isSelected()));
+					QueryConditions.getInstance().setIsValid(isValid.isSelected());
+					SystemProperties.getInstance().setProperty("ledger.onlyValid", String.valueOf(isValid.isSelected()));
 					f.updateLedger();
 					logger.info("勾选复选框，刷新表格 - 完成\n");
 				} catch (SQLException e1) {
@@ -225,12 +224,12 @@ public class SortPanel extends JPanel implements ActionListener {
 		}
 		h2.close();
 		// 起始和结束时间
-		tx[0].setText(QueryConditions.getStartTime());
-		tx[1].setText(QueryConditions.getStopTime());
+		tx[0].setText(QueryConditions.getInstance().getStartTime());
+		tx[1].setText(QueryConditions.getInstance().getStopTime());
 		// 收入或支出
-		type.setSelectedIndex(QueryConditions.getType());
+		type.setSelectedIndex(QueryConditions.getInstance().getType());
 		// 标签
-		tag.setSelectedItem(QueryConditions.getLabel());
+		tag.setSelectedItem(QueryConditions.getInstance().getLabel());
 	}
 
 	@Override
@@ -238,7 +237,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		if (e.getSource() == btn[0] || e.getSource() == tx[0] || e.getSource() == tx[1]) {
 			// 筛选
 			logger.info("根据筛选条件刷新表格 - 开始");
-			QueryConditions.setIsFuzzy(false);
+			QueryConditions.getInstance().setIsFuzzy(false);
 			try {
 				SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
 				// 验证起始时间字符串格式是否正确
@@ -248,10 +247,10 @@ public class SortPanel extends JPanel implements ActionListener {
 				date = ft.parse(tx[1].getText());
 				tx[1].setText(ft.format(date));
 				// 设置筛选条件
-				QueryConditions.setStartTime(tx[0].getText());
-				QueryConditions.setStopTime(tx[1].getText());
-				QueryConditions.setLabel(tag.getSelectedItem().toString());
-				QueryConditions.setType(type.getSelectedIndex());
+				QueryConditions.getInstance().setStartTime(tx[0].getText());
+				QueryConditions.getInstance().setStopTime(tx[1].getText());
+				QueryConditions.getInstance().setLabel(tag.getSelectedItem().toString());
+				QueryConditions.getInstance().setType(type.getSelectedIndex());
 				// 筛选结果更新
 				f.updateLedger();
 				logger.info("根据筛选条件刷新表格 - 完成\n");
@@ -265,8 +264,8 @@ public class SortPanel extends JPanel implements ActionListener {
 		} else if (e.getSource() == btn[1]) {
 			// 重置筛选
 			logger.info("重置筛选页面 - 开始");
-			QueryConditions.setIsFuzzy(false);
-			QueryConditions.initQueryItems();
+			QueryConditions.getInstance().setIsFuzzy(false);
+			QueryConditions.getInstance().initQueryItems();
 			try {
 				updateContent();
 				f.updateLedger();
@@ -278,7 +277,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		} else if (e.getSource() == tx[2]) {
 			// 模糊搜索结果更新
 			logger.info("模糊筛选 - 开始");
-			QueryConditions.setFuzzyWord(tx[2].getText());
+			QueryConditions.getInstance().setFuzzyWord(tx[2].getText());
 			tx[2].setText(null);
 			try {
 				f.updateLedger();
@@ -290,16 +289,16 @@ public class SortPanel extends JPanel implements ActionListener {
 		} else {
 			// 上下个月
 			if (e.getSource() == btn[2]) {
-				QueryConditions.nextMonth(-1);
+				QueryConditions.getInstance().nextMonth(-1);
 				logger.info(String.format("上个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
 			} else if (e.getSource() == btn[3]) {
-				QueryConditions.nextMonth(1);
+				QueryConditions.getInstance().nextMonth(1);
 				logger.info(String.format("下个月为：%s -> %s", tx[0].getText(), tx[1].getText()));
 			} else {
-				QueryConditions.initTimeInternal();
+				QueryConditions.getInstance().initTimeInternal();
 			}
-			tx[0].setText(QueryConditions.getStartTime());
-			tx[1].setText(QueryConditions.getStopTime());
+			tx[0].setText(QueryConditions.getInstance().getStartTime());
+			tx[1].setText(QueryConditions.getInstance().getStopTime());
 			try {
 				f.updateLedger();
 				logger.info("月份切换成功\n");

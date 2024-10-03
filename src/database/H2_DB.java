@@ -28,7 +28,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
-import tool.DefaultProperties;
+import tool.SystemProperties;
 import tool.LogHelper;
 
 public class H2_DB {
@@ -158,13 +158,13 @@ public class H2_DB {
 
 		// 计算校验文件
 		MessageDigest md = null;
-		String alg = DefaultProperties.getString("cryptography.algorithm");
+		String alg = SystemProperties.getInstance().getString("cryptography.algorithm");
 		try {
 			md = MessageDigest.getInstance(alg);
 		} catch (NoSuchAlgorithmException e) {
 			alg = "SHA-512";
 			logger.warn("加密算法错误，重置配置文件");
-			DefaultProperties.setProperty("cryptography.algorithm", alg);
+			SystemProperties.getInstance().setProperty("cryptography.algorithm", alg);
 		}
 		try {
 			if (md == null) {
@@ -222,10 +222,10 @@ public class H2_DB {
 			}
 			// 恢复数据
 			logger.info("即将选择SQL文件进行恢复");
-			String filePath = DefaultProperties.getString("backup.path");
+			String filePath = SystemProperties.getInstance().getString("backup.path");
 			File sqlFile = FileChooserDialog.openFileChooser(null, filePath);
 			if (sqlFile != null) {
-				DefaultProperties.setProperty("backup.path", sqlFile.getParent());
+				SystemProperties.getInstance().setProperty("backup.path", sqlFile.getParent());
 				logger.info("待恢复文件路径：" + sqlFile.getAbsolutePath());
 				RunScript.execute(url, user, pw, sqlFile.getAbsolutePath(), Charset.forName("GBK"), false);
 				checkUsers();
