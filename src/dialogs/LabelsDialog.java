@@ -68,34 +68,35 @@ public class LabelsDialog extends JDialog implements ActionListener {
 				return;
 			}
 			try {
-				h2 = new H2_DB();
-				h2.setAutoCommit(false);
-				String sql = "";
-				if (isTagUnique(table.getValueAt(r, c).toString())) {
-					// 修改后标签无重复
-					sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'", table.getValueAt(r, c),
-							pre);
-					logger.info("标签不重复，已修改");
-				} else {
-					// 修改后标签重复
-					if (MessageDialog.showConfirm(this, "修改后标签重复，是否整合两重复标签？") == JOptionPane.NO_OPTION) {
-						logger.info("取消操作");
-						return;
+				try (H2_DB h2 = new H2_DB()) {
+					h2.setAutoCommit(false);
+					String sql = "";
+					if (isTagUnique(table.getValueAt(r, c).toString())) {
+						// 修改后标签无重复
+						sql = String.format("UPDATE `labels` SET `label`='%s' WHERE `label`='%s'",
+								table.getValueAt(r, c), pre);
+						logger.info("标签不重复，已修改");
+					} else {
+						// 修改后标签重复
+						if (MessageDialog.showConfirm(this, "修改后标签重复，是否整合两重复标签？") == JOptionPane.NO_OPTION) {
+							logger.info("取消操作");
+							return;
+						}
+						sql = String.format(
+								"UPDATE `ledger` SET `label`='%1$s' WHERE `label`='%2$s';DELETE FROM `labels` WHERE `label`='%2$s'",
+								table.getValueAt(r, c), pre);
+						logger.info("标签重复，已合并重复标签");
 					}
-					sql = String.format(
-							"UPDATE `ledger` SET `label`='%1$s' WHERE `label`='%2$s';DELETE FROM `labels` WHERE `label`='%2$s'",
-							table.getValueAt(r, c), pre);
-					logger.info("标签重复，已合并重复标签");
+					// 如果修改涉及到当前筛选条件则进行相应更改
+					if (QueryConditions.getInstance().getLabel().equals(pre)) {
+						QueryConditions.getInstance().setLabel(table.getValueAt(r, c).toString());
+					}
+					// 执行修改
+					logger.info(sql);
+					h2.execute(sql);
+					h2.commit();
+					h2.close();
 				}
-				// 如果修改涉及到当前筛选条件则进行相应更改
-				if (QueryConditions.getInstance().getLabel().equals(pre)) {
-					QueryConditions.getInstance().setLabel(table.getValueAt(r, c).toString());
-				}
-				// 执行修改
-				logger.info(sql);
-				h2.execute(sql);
-				h2.commit();
-				h2.close();
 				updateTable();
 			} catch (SQLException e1) {
 				MessageDialog.showError(this, "数据库错误");
@@ -166,8 +167,6 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	// 三个按键
 	private JButton[] btn = new JButton[3];
 	private static final int BUTTON_INSERT = 0, BUTTON_DEL = 1, BUTTON_CLOSE = 2;
-	// 数据库
-	private H2_DB h2 = null;
 	// 字体
 	private DefaultFont font = new DefaultFont();
 	// 日志
@@ -262,16 +261,17 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 */
 	private void updateTable() throws SQLException {
 		logger.info("刷新标签表格");
-		h2 = new H2_DB();
-		String sql = "SELECT * FROM `view_labels`";
-		ResultSet rs = h2.query(sql);
-		logger.info(sql);
-		array.clear();
-		while (rs.next()) {
-			array.add(new LabelStructure(rs.getString("label"), rs.getString("createtime"), rs.getFloat("amount"),
-					rs.getInt("count")));
+		try (H2_DB h2 = new H2_DB()) {
+			String sql = "SELECT * FROM `view_labels`";
+			ResultSet rs = h2.query(sql);
+			logger.info(sql);
+			array.clear();
+			while (rs.next()) {
+				array.add(new LabelStructure(rs.getString("label"), rs.getString("createtime"), rs.getFloat("amount"),
+						rs.getInt("count")));
+			}
+			h2.close();
 		}
-		h2.close();
 		// 表格内容更新
 		table.setModel(new LabelsModel(array));
 
@@ -296,10 +296,11 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		} else if (isTagUnique(tx.getText())) {
 			String sql = String.format("INSERT INTO `labels`(`label`) VALUES ('%s')", tx.getText());
 			tx.setText(null);
-			h2 = new H2_DB();
-			logger.info(sql);
-			h2.execute(sql);
-			h2.close();
+			try (H2_DB h2 = new H2_DB()) {
+				logger.info(sql);
+				h2.execute(sql);
+				h2.close();
+			}
 		} else {
 			MessageDialog.showError(this, "标签已存在");
 		}
@@ -334,10 +335,11 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		if (MessageDialog.showConfirm(this, "确认删除当前标签？") == JOptionPane.YES_OPTION) {
 			logger.info("确认删除标签");
 			String sql = String.format("DELETE FROM `labels` WHERE `label`='%s'", array.get(r).getLabel());
-			h2 = new H2_DB();
-			logger.info(sql);
-			h2.execute(sql);
-			h2.close();
+			try (H2_DB h2 = new H2_DB()) {
+				logger.info(sql);
+				h2.execute(sql);
+				h2.close();
+			}
 			// 如果待删除标签涉及到当前筛选条件则将筛选条件修改为全部
 			if (QueryConditions.getInstance().getLabel().equals(l)) {
 				QueryConditions.getInstance().setLabel("全部");
@@ -357,9 +359,11 @@ public class LabelsDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private static boolean isTagUnique(String tag) throws SQLException {
-		H2_DB h2 = new H2_DB();
-		boolean result = h2.isUnique("labels", "label", tag);
-		h2.close(); 
+		boolean result = false;
+		try (H2_DB h2 = new H2_DB()) {
+			result = h2.isUnique("labels", "label", tag);
+			h2.close();
+		}
 		return result;
 	}
 

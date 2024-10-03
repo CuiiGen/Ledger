@@ -216,19 +216,20 @@ public class MainFrame extends JFrame implements ActionListener {
 	 * @throws SQLException
 	 */
 	public String checkLedger() throws SQLException {
-		H2_DB h2 = new H2_DB();
-		String sql = "SELECT `accounts`.*, `check`.`amount` FROM `accounts` LEFT JOIN "
-				+ "( SELECT `name`, SUM(`amount` * (3 - 2 * CAST(`type` AS INT))) AS `amount` FROM `ledger` GROUP BY `name` ) AS `check` "
-				+ "ON `check`.`name` = `accounts`.`name`"
-				+ "WHERE ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7 AND `check`.`amount` IS NOT NULL;";
-		ResultSet rs = h2.query(sql);
 		ArrayList<String> err = new ArrayList<>();
-		while (rs.next()) {
-			String e = String.format("%s：%3.2f，应为%3.2f", rs.getString(1), rs.getDouble(3), rs.getDouble(4));
-			logger.error(e);
-			err.add(e);
+		try (H2_DB h2 = new H2_DB()) {
+			String sql = "SELECT `accounts`.*, `check`.`amount` FROM `accounts` LEFT JOIN "
+					+ "( SELECT `name`, SUM(`amount` * CAST(CAST(`type` AS VARCHAR) AS INT)) AS `amount` FROM `ledger` GROUP BY `name` ) AS `check` "
+					+ "ON `check`.`name` = `accounts`.`name`"
+					+ "WHERE ABS(`check`.`amount` - `accounts`.`balance`) > 1E-7 AND `check`.`amount` IS NOT NULL;";
+			ResultSet rs = h2.query(sql);
+			while (rs.next()) {
+				String e = String.format("%s：%3.2f，应为%3.2f", rs.getString(1), rs.getDouble(3), rs.getDouble(4));
+				logger.error(e);
+				err.add(e);
+			}
+			h2.close();
 		}
-		h2.close();
 		return String.join("\n", err);
 	}
 
@@ -340,8 +341,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == mit[ITEM_LOG]) {
 			// 打开日志
 			try {
-				String[] trace = {"notepad", "./database/Ledger.trace.db"};
-				String[] info = {"notepad", "./logs/info.log"};
+				String[] trace = { "notepad", "./database/Ledger.trace.db" };
+				String[] info = { "notepad", "./logs/info.log" };
 				logger.info("查看日志\n");
 				File file = new File("./database/Ledger.trace.db");
 				if (file.exists()) {

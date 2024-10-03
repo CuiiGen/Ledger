@@ -73,27 +73,28 @@ public class PiePanel extends JPanel {
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		// SQL
 		String sql = QueryConditions.getInstance().getPieSql();
-		H2_DB h2 = new H2_DB();
-		logger.info(sql);
-		// 重置
-		list.clear();
-		// 数据整合
-		ResultSet rs = h2.query(sql);
-		while (rs.next()) {
-			// 防止空键值出现
-			String key = rs.getString(1);
-			if (key == null) {
-				key = "null";
+		try (H2_DB h2 = new H2_DB()) {
+			logger.info(sql);
+			// 重置
+			list.clear();
+			// 数据整合
+			ResultSet rs = h2.query(sql);
+			while (rs.next()) {
+				// 防止空键值出现
+				String key = rs.getString(1);
+				if (key == null) {
+					key = "null";
+				}
+				// 加入数据
+				if (rs.getString("type").equals("1")) {
+					dataset.addValue(rs.getDouble("total"), key, "  收 入 - 类 别 情 况  ");
+				} else {
+					dataset.addValue(rs.getDouble("total"), key, "  支 出 - 类 别 情 况  ");
+				}
+				list.add(key);
 			}
-			// 加入数据
-			if (rs.getString("type").equals("1")) {
-				dataset.addValue(rs.getDouble("total"), key, "  收 入 - 类 别 情 况  ");
-			} else {
-				dataset.addValue(rs.getDouble("total"), key, "  支 出 - 类 别 情 况  ");
-			}
-			list.add(key);
+			h2.close();
 		}
-		h2.close();
 		return dataset;
 	}
 

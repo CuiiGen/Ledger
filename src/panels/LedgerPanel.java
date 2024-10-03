@@ -135,16 +135,17 @@ public class LedgerPanel extends JPanel implements ActionListener {
 						// 记录滚轴位置
 						int scrollValue = scrollPane.getVerticalScrollBar().getValue();
 						logger.info("修改有效性标记");
-						h2 = new H2_DB();
-						String t = "o";
-						if (array.get(selectedRow).getIsValid()) {
-							t = "i";
+						try (H2_DB h2 = new H2_DB()) {
+							String t = "o";
+							if (array.get(selectedRow).getIsValid()) {
+								t = "i";
+							}
+							String sql = String.format("UPDATE ledger SET `isValid` = '%s' WHERE createtime = '%s'", t,
+									array.get(selectedRow).getCreatetime());
+							logger.info(sql);
+							h2.execute(sql);
+							h2.close();
 						}
-						String sql = String.format("UPDATE ledger SET `isValid` = '%s' WHERE createtime = '%s'", t,
-								array.get(selectedRow).getCreatetime());
-						logger.info(sql);
-						h2.execute(sql);
-						h2.close();
 						f.updateLedger();
 						// 页面刷新后保持原视图
 						scrollPane.getVerticalScrollBar().setValue(scrollValue);
@@ -181,8 +182,6 @@ public class LedgerPanel extends JPanel implements ActionListener {
 
 	// 字体
 	private DefaultFont font = new DefaultFont();
-	// 数据库
-	private H2_DB h2 = null;
 	// 日志
 	private Logger logger = LogManager.getLogger();
 	// 父窗口
@@ -266,16 +265,25 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		// 根据筛选条件生成SQL并查询
 		String sql = QueryConditions.getInstance().getSQL();
 		logger.info("流水表格更新");
-		h2 = new H2_DB();
-		logger.info(sql);
-		ResultSet rs = h2.query(sql);
-		array.clear();
-		while (rs.next()) {
-			array.add(new RecordStructure(rs.getString("createtime"), rs.getString("name"),
-					Integer.parseInt(rs.getString("type")), rs.getFloat("amount"), rs.getString("label"),
-					rs.getString("remark"), rs.getString("isValid")));
+		try (H2_DB h2 = new H2_DB()) {
+			logger.info(sql);
+			ResultSet rs = h2.query(sql);
+			array.clear();
+			while (rs.next()) {
+				RecordStructure st = new RecordStructure();
+				st.setCreatetime(rs.getString("createtime"));
+				st.setName(rs.getString("name"));
+				st.setAmcount(rs.getFloat("amount"));
+				// valid if it's "o"
+				st.setIsValid(rs.getString("isValid").equals("o"));
+				st.setReimbursement(rs.getInt("reimbursement"));
+				st.setRemark(rs.getString("remark"));
+				st.setType(Integer.parseInt(rs.getString("type")));
+				st.setLabel(rs.getString("label"));
+				array.add(st);
+			}
+			h2.close();
 		}
-		h2.close();
 		// 金额状态更新
 		float in = 0, out = 0;
 		for (RecordStructure r : array) {
@@ -349,22 +357,23 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		}
 		if (MessageDialog.showConfirm(f, "确认删除当前拉流水记录？\r\n注意删除后无法复原！") == JOptionPane.YES_OPTION) {
 			logger.info("确认删除流水记录");
-			h2 = new H2_DB();
-			h2.setAutoCommit(false);
-			// 恢复余额
-			RecordStructure rds = array.get(r);
-			String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
-					rds.getType() * rds.getAmount(), rds.getName());
-			logger.info("恢复相关账户余额");
-			logger.info(sql);
-			h2.execute(sql);
-			// 删除流水记录
-			sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
-			logger.info("删除流水记录");
-			logger.info(sql);
-			h2.execute(sql);
-			h2.commit();
-			h2.close();
+			try (H2_DB h2 = new H2_DB()) {
+				h2.setAutoCommit(false);
+				// 恢复余额
+				RecordStructure rds = array.get(r);
+				String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
+						rds.getType() * rds.getAmount(), rds.getName());
+				logger.info("恢复相关账户余额");
+				logger.info(sql);
+				h2.execute(sql);
+				// 删除流水记录
+				sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
+				logger.info("删除流水记录");
+				logger.info(sql);
+				h2.execute(sql);
+				h2.commit();
+				h2.close();
+			}
 			return true;
 		} else {
 			logger.info("取消删除");
@@ -435,7 +444,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			// 再来一笔
 			try {
 				RecordStructure r = array.get(table.getSelectedRow()).clone();
-				r.resetCreatetime();
+				r.setCreatetime();
 				if (showInfoDialog(r, InfoDialog.PUR_ONE_MORE)) {
 					f.updateAllPanel();
 					logger.info("再来一笔订单完成\n");

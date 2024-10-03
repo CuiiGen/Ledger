@@ -49,8 +49,6 @@ public class SortPanel extends JPanel implements ActionListener {
 	private JButton[] btn = new JButton[5];
 	// 复选框
 	private JCheckBox isValid = new JCheckBox("仅显示有效数据");
-	// 数据库
-	private H2_DB h2 = null;
 	// 字体
 	private DefaultFont font = new DefaultFont();
 	// 日志
@@ -122,7 +120,8 @@ public class SortPanel extends JPanel implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					QueryConditions.getInstance().setIsValid(isValid.isSelected());
-					SystemProperties.getInstance().setProperty("ledger.onlyValid", String.valueOf(isValid.isSelected()));
+					SystemProperties.getInstance().setProperty("ledger.onlyValid",
+							String.valueOf(isValid.isSelected()));
 					f.updateLedger();
 					logger.info("勾选复选框，刷新表格 - 完成\n");
 				} catch (SQLException e1) {
@@ -216,13 +215,14 @@ public class SortPanel extends JPanel implements ActionListener {
 		tag.addItem("全部");
 		// 两个空格
 		tag.addItem(QueryConditions.nullPopItem);
-		h2 = new H2_DB();
-		String sql = "SELECT label FROM labels";
-		ResultSet rs = h2.query(sql);
-		while (rs.next()) {
-			tag.addItem(rs.getString("label"));
+		try (H2_DB h2 = new H2_DB()) {
+			String sql = "SELECT label FROM labels";
+			ResultSet rs = h2.query(sql);
+			while (rs.next()) {
+				tag.addItem(rs.getString("label"));
+			}
+			h2.close();
 		}
-		h2.close();
 		// 起始和结束时间
 		tx[0].setText(QueryConditions.getInstance().getStartTime());
 		tx[1].setText(QueryConditions.getInstance().getStopTime());

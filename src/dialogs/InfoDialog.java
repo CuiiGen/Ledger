@@ -52,8 +52,6 @@ public class InfoDialog extends JDialog implements ActionListener {
 	private JCheckBox isValid = new JCheckBox("有效记录");
 	// 字体
 	private DefaultFont font = new DefaultFont();
-	// 数据库
-	private H2_DB h2 = null;
 	// 日志
 	private Logger logger = LogManager.getLogger();
 	// 标志位
@@ -125,21 +123,22 @@ public class InfoDialog extends JDialog implements ActionListener {
 		isValid.setBackground(null);
 		isValid.setSelected(true);
 
-		h2 = new H2_DB();
-		// 账户名下拉列表
-		String sql = "SELECT name FROM accounts";
-		ResultSet rs = h2.query(sql);
-		while (rs.next()) {
-			account.addItem(rs.getString("name"));
+		try (H2_DB h2 = new H2_DB()) {
+			// 账户名下拉列表
+			String sql = "SELECT name FROM accounts";
+			ResultSet rs = h2.query(sql);
+			while (rs.next()) {
+				account.addItem(rs.getString("name"));
+			}
+			// 标签下拉列表
+			label.addItem(QueryConditions.nullPopItem);
+			sql = "SELECT label FROM labels ORDER BY createtime DESC";
+			rs = h2.query(sql);
+			while (rs.next()) {
+				label.addItem(rs.getString("label"));
+			}
+			h2.close();
 		}
-		// 标签下拉列表
-		label.addItem(QueryConditions.nullPopItem);
-		sql = "SELECT label FROM labels ORDER BY createtime DESC";
-		rs = h2.query(sql);
-		while (rs.next()) {
-			label.addItem(rs.getString("label"));
-		}
-		h2.close();
 
 		label.setFont(font.getFont());
 		label.setBounds(120, 180, 100, 25);
@@ -215,8 +214,11 @@ public class InfoDialog extends JDialog implements ActionListener {
 			label.setSelectedItem(rds.getLabel());
 			isValid.setSelected(rds.getIsValid());
 			if (purpose == PUR_REFUND) {
+				// 不计入账单
+				isValid.setSelected(false);
+				// 退款需要切换收入/支出状态
+				type.setSelectedIndex(1 - type.getSelectedIndex());
 				// 退款时收支类型及退款标签不可更改
-				tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 				type.setEnabled(false);
 				label.setEnabled(false);
 				isValid.setEnabled(false);
@@ -230,11 +232,12 @@ public class InfoDialog extends JDialog implements ActionListener {
 	/**
 	 * 插入或保存流水
 	 * 
-	 * @param date 流水交易时间，调用该函数新建流水前需要校验时间输入是否准确，修改保存时无需校验
+	 * @param date          流水交易时间，调用该函数新建流水前需要校验时间输入是否准确，修改保存时无需校验
+	 * @param reimbursement 相关联报销单号，为0表示null
 	 * @throws SQLException
 	 * @throws NumberFormatException
 	 */
-	private void insert(Date date) throws SQLException, NumberFormatException {
+	private void insertUnsafe(H2_DB h2, Date date, int reimbursement) throws SQLException, NumberFormatException {
 		logger.info("插入流水记录");
 		// 时间
 		SimpleDateFormat ft1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -247,28 +250,28 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else {
 			type = 1;
 		}
+		// 报销
+		String reimbursementSQL = reimbursement == 0 ? "null" : String.valueOf(reimbursement);
 		// label
 		String sql = null;
 		String i = isValid.isSelected() ? "o" : "i";
 		if (label.getSelectedItem() == QueryConditions.nullPopItem) {
-			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, null, '%s');", i,
-					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText());
+			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, null, '%s', %s);", i,
+					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText(),
+					reimbursementSQL);
 		} else {
-			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, '%s', '%s');", i,
+			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, '%s', '%s', %s);", i,
 					ft1.format(date), account.getSelectedItem(), type, amount, label.getSelectedItem(),
-					tx[TX_REMARK].getText());
+					tx[TX_REMARK].getText(), reimbursementSQL);
 		}
 		// 执行SQL
-		h2 = new H2_DB();
-		h2.setAutoCommit(false);
 		logger.info(sql);
 		h2.execute(sql);
 		// 根据流水计算账户余额
 		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", type * amount,
 				account.getSelectedItem().toString());
+		logger.info(sql);
 		h2.execute(sql);
-		h2.commit();
-		h2.close();
 	}
 
 	/**
@@ -276,9 +279,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * 
 	 * @throws SQLException
 	 */
-	private void delete() throws SQLException {
-		h2 = new H2_DB();
-		h2.setAutoCommit(false);
+	private void deleteUnsafe(H2_DB h2) throws SQLException {
 		logger.info("删除流水记录");
 		// 恢复余额
 		String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
@@ -288,8 +289,32 @@ public class InfoDialog extends JDialog implements ActionListener {
 		sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
 		logger.info(sql);
 		h2.execute(sql);
-		h2.commit();
-		h2.close();
+	}
+
+	private void insert(Date date, int reimbursement) throws SQLException, NumberFormatException {
+		try (H2_DB h2 = new H2_DB()) {
+			h2.setAutoCommit(false);
+			this.insertUnsafe(h2, date, reimbursement);
+			h2.commit();
+			h2.close();
+		}
+	}
+
+	/**
+	 * update information by deleting and then inserting a new one
+	 * 
+	 * @param date
+	 * @throws SQLException
+	 * @throws NumberFormatException
+	 */
+	private void update(Date date, int reimbursement) throws SQLException, NumberFormatException {
+		try (H2_DB h2 = new H2_DB()) {
+			h2.setAutoCommit(false);
+			this.deleteUnsafe(h2);
+			this.insertUnsafe(h2, date, reimbursement);
+			h2.commit();
+			h2.close();
+		}
 	}
 
 	/**
@@ -297,34 +322,24 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * 
 	 * @throws SQLException
 	 */
-	private void refund() throws SQLException, NumberFormatException {
+	private void refundUnsafe(H2_DB h2) throws SQLException, NumberFormatException {
 		logger.info("退款记录保存");
-		// 格式化金额
-		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
-
-		h2 = new H2_DB();
-		h2.setAutoCommit(false);
 		// 原纪录备注更改
 		String sql = String.format("UPDATE ledger SET isValid = 'i', remark = '%s' WHERE createtime = '%s'",
 				rds.getRemark() + "，已退款！", rds.getCreatetime());
 		logger.info("原纪录备注更改");
 		logger.info(sql);
 		h2.execute(sql);
-		// 插入退款记录
-		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '退款', '%s');",
-				tx[TX_TIME].getText(), account.getSelectedItem(), -1 * rds.getType(), amount,
-				tx[TX_REMARK].getText() + " 原流水时间：" + rds.getCreatetime());
-		logger.info("插入退款记录");
-		logger.info(sql);
-		h2.execute(sql);
-		// 恢复余额
-		sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
-				rds.getType() * amount, account.getSelectedItem());
-		logger.info("恢复余额");
-		logger.info(sql);
-		h2.execute(sql);
-		h2.commit();
-		h2.close();
+	}
+
+	private void refund(Date date, int reimbursement) throws SQLException, NumberFormatException {
+		try (H2_DB h2 = new H2_DB()) {
+			h2.setAutoCommit(false);
+			this.refundUnsafe(h2);
+			this.insertUnsafe(h2, date, reimbursement);
+			h2.commit();
+			h2.close();
+		}
 	}
 
 	private float arithmetic(String formula) throws NumberFormatException {
@@ -414,7 +429,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			try {
 				if (MessageDialog.showConfirm(this, "流水时间无法更改，确认为：" + ft1.format(date)) == JOptionPane.YES_OPTION) {
 					logger.info("确认插入");
-					insert(date);
+					insert(date, 0);
 					flag = true;
 					dispose();
 				}
@@ -428,8 +443,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		} else if (purpose == PUR_UPDATE && confirmed) {
 			// 更新保存
 			try {
-				delete();
-				insert(date);
+				update(date, rds.getReimbursement());
 				dispose();
 				flag = true;
 			} catch (SQLException e1) {
@@ -443,7 +457,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			// 退款
 			try {
 				if (MessageDialog.showConfirm(this, "确认该订单已退款？") == JOptionPane.YES_OPTION) {
-					refund();
+					refund(date, rds.getReimbursement());
 					flag = true;
 					dispose();
 				}

@@ -48,7 +48,6 @@ public class TransferDialog extends JDialog implements ActionListener {
 
 	private DefaultFont font = new DefaultFont();
 
-	private H2_DB h2 = null;
 	// 标志位
 	private boolean flag = false;
 
@@ -111,15 +110,16 @@ public class TransferDialog extends JDialog implements ActionListener {
 		to.setBackground(ThemeColor.BLUE);
 		to.setForeground(Color.WHITE);
 
-		h2 = new H2_DB();
-		// 账户名下拉列表
-		String sql = "SELECT name FROM accounts";
-		ResultSet rs = h2.query(sql);
-		while (rs.next()) {
-			from.addItem(rs.getString("name"));
-			to.addItem(rs.getString("name"));
+		try (H2_DB h2 = new H2_DB()) {
+			// 账户名下拉列表
+			String sql = "SELECT name FROM accounts";
+			ResultSet rs = h2.query(sql);
+			while (rs.next()) {
+				from.addItem(rs.getString("name"));
+				to.addItem(rs.getString("name"));
+			}
+			h2.close();
 		}
-		h2.close();
 		// 按钮设置
 		String[] bstr = { "确定", "退出" };
 		for (int i = 0; i < bstr.length; i++) {
@@ -161,36 +161,37 @@ public class TransferDialog extends JDialog implements ActionListener {
 		// 金额
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 		// 数据库初始化
-		h2 = new H2_DB();
-		h2.setAutoCommit(false);
-		// 付款
-		String sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
-				ft1.format(date), from.getSelectedItem(), -1, amount, "转账", "转账付款，" + tx[TX_REMARK].getText());
-		logger.info("转账付款记录");
-		logger.info(sql);
-		h2.execute(sql);
-		// 根据流水计算账户余额
-		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", -amount,
-				from.getSelectedItem());
-		logger.info("转账付款账户修改金额");
-		h2.execute(sql);
-		// 收款
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		c.add(Calendar.SECOND, 1);
-		sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
-				String.format("%1$tF %1$tT", c), to.getSelectedItem(), 1, amount, "转账",
-				"转账收款，" + tx[TX_REMARK].getText());
-		logger.info("转账收款记录");
-		logger.info(sql);
-		h2.execute(sql);
-		// 根据流水计算账户余额
-		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", amount,
-				to.getSelectedItem());
-		logger.info("转账收款账户修改金额");
-		h2.execute(sql);
-		h2.commit();
-		h2.close();
+		try (H2_DB h2 = new H2_DB()) {
+			h2.setAutoCommit(false);
+			// 付款
+			String sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
+					ft1.format(date), from.getSelectedItem(), -1, amount, "转账", "转账付款，" + tx[TX_REMARK].getText());
+			logger.info("转账付款记录");
+			logger.info(sql);
+			h2.execute(sql);
+			// 根据流水计算账户余额
+			sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", -amount,
+					from.getSelectedItem());
+			logger.info("转账付款账户修改金额");
+			h2.execute(sql);
+			// 收款
+			Calendar c = Calendar.getInstance();
+			c.setTime(date);
+			c.add(Calendar.SECOND, 1);
+			sql = String.format("INSERT INTO ledger VALUES ('i', '%s', '%s', '%d', %.2f, '%s', '%s');",
+					String.format("%1$tF %1$tT", c), to.getSelectedItem(), 1, amount, "转账",
+					"转账收款，" + tx[TX_REMARK].getText());
+			logger.info("转账收款记录");
+			logger.info(sql);
+			h2.execute(sql);
+			// 根据流水计算账户余额
+			sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", amount,
+					to.getSelectedItem());
+			logger.info("转账收款账户修改金额");
+			h2.execute(sql);
+			h2.commit();
+			h2.close();
+		}
 	}
 
 	@Override

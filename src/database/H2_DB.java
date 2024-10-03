@@ -31,7 +31,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 import tool.SystemProperties;
 import tool.LogHelper;
 
-public class H2_DB {
+public class H2_DB implements AutoCloseable {
 
 	private static final String url = "jdbc:h2:file:./database/Ledger";
 	private static final String user = "root";
@@ -89,6 +89,7 @@ public class H2_DB {
 	 * 
 	 * @throws SQLException
 	 */
+	@Override
 	public void close() throws SQLException {
 		if (connection != null && connection.isClosed() == false)
 			connection.close();
@@ -262,23 +263,24 @@ public class H2_DB {
 	 * @throws SQLException
 	 */
 	private static void checkUsers() throws SQLException {
-		H2_DB h2 = new H2_DB();
-		String sql = "SELECT * FROM INFORMATION_SCHEMA.USERS";
-		LogManager.getLogger().info(sql);
-		ResultSet rs = h2.query(sql);
-		// 用户名列表
-		ArrayList<String> list = new ArrayList<>();
-		while (rs.next()) {
-			list.add(rs.getString(1));
-		}
-		for (String username : list) {
-			if (user.equals(username.toLowerCase())) {
-				continue;
-			} else {
-				LogManager.getLogger().info("删除用户：" + username);
-				h2.execute(String.format("DROP USER IF EXISTS %s", username));
+		try (H2_DB h2 = new H2_DB()) {
+			String sql = "SELECT * FROM INFORMATION_SCHEMA.USERS";
+			LogManager.getLogger().info(sql);
+			ResultSet rs = h2.query(sql);
+			// 用户名列表
+			ArrayList<String> list = new ArrayList<>();
+			while (rs.next()) {
+				list.add(rs.getString(1));
 			}
+			for (String username : list) {
+				if (user.equals(username.toLowerCase())) {
+					continue;
+				} else {
+					LogManager.getLogger().info("删除用户：" + username);
+					h2.execute(String.format("DROP USER IF EXISTS %s", username));
+				}
+			}
+			h2.close();
 		}
-		h2.close();
 	}
 }

@@ -76,23 +76,23 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 	 */
 	private void fetchData() throws SQLException {
 		// 获取数据
-		H2_DB h2 = new H2_DB();
-		String sql = QueryConditions.getInstance().getPlotSql();
-		logger.info(sql);
-		ResultSet rs = h2.query(sql);
-		// 清空当前内容
-		amount.clear();
-		date.clear();
-		// 遍历
-		while (rs.next()) {
-			// 金额
-			amount.add(rs.getDouble("y"));
-			// 月份
-			date.add(rs.getString("x"));
+		try (H2_DB h2 = new H2_DB()) {
+			String sql = QueryConditions.getInstance().getPlotSql();
+			logger.info(sql);
+			ResultSet rs = h2.query(sql);
+			// 清空当前内容
+			amount.clear();
+			date.clear();
+			// 遍历
+			while (rs.next()) {
+				// 金额
+				amount.add(rs.getDouble("y"));
+				// 月份
+				date.add(rs.getString("x"));
+			}
+			// 关闭连接
+			h2.close();
 		}
-		// 关闭连接
-		h2.close();
-
 	}
 
 	/**

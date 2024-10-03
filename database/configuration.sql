@@ -77,7 +77,7 @@ CREATE
 OR REPLACE VIEW `view_reimbursement` AS
 SELECT
     `reimbursements`.*,
-    sum(`ledger`.`amount` * CAST(CAST(`ledger`.`type` AS VARCHAR) AS INT)) AS `interest`
+    sum(`ledger`.`amount` * CAST(CAST(`ledger`.`type` AS VARCHAR) AS INT)) AS `balance`
 FROM
     `reimbursements`
     LEFT JOIN `ledger` ON `reimbursements`.`no` = `ledger`.`reimbursement`
@@ -154,7 +154,7 @@ FROM
     LEFT JOIN (
         SELECT
             `name`,
-            SUM(`amount` * CAST(`type` AS CHAR)) AS `amount`
+            SUM(`amount` * CAST(CAST(`type` AS VARCHAR) AS INT)) AS `amount`
         FROM
             `ledger`
         GROUP BY

@@ -7,24 +7,21 @@ public class RecordStructure implements Cloneable {
 	private String createtime = null, name = null, label = null, remark = null;
 
 	int type = 1;
+	// 报销单ID，0表示空
+	int reimbursement = 0;
 	float amount = 0;
 	// 是否计入流水
 	private boolean isValid = true;
 
-	public RecordStructure(String createtime, String name, int type, float amount, String label, String remark,
-			String isValid) {
-		this.createtime = createtime;
-		this.name = name;
-		this.type = type;
-		this.amount = amount;
-		this.label = label;
-		this.remark = remark;
-		this.isValid = isValid.equals("o");
-
+	public RecordStructure() {
 	}
 
-	public void resetCreatetime() {
+	public void setCreatetime() {
 		createtime = String.format("%1$tF %1$tT", Calendar.getInstance());
+	}
+
+	public void setCreatetime(String newTime) {
+		createtime = newTime;
 	}
 
 	public String getCreatetime() {
@@ -33,6 +30,18 @@ public class RecordStructure implements Cloneable {
 
 	public String getName() {
 		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getReimbursement() {
+		return reimbursement;
+	}
+
+	public void setReimbursement(int reimbursement) {
+		this.reimbursement = reimbursement;
 	}
 
 	public void setLabel(String label) {
@@ -59,8 +68,16 @@ public class RecordStructure implements Cloneable {
 		return type;
 	}
 
+	public void setType(int type) {
+		this.type = type;
+	}
+
 	public float getAmount() {
 		return amount;
+	}
+
+	public void setAmcount(float amount) {
+		this.amount = amount;
 	}
 
 	public String toString() {

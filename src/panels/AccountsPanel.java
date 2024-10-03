@@ -88,10 +88,11 @@ public class AccountsPanel extends Panel {
 					// 更新
 					logger.info("更新账户名");
 					String sql = String.format("UPDATE `accounts` SET `name`='%s' WHERE `name`='%s'", newName, pre);
-					h2 = new H2_DB();
-					logger.info(sql);
-					h2.execute(sql);
-					h2.close();
+					try (H2_DB h2 = new H2_DB()) {
+						logger.info(sql);
+						h2.execute(sql);
+						h2.close();
+					}
 					// 如果账户名修改设计筛选条件中账户名则进行更新
 					if (QueryConditions.getInstance().getName().equals(pre)) {
 						QueryConditions.getInstance().setName(newName);
@@ -177,8 +178,6 @@ public class AccountsPanel extends Panel {
 		}
 	};
 
-	// 数据库
-	private H2_DB h2 = null;
 	// 字体
 	private DefaultFont font = new DefaultFont();
 	// 日志
@@ -239,15 +238,17 @@ public class AccountsPanel extends Panel {
 	 */
 	public void updateTable() throws SQLException {
 		logger.info("刷新账户表格");
-		h2 = new H2_DB();
-		String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` ASC;";
-		logger.info(sql);
-		ResultSet rs = h2.query(sql);
-		array.clear();
-		while (rs.next()) {
-			array.add(new AccountStructure(rs.getString("name"), rs.getString("createtime"), rs.getFloat("balance")));
+		try (H2_DB h2 = new H2_DB()) {
+			String sql = "SELECT * FROM `accounts` ORDER BY `accounts`.`createtime` ASC;";
+			logger.info(sql);
+			ResultSet rs = h2.query(sql);
+			array.clear();
+			while (rs.next()) {
+				array.add(
+						new AccountStructure(rs.getString("name"), rs.getString("createtime"), rs.getFloat("balance")));
+			}
+			h2.close();
 		}
-		h2.close();
 		// 表格内容更新
 		table.setModel(new AccountsModel(array));
 
@@ -266,10 +267,11 @@ public class AccountsPanel extends Panel {
 	private void insertAccount(String name) throws SQLException {
 		logger.info("开始新建账户");
 		String sql = String.format("INSERT INTO `accounts`(`name`) VALUES ('%s')", name);
-		h2 = new H2_DB();
-		logger.info(sql);
-		h2.execute(sql);
-		h2.close();
+		try (H2_DB h2 = new H2_DB()) {
+			logger.info(sql);
+			h2.execute(sql);
+			h2.close();
+		}
 	}
 
 	/**
@@ -280,9 +282,11 @@ public class AccountsPanel extends Panel {
 	 * @throws SQLException
 	 */
 	private boolean isNameUnique(String name) throws SQLException {
-		H2_DB h2 = new H2_DB();
-		boolean result = h2.isUnique("accounts", "name", name);
-		h2.close();
+		boolean result = false;
+		try (H2_DB h2 = new H2_DB()) {
+			result = h2.isUnique("accounts", "name", name);
+			h2.close();
+		}
 		return result;
 	}
 
@@ -301,9 +305,11 @@ public class AccountsPanel extends Panel {
 			return false;
 		}
 		// 判断是否存在关联记录决定是否可删除
-		h2 = new H2_DB();
-		boolean independent = h2.isUnique("ledger", "name", array.get(r).getName());
-		h2.close();
+		boolean independent = false;
+		try (H2_DB h2 = new H2_DB()) {
+			independent = h2.isUnique("ledger", "name", array.get(r).getName());
+			h2.close();
+		}
 		if (independent == false) {
 			MessageDialog.showError(f, "当前账户存在关联记录，禁止删除");
 			return false;
@@ -313,9 +319,10 @@ public class AccountsPanel extends Panel {
 			logger.info("确认删除流水记录");
 			String sql = String.format("DELETE FROM `accounts` WHERE `name`='%s'", array.get(r).getName());
 			logger.info(sql);
-			h2 = new H2_DB();
-			h2.execute(sql);
-			h2.close();
+			try (H2_DB h2 = new H2_DB()) {
+				h2.execute(sql);
+				h2.close();
+			}
 			// 如果删除账户涉及当前筛选条件则改为全部
 			if (QueryConditions.getInstance().getName().equals(array.get(r).getName())) {
 				QueryConditions.getInstance().setName("%");

@@ -8,11 +8,11 @@
 > 
 > 作者：iamroot
 > 
-> 2021年5月12日
+> 2024年10月3日
 
 ## 版本说明
 
-1. 该工程中所使用的数据库工具为**h2-1.4.200**，可通过[官网](http://www.h2database.com/html/download.html)或者[GitHub](https://github.com/h2database/h2database)进行下载。
+1. 该工程中所使用的数据库工具为**h2-2.3.232**，可通过[官网](http://www.h2database.com/html/download.html)或者[GitHub](https://github.com/h2database/h2database)进行下载。
 1. 需要注意不同版本之间数据库工具互不兼容，一般不要随意使用其它版本工具打开数据库文件。
 
 ## 连接说明
@@ -39,9 +39,10 @@ java -cp h2-1.4.200.jar org.h2.tools.RunScript -url [连接URL] -user [用户名
 
 ## 关系表说明
 
-根据软件需求分析，该项目中共需要三张关系表，分别为
+根据软件需求分析，该项目中共需要四张关系表，分别为
 - `accounts`，存储账户相关信息；
 - `labels`，存储账目记录的标签表；
+- `reimbursement`，存储报销单信息；
 - `ledger`，记录详细流水。
 
 表中字段详细说明如后续所示。
@@ -89,17 +90,38 @@ INSERT INTO `labels` VALUES('转账', DEFAULT);
 INSERT INTO `labels` VALUES('退款', DEFAULT);
 ```
 
+### 报销单
+
+|   字段名   |   数据类型    |    注释    | 非空 |       备注       |
+| :--------: | :-----------: | :--------: | :--: | :--------------: |
+|    `no`    |     `INT`     |  报销单ID  |  是  | `AUTO_INCREMENT` |
+|   `name`   | `VARCHAR(32)` |    备注    |  是  |                  |
+| `complete` |   `BOOLEAN`   | 是否已完成 |  是  |   默认`FALSE`    |
+
+```sql
+-- 报销
+DROP TABLE `reimbursements` IF EXISTS;
+
+CREATE TABLE `reimbursements` (
+    `no` INT NOT NULL AUTO_INCREMENT COMMENT '报销单ID',
+    `name` VARCHAR(32) NOT NULL COMMENT '备注',
+    `complete` BOOLEAN DEFAULT FALSE NOT NULL COMMENT '已经完成',
+    PRIMARY KEY (`no`)
+);
+```
+
 ### 账本
 
-|    字段名    |     数据类型      |       注释       | 非空 |        备注         |
-| :----------: | :---------------: | :--------------: | :--: | :-----------------: |
-|  `isValid`   |   `varchar(1)`    | 计入总收入或支出 |  是  | `o`表示有效否则无效 |
-| `createtime` |    `DATETIME`     |     记账时间     |  是  |        主键         |
-|    `name`    |   `VARCHAR(32)`   |    相关账户名    |  是  |      关联外键       |
-|    `type`    | `ENUM('1', '-1')` |    收入或支出    |  是  |                     |
-|   `amount`   |     `DOUBLE`      |       金额       |  是  |                     |
-|   `label`    |   `VARCHAR(32)`   |       标签       |  是  |      关联外键       |
-|   `remark`   |      `TEXT`       |       备注       |  否  |                     |
+|     字段名      |     数据类型      |       注释       | 非空 |        备注         |
+| :-------------: | :---------------: | :--------------: | :--: | :-----------------: |
+|    `isValid`    |   `varchar(1)`    | 计入总收入或支出 |  是  | `o`表示有效否则无效 |
+|  `createtime`   |    `DATETIME`     |     记账时间     |  是  |        主键         |
+|     `name`      |   `VARCHAR(32)`   |    相关账户名    |  是  |      关联外键       |
+|     `type`      | `ENUM('1', '-1')` |    收入或支出    |  是  |                     |
+|    `amount`     |     `DOUBLE`      |       金额       |  是  |                     |
+|     `label`     |   `VARCHAR(32)`   |       标签       |  是  |      关联外键       |
+|    `remark`     |      `TEXT`       |       备注       |  否  |                     |
+| `reimbursement` |       `INT`       |       报销       |  否  |      关联外键       |
 
 注：所有外键限制删除，级联更新。建表命令为：
 
@@ -111,18 +133,22 @@ CREATE TABLE `ledger` (
     `createtime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记账时间',
     `name` VARCHAR(32) NOT NULL COMMENT '账户名',
     `type` ENUM('1', '-1') NOT NULL COMMENT '收入或支出',
-    `amount` DOUBLE NOT NULL COMMENT '金额',
+    `amount` DOUBLE DEFAULT 0 NOT NULL COMMENT '金额',
     `label` VARCHAR(32) DEFAULT NULL COMMENT '标签',
     `remark` TEXT DEFAULT NULL COMMENT '备注',
+    `reimbursement` INT DEFAULT NULL COMMENT '报销',
     PRIMARY KEY (`createtime`),
     CONSTRAINT `ledger_ibfk_1` FOREIGN KEY (`name`) REFERENCES `accounts` (`name`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `ledger_ibfk_2` FOREIGN KEY (`label`) REFERENCES `labels` (`label`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `ledger_ibfk_2` FOREIGN KEY (`label`) REFERENCES `labels` (`label`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `ledger_ibfk_3` FOREIGN KEY (`reimbursement`) REFERENCES `reimbursements` (`no`) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 ```
 
 ## 查询说明
 
-一般查询使用`SELECT`直接查询即可，标签表查询方面由于需要关联流水表，因此可以建立视图`view_labels`以方便查询。视图建立命令为：
+一般查询使用`SELECT`直接查询即可。
+
+标签表查询需要关联流水表，因此可以建立视图`view_labels`以方便查询。视图建立命令为：
 
 ```sql
 CREATE
@@ -138,4 +164,21 @@ GROUP BY
     `labels`.`label`
 ORDER BY
     `labels`.`createtime` DESC;
+```
+
+报销单查询需要关联流水表，因此可以建立视图`view_reimbursement`以方便查询。视图建立命令为：
+
+```sql
+CREATE
+OR REPLACE VIEW `view_reimbursement` AS
+SELECT
+    `reimbursements`.*,
+    sum(`ledger`.`amount` * CAST(CAST(`ledger`.`type` AS VARCHAR) AS INT)) AS `balance`
+FROM
+    `reimbursements`
+    LEFT JOIN `ledger` ON `reimbursements`.`no` = `ledger`.`reimbursement`
+GROUP BY
+    `reimbursements`.`no`
+ORDER BY
+    `reimbursements`.`no` DESC;
 ```
