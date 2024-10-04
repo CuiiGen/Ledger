@@ -12,12 +12,12 @@ import tool.SystemProperties;
 public class QueryConditions {
 
 	// 起始结束时间
-	private String startTime = null;
-	private String stopTime = null;
+	private String startTime = "1970-01-01";
+	private String stopTime = "1970-01-31";
 	// 标签
 	private String label = "全部";
 	// 类别
-	private int type = 0;
+	private String type = "全部";
 	// 账户名
 	private String name = "%";
 	// 模糊搜索
@@ -55,7 +55,7 @@ public class QueryConditions {
 		Logger logger = LogManager.getLogger();
 		logger.info("其他查询条件初始化");
 		label = "全部";
-		type = 0;
+		type = "全部";
 		name = "%";
 		reimbursement = -1;
 		// 设置默认选项
@@ -101,12 +101,32 @@ public class QueryConditions {
 		this.label = label;
 	}
 
-	public int getType() {
+	private String getLabelSQL() {
+		if (label.equals("全部")) {
+			return "true";
+		} else if (label.equals(QueryConditions.nullPopItem)) {
+			return "`label` IS null";
+		} else {
+			return String.format("`label` = '%s'", label);
+		}
+	}
+
+	public String getType() {
 		return type;
 	}
 
-	public void setType(int type) {
+	public void setType(String type) {
 		this.type = type;
+	}
+
+	private String getTypeSQL() {
+		if (type.equals("全部")) {
+			return "true";
+		} else if (type.equals("支出")) {
+			return "`type` = '-1'";
+		} else {
+			return "`type` = '1'";
+		}
 	}
 
 	public String getName() {
@@ -123,6 +143,16 @@ public class QueryConditions {
 
 	public void setReimbursement(int reimbursement) {
 		this.reimbursement = reimbursement;
+	}
+
+	private String getReimbursementSQL() {
+		if (reimbursement < 0) {
+			return "true";
+		} else if (reimbursement == 0) {
+			return "`reimbursement` IS null";
+		} else {
+			return String.format("`reimbursement` = '%d'", reimbursement);
+		}
 	}
 
 	/**
@@ -180,6 +210,14 @@ public class QueryConditions {
 		return isValid;
 	}
 
+	private String getIsValidSQL() {
+		if (isValid) {
+			return "`isValid` = 'o'";
+		} else {
+			return "true";
+		}
+	}
+
 	/**
 	 * 根据筛选条件返回SQL语句
 	 * 
@@ -192,35 +230,14 @@ public class QueryConditions {
 					"SELECT * FROM ledger WHERE label LIKE '%1$s' OR remark LIKE '%1$s' ORDER BY createtime DESC;",
 					fuzzyWord);
 		} else {
-			String sortLabel = null, sortType = null;
-			String reimbursementSQL = reimbursement == 0 ? "null" : String.valueOf(reimbursement);
-			// 标签
-			if (label.equals(QueryConditions.nullPopItem)) {
-				sortLabel = "`label` IS NULL";
-			} else if (label.equals("全部")) {
-				sortLabel = "true";
-			} else {
-				sortLabel = String.format("`label` LIKE '%s'", label);
-			}
-			// 类别
-			if (type == 0) {
-				sortType = "true";
-			} else {
-				sortType = String.format("`type` = '%d'", 2 * type - 3);
-			}
-			if (reimbursement < 0) {
-				reimbursementSQL = "true";
-			} else if (reimbursement == 0) {
-				reimbursementSQL = "`reimbursement` IS null";
-			} else {
-				reimbursementSQL = String.format("`reimbursement` = '%d'", reimbursement);
-			}
 			// SQL语句
 			sql = String.format(
-					"SELECT * FROM ledger WHERE isValid LIKE '%s' AND name LIKE '%s' "
+					"SELECT * FROM ledger WHERE %s AND name LIKE '%s' "
 							+ "AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59' "
 							+ "AND %s and %s AND %s ORDER BY createtime DESC;",
-					isValid ? "o" : "%", name, startTime, stopTime, sortLabel, sortType, reimbursementSQL);
+					getIsValidSQL(), name, //
+					startTime, stopTime, //
+					getLabelSQL(), getTypeSQL(), getReimbursementSQL());
 		}
 		return sql;
 	}
@@ -231,19 +248,9 @@ public class QueryConditions {
 	 * @return
 	 */
 	public String getPlotSql() {
-		String sql = "";
-		String sortLabel = null;
-		// 标签
-		if (label.equals("  ")) {
-			sortLabel = "label IS NULL";
-		} else if (label.equals("全部")) {
-			sortLabel = "true";
-		} else {
-			sortLabel = String.format("label LIKE '%s'", label);
-		}
 		// SQL语句
-		sql = String.format("SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x, SUM(`amount`) AS y FROM `ledger`"
-				+ "WHERE `type` = '-1' AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", sortLabel);
+		String sql = String.format("SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x, SUM(`amount`) AS y FROM `ledger`"
+				+ "WHERE `type` = '-1' AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", getLabelSQL());
 		return sql;
 	}
 

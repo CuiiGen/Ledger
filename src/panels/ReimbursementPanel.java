@@ -64,8 +64,6 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 			String pre = table.getValueAt(r, c).toString();
 			super.editingStopped(e);
 			String newName = table.getValueAt(r, c).toString();
-			logger.debug(pre);
-			logger.debug(newName);
 			// 如果未更改则直接退出后续处理
 			if (pre.equals(newName)) {
 				return;
@@ -135,9 +133,6 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 				pop.show(e.getComponent(), e.getX(), e.getY());
 			} else if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
 				int r = table.getSelectedRow();
-				if (r == array.size() - 1) {
-					return;
-				}
 				try {
 					QueryConditions.getInstance().setReimbursement(Integer.parseInt(table.getValueAt(r, 0).toString()));
 					f.updateLedger();
@@ -361,7 +356,7 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 			}
 		}
 		try {
-			updateTable();
+			f.updateLedger();
 		} catch (SQLException e1) {
 			logger.error(LogHelper.exceptionToString(e1));
 			MessageDialog.showError(this, "数据库访问错误，刷新报销失败！");

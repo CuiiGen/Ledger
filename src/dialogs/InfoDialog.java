@@ -248,7 +248,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		// 金额
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 		// 收入或支出
-		int typeSQL = this.type.getSelectedIndex() == 0 ? -1 : 0;
+		int typeSQL = this.type.getSelectedIndex() == 0 ? -1 : 1;
 		// 报销
 		String reimbursementSQL = reimbursement == 0 ? "null" : String.valueOf(reimbursement);
 		// isValid

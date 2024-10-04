@@ -227,7 +227,7 @@ public class SortPanel extends JPanel implements ActionListener {
 		tx[0].setText(QueryConditions.getInstance().getStartTime());
 		tx[1].setText(QueryConditions.getInstance().getStopTime());
 		// 收入或支出
-		type.setSelectedIndex(QueryConditions.getInstance().getType());
+		type.setSelectedItem(QueryConditions.getInstance().getType());
 		// 标签
 		tag.setSelectedItem(QueryConditions.getInstance().getLabel());
 	}
@@ -250,7 +250,7 @@ public class SortPanel extends JPanel implements ActionListener {
 				QueryConditions.getInstance().setStartTime(tx[0].getText());
 				QueryConditions.getInstance().setStopTime(tx[1].getText());
 				QueryConditions.getInstance().setLabel(tag.getSelectedItem().toString());
-				QueryConditions.getInstance().setType(type.getSelectedIndex());
+				QueryConditions.getInstance().setType(type.getSelectedItem().toString());
 				// 筛选结果更新
 				f.updateLedger();
 				logger.info("根据筛选条件刷新表格 - 完成\n");
