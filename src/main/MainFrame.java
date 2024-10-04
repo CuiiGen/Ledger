@@ -40,6 +40,7 @@ import dialogs.TransferDialog;
 import panels.AccountsPanel;
 import panels.LedgerPanel;
 import panels.QueryConditions;
+import panels.ReimbursementPanel;
 import panels.SortPanel;
 import tool.LogHelper;
 
@@ -68,6 +69,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	private AccountsPanel accounts = null;
 	private LedgerPanel ledgerPanel = null;
 	private SortPanel sortPanel = null;
+	private ReimbursementPanel reimbursementPanel = null;
 	// 折线图
 	private PlotPanel monthlyCost = null;
 	private PiePanel piePanel = null;
@@ -164,6 +166,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		tabPane.add("支出情况统计", piePanel);
 		monthlyCost = new PlotPanel();
 		tabPane.addTab("每月支出情况", monthlyCost);
+		reimbursementPanel = new ReimbursementPanel(this);
+		tabPane.addTab("报销单列表", reimbursementPanel);
 
 		// 显示窗口
 		validate();
@@ -195,6 +199,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		logger.info("主界面中流水表和折线图更新");
 		// 流水
 		ledgerPanel.updateTable();
+		reimbursementPanel.updateTable();
 		// 折线图
 		piePanel.updatePlot();
 		monthlyCost.updatePlot();

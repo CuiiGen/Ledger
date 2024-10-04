@@ -203,7 +203,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 	 * @throws SQLException
 	 */
 	private void contentReset() throws SQLException {
-		// 时间
+		// 默认时间
 		tx[TX_TIME].setText(String.format("%1$tF %1$tT", Calendar.getInstance()));
 		// 若记录非空
 		if (rds != null) {
@@ -214,6 +214,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 			label.setSelectedItem(rds.getLabel());
 			isValid.setSelected(rds.getIsValid());
 			if (purpose == PUR_REFUND) {
+				// 使用新时间
 				// 不计入账单
 				isValid.setSelected(false);
 				// 退款需要切换收入/支出状态
@@ -222,9 +223,12 @@ public class InfoDialog extends JDialog implements ActionListener {
 				type.setEnabled(false);
 				label.setEnabled(false);
 				isValid.setEnabled(false);
-			} else {
+			} else if (purpose == PUR_UPDATE) {
 				// 修改信息则显示之前时间
 				tx[TX_TIME].setText(rds.getCreatetime());
+			} else {
+				// purpose == PUR_ONE_MORE
+				// do nothing
 			}
 		}
 	}
@@ -244,32 +248,27 @@ public class InfoDialog extends JDialog implements ActionListener {
 		// 金额
 		float amount = Float.parseFloat(tx[TX_AMOUNT].getText());
 		// 收入或支出
-		int type = 0;
-		if (this.type.getSelectedIndex() == 0) {
-			type = -1;
-		} else {
-			type = 1;
-		}
+		int typeSQL = this.type.getSelectedIndex() == 0 ? -1 : 0;
 		// 报销
 		String reimbursementSQL = reimbursement == 0 ? "null" : String.valueOf(reimbursement);
+		// isValid
+		String validSQL = isValid.isSelected() ? "o" : "i";
 		// label
-		String sql = null;
-		String i = isValid.isSelected() ? "o" : "i";
-		if (label.getSelectedItem() == QueryConditions.nullPopItem) {
-			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, null, '%s', %s);", i,
-					ft1.format(date), account.getSelectedItem(), type, amount, tx[TX_REMARK].getText(),
-					reimbursementSQL);
-		} else {
-			sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, '%s', '%s', %s);", i,
-					ft1.format(date), account.getSelectedItem(), type, amount, label.getSelectedItem(),
-					tx[TX_REMARK].getText(), reimbursementSQL);
-		}
+		String labelSQL = label.getSelectedItem() == QueryConditions.nullPopItem ? "null"
+				: String.format("'%s'", label.getSelectedItem());
+		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, %s, '%s', %s);", //
+				validSQL, // 有效标志位
+				ft1.format(date), // 时间
+				account.getSelectedItem(), // 账户名
+				typeSQL, amount, labelSQL, // 收支，金额和标签
+				tx[TX_REMARK].getText(), // 备注
+				reimbursementSQL);
 		// 执行SQL
 		logger.info(sql);
 		h2.execute(sql);
 		// 根据流水计算账户余额
-		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';", type * amount,
-				account.getSelectedItem().toString());
+		sql = String.format("UPDATE accounts SET balance = balance + %.2f WHERE accounts.`name` = '%s';",
+				typeSQL * amount, account.getSelectedItem().toString());
 		logger.info(sql);
 		h2.execute(sql);
 	}
@@ -447,7 +446,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				dispose();
 				flag = true;
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库访问错误，插入失败！");
+				MessageDialog.showError(this, "数据库访问错误，更新失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
@@ -462,7 +461,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 					dispose();
 				}
 			} catch (SQLException e1) {
-				MessageDialog.showError(this, "数据库访问错误，插入失败！");
+				MessageDialog.showError(this, "数据库访问错误，退款失败！");
 				logger.error(LogHelper.exceptionToString(e1));
 			} catch (NumberFormatException e1) {
 				MessageDialog.showError(this, "数据格式错误！");
@@ -476,6 +475,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 				}
 			} catch (NumberFormatException e2) {
 				MessageDialog.showError(this, e2.getMessage());
+				logger.error(LogHelper.exceptionToString(e2));
 			}
 		}
 	}

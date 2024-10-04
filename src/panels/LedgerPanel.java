@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -38,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import database.H2_DB;
 import design.DefaultFont;
 import design.DefaultMemuItemUI;
+import design.DefaultMenuUI;
 import design.ThemeColor;
 import dialogs.InfoDialog;
 import dialogs.MessageDialog;
@@ -59,11 +61,37 @@ public class LedgerPanel extends JPanel implements ActionListener {
 
 	// 弹出式菜单
 	private JPopupMenu pop = new JPopupMenu();
+	private JMenu addtoMenu = new JMenu(" 加入到");
 	private JMenuItem[] items = new JMenuItem[4];
 	private static final int ITEM_ONE_MORE = 0, ITEM_SORT_TAG = 1, ITEM_REFUND = 2, ITEM_DEL = 3;
 
 	// 鼠标所在行
 	int at = -1;
+
+	private class ReimbursementMonitor implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String num = ((JMenuItem) e.getSource()).getText().split("-")[0];
+			String sql = String.format("UPDATE `ledger` SET `reimbursement` = %s WHERE `ledger`.`createtime` = '%s';",
+					num.equals("0") ? "null" : num, // null if reimbursement id is zero
+					array.get(table.getSelectedRow()).getCreatetime());
+			logger.info(sql);
+			try (H2_DB h2 = new H2_DB()) {
+				h2.execute(sql);
+				h2.close();
+			} catch (SQLException e1) {
+				MessageDialog.showError(f, "数据库访问错误，报销关联更新失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+			try {
+				f.updateLedger();
+			} catch (SQLException e1) {
+				MessageDialog.showError(f, "数据库访问错误，更新失败！");
+				logger.error(LogHelper.exceptionToString(e1));
+			}
+		}
+	}
 
 	// 内部类
 	private class CellRenderer extends DefaultTableCellRenderer implements MouseMotionListener, MouseListener {
@@ -112,6 +140,25 @@ public class LedgerPanel extends JPanel implements ActionListener {
 			at = table.rowAtPoint(e.getPoint());
 			if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON3) {
 				table.setRowSelectionInterval(at, at);
+				addtoMenu.removeAll();
+				addtoMenu.add(new JMenuItem("0-NULL"));
+				try (H2_DB h2 = new H2_DB()) {
+					String sql = "SELECT * FROM `reimbursements` WHERE `complete` IS FALSE ORDER BY `no` DESC;";
+					logger.info(sql);
+					ResultSet rs = h2.query(sql);
+					while (rs.next()) {
+						addtoMenu.add(new JMenuItem(rs.getString("no") + "-" + rs.getString("name")));
+					}
+					for (Component i : addtoMenu.getMenuComponents()) {
+						i.setFont(font.getFont(12f));
+						((JMenuItem) i).addActionListener(new ReimbursementMonitor());
+						i.setBackground(Color.WHITE);
+						((JMenuItem) i).setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
+					}
+				} catch (SQLException e1) {
+					MessageDialog.showError(f, "数据库访问错误，报销列表获取失败！");
+					logger.error(LogHelper.exceptionToString(e1));
+				}
 				pop.show(e.getComponent(), e.getX(), e.getY());
 			}
 			if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
@@ -126,8 +173,8 @@ public class LedgerPanel extends JPanel implements ActionListener {
 							logger.info("有信息修改，刷新页面\n");
 						}
 					} catch (SQLException e1) {
-						e1.printStackTrace();
-						logger.info(LogHelper.exceptionToString(e1));
+						MessageDialog.showError(f, "数据库访问错误，打开流水记录详情对话框失败！");
+						logger.error(LogHelper.exceptionToString(e1));
 					}
 				} else {
 					// 修改isValid
@@ -239,7 +286,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		String[] istr = { " 再来一笔", " 筛选同标签记录", " 退款 ", " 删除 " };
 		for (int i = 0; i < istr.length; i++) {
 			items[i] = new JMenuItem(istr[i]);
-			items[i].setFont(font.getFont(14f));
+			items[i].setFont(font.getFont(12f));
 			items[i].addActionListener(this);
 			items[i].setBackground(Color.WHITE);
 			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
@@ -248,6 +295,11 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		pop.add(items[ITEM_SORT_TAG]);
 		// 退款
 		pop.add(items[ITEM_REFUND]);
+
+		addtoMenu.setFont(font.getFont(12f));
+		addtoMenu.setUI(new DefaultMenuUI(ThemeColor.BLUE, Color.WHITE));
+		pop.add(addtoMenu);
+
 		pop.addSeparator();
 		// 删除
 		items[ITEM_DEL].setUI(new DefaultMemuItemUI(ThemeColor.RED, Color.WHITE));
@@ -318,6 +370,9 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		// 标签
 		cm.getColumn(5).setMaxWidth(160);
 		cm.getColumn(5).setMinWidth(140);
+		// 报销
+		cm.getColumn(7).setMaxWidth(120);
+		cm.getColumn(7).setMinWidth(100);
 
 		scrollPane.getVerticalScrollBar().setValue(0);
 	}
@@ -361,13 +416,14 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				h2.setAutoCommit(false);
 				// 恢复余额
 				RecordStructure rds = array.get(r);
-				String sql = String.format("UPDATE accounts SET balance = balance - %.2f WHERE accounts.`name` = '%s';",
+				String sql = String.format(
+						"UPDATE `accounts` SET `balance` = `balance` - %.2f WHERE `accounts`.`name` = '%s';",
 						rds.getType() * rds.getAmount(), rds.getName());
 				logger.info("恢复相关账户余额");
 				logger.info(sql);
 				h2.execute(sql);
 				// 删除流水记录
-				sql = String.format("DELETE FROM ledger WHERE createtime='%s'", rds.getCreatetime());
+				sql = String.format("DELETE FROM `ledger` WHERE `createtime` = '%s'", rds.getCreatetime());
 				logger.info("删除流水记录");
 				logger.info(sql);
 				h2.execute(sql);
@@ -438,13 +494,12 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				f.updateAllPanel();
 			} catch (SQLException e1) {
 				logger.error(LogHelper.exceptionToString(e1));
-				MessageDialog.showError(this, "数据库访问错误，退款失败！");
+				MessageDialog.showError(this, "数据库访问错误，筛选刷新失败！");
 			}
 		} else if (e.getSource() == items[ITEM_ONE_MORE]) {
 			// 再来一笔
 			try {
 				RecordStructure r = array.get(table.getSelectedRow()).clone();
-				r.setCreatetime();
 				if (showInfoDialog(r, InfoDialog.PUR_ONE_MORE)) {
 					f.updateAllPanel();
 					logger.info("再来一笔订单完成\n");
@@ -453,7 +508,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 				}
 			} catch (SQLException e1) {
 				logger.error(LogHelper.exceptionToString(e1));
-				MessageDialog.showError(this, "数据库访问错误，退款失败！");
+				MessageDialog.showError(this, "数据库访问错误，再来一笔操作失败！");
 			} catch (CloneNotSupportedException e1) {
 				logger.error(LogHelper.exceptionToString(e1));
 				e1.printStackTrace();
@@ -470,7 +525,7 @@ class RecordsModel extends AbstractTableModel {
 	 */
 	private static final long serialVersionUID = -2453177164571829047L;
 
-	private static String[] title = { "#", "记账时间", "相关账户", "类型", "金额", "标签", "备注" };
+	private static String[] title = { "#", "记账时间", "相关账户", "类型", "金额", "标签", "备注", "报销单号" };
 
 	private ArrayList<RecordStructure> array = new ArrayList<>();
 
@@ -517,6 +572,9 @@ class RecordsModel extends AbstractTableModel {
 			break;
 		case 6:
 			o = array.get(rowIndex).getRemark();
+			break;
+		case 7:
+			o = array.get(rowIndex).getReimbursement() == 0 ? "" : array.get(rowIndex).getReimbursement();
 			break;
 		}
 		return o;

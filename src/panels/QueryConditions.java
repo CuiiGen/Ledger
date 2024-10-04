@@ -27,6 +27,8 @@ public class QueryConditions {
 	// 是否只显示有效数据
 	private boolean isValid = false;
 
+	private int reimbursement = -1;
+
 	public final static String nullPopItem = "  ";
 
 	/**
@@ -55,6 +57,7 @@ public class QueryConditions {
 		label = "全部";
 		type = 0;
 		name = "%";
+		reimbursement = -1;
 		// 设置默认选项
 		isValid = SystemProperties.getInstance().getBoolean("ledger.onlyValid");
 
@@ -112,6 +115,14 @@ public class QueryConditions {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getReimbursement() {
+		return reimbursement;
+	}
+
+	public void setReimbursement(int reimbursement) {
+		this.reimbursement = reimbursement;
 	}
 
 	/**
@@ -182,6 +193,7 @@ public class QueryConditions {
 					fuzzyWord);
 		} else {
 			String sortLabel = null, sortType = null;
+			String reimbursementSQL = reimbursement == 0 ? "null" : String.valueOf(reimbursement);
 			// 标签
 			if (label.equals(QueryConditions.nullPopItem)) {
 				sortLabel = "`label` IS NULL";
@@ -196,10 +208,19 @@ public class QueryConditions {
 			} else {
 				sortType = String.format("`type` = '%d'", 2 * type - 3);
 			}
+			if (reimbursement < 0) {
+				reimbursementSQL = "true";
+			} else if (reimbursement == 0) {
+				reimbursementSQL = "`reimbursement` IS null";
+			} else {
+				reimbursementSQL = String.format("`reimbursement` = '%d'", reimbursement);
+			}
 			// SQL语句
 			sql = String.format(
-					"SELECT * FROM ledger WHERE isValid LIKE '%s' AND name LIKE '%s' and createtime >= '%s 00:00:00' and createtime <= '%s 23:59:59' and %s and %s ORDER BY createtime DESC;",
-					isValid ? "o" : "%", name, startTime, stopTime, sortLabel, sortType);
+					"SELECT * FROM ledger WHERE isValid LIKE '%s' AND name LIKE '%s' "
+							+ "AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59' "
+							+ "AND %s and %s AND %s ORDER BY createtime DESC;",
+					isValid ? "o" : "%", name, startTime, stopTime, sortLabel, sortType, reimbursementSQL);
 		}
 		return sql;
 	}
