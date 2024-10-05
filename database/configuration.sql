@@ -22,7 +22,7 @@ CREATE TABLE `labels` (
 INSERT INTO
     `labels`
 VALUES
-    ('存入', DEFAULT);
+    ('转账', DEFAULT);
 
 INSERT INTO
     `labels`

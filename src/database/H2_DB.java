@@ -208,14 +208,13 @@ public class H2_DB implements AutoCloseable {
 	 */
 	public static boolean restore() {
 		// 数据库文件重命名备份
-		File file = new File("./database/Ledger.mv.db"), distFile = new File("./database/Ledger_old.mv.db"),
+		File file = new File("./database/Ledger.mv.db"), destFile = new File("./database/Ledger_old.mv.db"),
 				temp = new File("./database/Ledger_temp.mv.db");
 		Logger logger = LogManager.getLogger();
 		try {
 			// 恢复前准备
 			logger.info("准备恢复数据库，首先保存原数据库为temp.mv.db");
-			if (temp.exists() == false || temp.delete()) {
-				file.renameTo(temp);
+			if ((temp.exists() == false || temp.delete()) && file.renameTo(temp)) {
 			} else {
 				logger.error("文件读写失败，恢复过程取消，数据库未变动！");
 				MessageDialog.showError(null, "文件读写失败，恢复过程取消，数据库未变动！");
@@ -231,13 +230,13 @@ public class H2_DB implements AutoCloseable {
 				RunScript.execute(url, user, pw, sqlFile.getAbsolutePath(), Charset.forName("GBK"), false);
 				checkUsers();
 				logger.info("Ledger.mv.db存在，待后续刷新页面");
-				distFile.delete();
-				temp.renameTo(distFile);
+				logger.debug("del destFile: " + destFile.delete());
+				logger.debug("temp to destFile: " + temp.renameTo(destFile));
 				MessageDialog.showMessage(null, "数据库恢复成功，原数据库文件重命名为“Ledger_old.mv.db”！");
 				return true;
 			} else {
 				logger.info("未选中任何SQL文件，待恢复为原数据库");
-				temp.renameTo(file);
+				logger.debug("temp to original file: " + temp.renameTo(file));
 				MessageDialog.showMessage(null, "数据库未恢复，复原旧数据库");
 				return false;
 			}
