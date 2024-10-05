@@ -32,8 +32,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import database.H2_DB;
-import design.ThemeColor;
 import design.DefaultFont;
+import design.ThemeColor;
 import main.MainFrame;
 import models.LabelStructure;
 import panels.QueryConditions;

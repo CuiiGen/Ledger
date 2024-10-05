@@ -28,8 +28,8 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
-import tool.SystemProperties;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class H2_DB implements AutoCloseable {
 

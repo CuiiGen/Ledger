@@ -21,6 +21,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -209,6 +210,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		if (rds != null) {
 			tx[TX_AMOUNT].setText(String.valueOf(rds.getAmount()));
 			tx[TX_REMARK].setText(rds.getRemark());
+			// index: 0 -> outcome, 1 -> income
 			type.setSelectedIndex(rds.getType() == -1 ? 0 : 1);
 			account.setSelectedItem(rds.getName());
 			label.setSelectedItem(rds.getLabel());
@@ -256,6 +258,7 @@ public class InfoDialog extends JDialog implements ActionListener {
 		// label
 		String labelSQL = label.getSelectedItem() == QueryConditions.nullPopItem ? "null"
 				: String.format("'%s'", label.getSelectedItem());
+		// INSERT SQL
 		String sql = String.format("INSERT INTO ledger VALUES ('%s', '%s', '%s', '%d', %.2f, %s, '%s', %s);", //
 				validSQL, // 有效标志位
 				ft1.format(date), // 时间

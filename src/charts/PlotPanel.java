@@ -77,7 +77,7 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 	private void fetchData() throws SQLException {
 		// 获取数据
 		try (H2_DB h2 = new H2_DB()) {
-			String sql = QueryConditions.getInstance().getPlotSql();
+			String sql = QueryConditions.getInstance().getPlotSQL();
 			logger.info(sql);
 			ResultSet rs = h2.query(sql);
 			// 清空当前内容

@@ -247,10 +247,11 @@ public class QueryConditions {
 	 * 
 	 * @return
 	 */
-	public String getPlotSql() {
+	public String getPlotSQL() {
 		// SQL语句
-		String sql = String.format("SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x, SUM(`amount`) AS y FROM `ledger`"
-				+ "WHERE `type` = '-1' AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", getLabelSQL());
+		String sql = String
+				.format("SELECT FORMATDATETIME(`CREATETIME`, 'yyyy-MM') AS x, SUM(`amount`) AS y FROM `ledger`"
+						+ "WHERE `type` = '-1' AND `isvalid` = 'o' and %s GROUP BY x ORDER BY x;", getLabelSQL());
 		return sql;
 	}
 
@@ -259,7 +260,7 @@ public class QueryConditions {
 	 * 
 	 * @return
 	 */
-	public String getPieSql() {
+	public String getPieSQL() {
 		String sql = String.format("SELECT `label`, `type`, SUM(`amount`) AS `total` FROM `ledger` "
 				+ "WHERE `isvalid` = 'o' AND createtime >= '%s 00:00:00' AND createtime <= '%s 23:59:59'"
 				+ "GROUP BY `label`, `type` ORDER BY `type`, `total` DESC;", startTime, stopTime);

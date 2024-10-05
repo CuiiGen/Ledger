@@ -72,7 +72,7 @@ public class PiePanel extends JPanel {
 		// dataset
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		// SQL
-		String sql = QueryConditions.getInstance().getPieSql();
+		String sql = QueryConditions.getInstance().getPieSQL();
 		try (H2_DB h2 = new H2_DB()) {
 			logger.info(sql);
 			// 重置

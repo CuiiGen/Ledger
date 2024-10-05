@@ -31,8 +31,8 @@ import design.ThemeColor;
 import dialogs.MessageDialog;
 import main.MainFrame;
 import models.CustomListCellRenderer;
-import tool.SystemProperties;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class SortPanel extends JPanel implements ActionListener {
 
