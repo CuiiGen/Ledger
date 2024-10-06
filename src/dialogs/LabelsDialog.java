@@ -38,6 +38,7 @@ import main.MainFrame;
 import models.LabelStructure;
 import panels.QueryConditions;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class LabelsDialog extends JDialog implements ActionListener {
 
@@ -192,7 +193,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		header.setPreferredSize(new Dimension(header.getWidth(), 30));
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(30);
+		table.setRowHeight(SystemProperties.getInstance().getInt("theme.rowHeight"));
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
@@ -234,7 +235,7 @@ public class LabelsDialog extends JDialog implements ActionListener {
 		btn[BUTTON_DEL] = new JButton("删除");
 		btn[BUTTON_CLOSE] = new JButton("关闭");
 		for (final JButton b : btn) {
-			b.setFont(font.getFont(1));
+			b.setFont(font.getFont());
 			b.setForeground(Color.WHITE);
 			b.setBackground(Color.DARK_GRAY);
 			b.addActionListener(this);

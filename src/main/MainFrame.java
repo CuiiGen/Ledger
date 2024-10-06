@@ -105,13 +105,13 @@ public class MainFrame extends JFrame implements ActionListener {
 			m[i] = new JMenu(mstr[i]);
 			bar.add(m[i]);
 			m[i].setUI(new DefaultMenuUI(ThemeColor.BLUE, Color.WHITE));
-			m[i].setFont(font.getFont(14f));
+			m[i].setFont(font.getFont());
 		}
 		// 菜单项
 		String[] istr = { " 标签设置 ", " 删除选中账户 ", " 对账 ", " 导出CSV ", " 关于 ", " 记一笔账 ", " 转账 ", " 备份 ", " 恢复 ", " 查看日志 " };
 		for (int i = 0; i < istr.length; i++) {
 			mit[i] = new JMenuItem(istr[i]);
-			mit[i].setFont(font.getFont(14f));
+			mit[i].setFont(font.getFont());
 			mit[i].addActionListener(this);
 			mit[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
 			mit[i].setBackground(Color.WHITE);
@@ -242,7 +242,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mit[ITEM_ABOUT]) {
 			// 关于
-			MessageDialog.showMessage(this, "我的账本Ledger V3.8.0，由iamroot开发\r\n时间：2024-10-05\r\n邮箱：kevin.cuigen@qq.com");
+			MessageDialog.showMessage(this, "我的账本Ledger V3.8.1，由iamroot开发\r\n时间：2024-10-05\r\n邮箱：kevin.cuigen@qq.com");
 		} else if (e.getSource() == mit[ITEM_LABEL]) {
 			// 标签管理
 			logger.info("打开标签管理对话框");

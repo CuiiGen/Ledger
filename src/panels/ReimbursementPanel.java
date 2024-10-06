@@ -41,6 +41,7 @@ import dialogs.MessageDialog;
 import main.MainFrame;
 import models.ReimbursementStructure;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class ReimbursementPanel extends JPanel implements ActionListener {
 
@@ -187,7 +188,7 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 		header.setPreferredSize(new Dimension(header.getWidth(), 30));
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(32);
+		table.setRowHeight(SystemProperties.getInstance().getInt("theme.rowHeight"));
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
@@ -211,12 +212,12 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 		scrollPane.getViewport().setBackground(Color.WHITE);
 		scrollPane.setBorder(new EmptyBorder(1, 1, 1, 1));
 		// 新增按钮
-		btn.setFont(font.getFont(12f));
+		btn.setFont(font.getFont());
 		btn.setForeground(Color.WHITE);
 		btn.setBackground(ThemeColor.BLUE);
 		btn.addActionListener(this);
 		// 命名框
-		name.setFont(font.getFont(12f));
+		name.setFont(font.getFont());
 		name.setOpaque(true);
 		name.setSelectedTextColor(Color.WHITE);
 		name.setSelectionColor(ThemeColor.BLUE);
@@ -233,7 +234,7 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 		String[] istr = { " 修改完成状态 ", " 删除 " };
 		for (int i = 0; i < istr.length; i++) {
 			items[i] = new JMenuItem(istr[i]);
-			items[i].setFont(font.getFont(14f));
+			items[i].setFont(font.getFont());
 			items[i].addActionListener(this);
 			items[i].setBackground(Color.WHITE);
 			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
@@ -271,7 +272,6 @@ public class ReimbursementPanel extends JPanel implements ActionListener {
 		}
 		// 表格内容更新
 		table.setModel(new ReimbursementModel(array));
-		scrollPane.getVerticalScrollBar().setValue(0);
 	}
 
 	/**

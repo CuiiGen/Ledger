@@ -128,9 +128,9 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 		// 支持中文
 		StandardChartTheme chartTheme = new StandardChartTheme("CN");
 		// 设置字体
-		chartTheme.setRegularFont(font.getFont(13f));
-		chartTheme.setLargeFont(font.getFont(13f));
-		chartTheme.setSmallFont(font.getFont(13f));
+		chartTheme.setRegularFont(font.getFont());
+		chartTheme.setLargeFont(font.getFont());
+		chartTheme.setSmallFont(font.getFont());
 		// 应用
 		ChartFactory.setChartTheme(chartTheme);
 		// 创建柱状图图形
@@ -142,10 +142,10 @@ public class PlotPanel extends JPanel implements MouseWheelListener {
 		// Plot
 		plot = chart.getCategoryPlot();
 		// y轴字体
-		plot.getRangeAxis().setTickLabelFont(font.getFont(13f));
+		plot.getRangeAxis().setTickLabelFont(font.getFont());
 		// x轴格式化
 		CategoryAxis xAxis = plot.getDomainAxis();
-		xAxis.setTickLabelFont(font.getFont(13f));
+		xAxis.setTickLabelFont(font.getFont());
 		// 不显示标签
 		xAxis.setLabel(null);
 		plot.getRangeAxis().setLabel(null);

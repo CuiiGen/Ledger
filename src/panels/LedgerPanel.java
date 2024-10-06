@@ -46,6 +46,7 @@ import dialogs.MessageDialog;
 import main.MainFrame;
 import models.RecordStructure;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class LedgerPanel extends JPanel implements ActionListener {
 
@@ -150,7 +151,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 						addtoMenu.add(new JMenuItem(rs.getString("no") + "-" + rs.getString("name")));
 					}
 					for (Component i : addtoMenu.getMenuComponents()) {
-						i.setFont(font.getFont(12f));
+						i.setFont(font.getFont());
 						((JMenuItem) i).addActionListener(new ReimbursementMonitor());
 						i.setBackground(Color.WHITE);
 						((JMenuItem) i).setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
@@ -252,7 +253,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		header.setPreferredSize(new Dimension(header.getWidth(), 30));
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(32);
+		table.setRowHeight(SystemProperties.getInstance().getInt("theme.rowHeight"));
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
@@ -277,7 +278,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		scrollPane.setBorder(new EmptyBorder(1, 1, 1, 1));
 
 		// 余额
-		balence.setFont(font.getFont(3, 13f));
+		balence.setFont(font.getFont(3, 12f));
 		balence.setOpaque(true);
 		balence.setBackground(Color.WHITE);
 		balence.setHorizontalAlignment(JLabel.RIGHT);
@@ -286,7 +287,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		String[] istr = { " 再来一笔", " 筛选同标签记录", " 退款 ", " 删除 " };
 		for (int i = 0; i < istr.length; i++) {
 			items[i] = new JMenuItem(istr[i]);
-			items[i].setFont(font.getFont(12f));
+			items[i].setFont(font.getFont());
 			items[i].addActionListener(this);
 			items[i].setBackground(Color.WHITE);
 			items[i].setUI(new DefaultMemuItemUI(ThemeColor.BLUE, Color.WHITE));
@@ -296,7 +297,7 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		// 退款
 		pop.add(items[ITEM_REFUND]);
 
-		addtoMenu.setFont(font.getFont(12f));
+		addtoMenu.setFont(font.getFont());
 		addtoMenu.setUI(new DefaultMenuUI(ThemeColor.BLUE, Color.WHITE));
 		pop.add(addtoMenu);
 
@@ -373,8 +374,6 @@ public class LedgerPanel extends JPanel implements ActionListener {
 		// 报销
 		cm.getColumn(7).setMaxWidth(120);
 		cm.getColumn(7).setMinWidth(100);
-
-		scrollPane.getVerticalScrollBar().setValue(0);
 	}
 
 	/**

@@ -39,6 +39,8 @@ public class SystemProperties {
 		defaultProperties.setProperty("cryptography.algorithm", "SHA-512");
 		defaultProperties.setProperty("backup.path", "./backup/");
 		defaultProperties.setProperty("ledger.onlyValid", "false");
+		defaultProperties.setProperty("theme.rowHeight", "27");
+		defaultProperties.setProperty("theme.fontSize", "13");
 		if (fileProperties.isEmpty()) {
 			fileProperties = (Properties) defaultProperties.clone();
 		}
@@ -62,21 +64,11 @@ public class SystemProperties {
 	}
 
 	public boolean getBoolean(String key) {
-		boolean bool = Boolean.parseBoolean(defaultProperties.getProperty(key));
-		// 日志
-		logger.info(String.format("键：%s，默认值：%s", key, bool));
-		// 获取对应值
-		String property = fileProperties.getProperty(key);
-		// 判断键值是否存在
-		if (property != null) {
-			return Boolean.parseBoolean(property);
-		} else {
-			logger.warn("键值对不存在");
-			// 重写键值对
-			fileProperties.setProperty(key, String.valueOf(bool));
-			this.store();
-			return bool;
-		}
+		return Boolean.parseBoolean(getString(key));
+	}
+
+	public int getInt(String key) {
+		return Integer.parseInt(getString(key));
 	}
 
 	public void setProperty(String key, String value) {

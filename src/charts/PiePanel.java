@@ -109,9 +109,9 @@ public class PiePanel extends JPanel {
 		// 设置字体
 		DefaultFont font = new DefaultFont();
 		StandardChartTheme chartTheme = new StandardChartTheme("CN");
-		chartTheme.setRegularFont(font.getFont(13f));
-		chartTheme.setLargeFont(font.getFont(13f));
-		chartTheme.setSmallFont(font.getFont(13f));
+		chartTheme.setRegularFont(font.getFont());
+		chartTheme.setLargeFont(font.getFont());
+		chartTheme.setSmallFont(font.getFont());
 		// 应用
 		ChartFactory.setChartTheme(chartTheme);
 		// 创建chart

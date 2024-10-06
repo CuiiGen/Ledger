@@ -10,13 +10,14 @@ import org.apache.logging.log4j.Logger;
 
 import dialogs.MessageDialog;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class DefaultFont {
 
 	// 默认不加粗不斜体
 	private static final int fontDefaultStyle = 0;
 	// 默认15号大小
-	private static final float fontDefaultSize = 15;
+	private static final float fontDefaultSize = SystemProperties.getInstance().getInt("theme.fontSize");
 	// 字体文件是否存在
 	private static boolean isFontFileExists = true;
 

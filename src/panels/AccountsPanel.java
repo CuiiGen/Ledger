@@ -37,6 +37,7 @@ import dialogs.MessageDialog;
 import main.MainFrame;
 import models.AccountStructure;
 import tool.LogHelper;
+import tool.SystemProperties;
 
 public class AccountsPanel extends Panel {
 
@@ -202,7 +203,7 @@ public class AccountsPanel extends Panel {
 		header.setPreferredSize(new Dimension(header.getWidth(), 30));
 		// 行高
 		table.setFont(font.getFont());
-		table.setRowHeight(32);
+		table.setRowHeight(SystemProperties.getInstance().getInt("theme.rowHeight"));
 		// 居中显示
 		CellRenderer tcr = new CellRenderer();
 		table.setDefaultRenderer(Object.class, tcr);
@@ -224,7 +225,7 @@ public class AccountsPanel extends Panel {
 		scrollPane.getViewport().setBackground(Color.WHITE);
 
 		Border tb1 = BorderFactory.createTitledBorder(new LineBorder(Color.LIGHT_GRAY), "账户信息显示", TitledBorder.LEFT,
-				TitledBorder.DEFAULT_POSITION, font.getFont(0, 13f));
+				TitledBorder.DEFAULT_POSITION, font.getFont(0, 12f));
 		scrollPane.setBorder(tb1);
 		add(scrollPane, BorderLayout.CENTER);
 
